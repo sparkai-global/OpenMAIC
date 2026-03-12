@@ -1,12 +1,11 @@
 import { NextRequest } from "next/server";
-import { getModel, parseModelString } from "@/lib/ai/providers";
-import { resolveApiKey, resolveBaseUrl, resolveProxy } from "@/lib/server/provider-config";
 import { callLLM } from "@/lib/ai/llm";
 import { z } from "zod";
 import { nanoid } from "nanoid";
 import type { ParsedPdfContent } from "@/lib/types/pdf";
 import { createLogger } from '@/lib/logger'
 import { apiError, apiSuccess } from '@/lib/server/api-response'
+import { resolveModel } from '@/lib/server/resolve-model';
 const log = createLogger('Classroom')
 
 
@@ -52,21 +51,14 @@ export async function POST(req: NextRequest) {
       return apiError('MISSING_REQUIRED_FIELD', 400, 'No PDF content provided');
     }
 
-    const modelString = model || "gpt-4o-mini";
-    const { providerId, modelId } = parseModelString(modelString);
-    const effectiveApiKey = resolveApiKey(providerId, apiKey);
-    const effectiveBaseUrl = resolveBaseUrl(providerId, baseUrl);
-    const proxy = resolveProxy(providerId);
-    log.info(`Using model: provider=${providerId}, model=${modelId}`);
-    const { model: languageModel, modelInfo } = getModel({
-      providerId,
-      modelId,
-      apiKey: effectiveApiKey || '',
-      baseUrl: effectiveBaseUrl,
-      proxy,
-      providerType: providerType as 'openai' | 'anthropic' | 'google' | undefined,
+    const { model: languageModel, modelInfo } = resolveModel({
+      modelString: model,
+      apiKey: apiKey || '',
+      baseUrl,
+      providerType,
       requiresApiKey,
     });
+    log.info(`Using model: ${model || 'gpt-4o-mini'}`);
 
     const backgroundContext = background
       ? `\n\nStudent background: ${background}\nPlease adapt the content complexity and examples based on this background.`

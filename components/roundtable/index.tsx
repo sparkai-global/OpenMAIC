@@ -1,14 +1,13 @@
 'use client';
 
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Mic, MicOff, Send, MessageSquare, Pause, Play, ChevronLeft, ChevronRight, Repeat, BookOpen, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { CanvasToolbar } from '@/components/canvas/canvas-toolbar';
 import { useAudioRecorder } from '@/lib/hooks/use-audio-recorder';
 import { useI18n } from '@/lib/hooks/use-i18n';
 import { toast } from 'sonner';
-import { useSettingsStore, PLAYBACK_SPEEDS } from '@/lib/store/settings';
+import { useSettingsStore } from '@/lib/store/settings';
 import { ProactiveCard } from '@/components/chat/proactive-card';
 import { HoverCard, HoverCardTrigger, HoverCardContent } from '@/components/ui/hover-card';
 import { useAgentRegistry } from '@/lib/orchestration/registry/store';
@@ -44,24 +43,11 @@ interface RoundtableProps {
   readonly onMessageSend?: (message: string) => void;
   readonly onDiscussionStart?: (request: DiscussionAction) => void;
   readonly onDiscussionSkip?: () => void;
-  readonly onStopDiscussion?: () => void;
   readonly onInputActivate?: () => void;
   readonly onSoftPause?: () => void;
   readonly onResumeTopic?: () => void;
   readonly onPlayPause?: () => void;
   readonly totalActions?: number;
-  readonly currentActionIndex?: number;
-  // Toolbar props (merged from CanvasArea)
-  readonly currentSceneIndex?: number;
-  readonly scenesCount?: number;
-  readonly whiteboardOpen?: boolean;
-  readonly sidebarCollapsed?: boolean;
-  readonly chatCollapsed?: boolean;
-  readonly onToggleSidebar?: () => void;
-  readonly onToggleChat?: () => void;
-  readonly onPrevSlide?: () => void;
-  readonly onNextSlide?: () => void;
-  readonly onWhiteboardClose?: () => void;
 }
 
 const DEFAULT_TEACHER_AVATAR = '/avatars/teacher.png';
@@ -98,33 +84,13 @@ export function Roundtable({
   onMessageSend,
   onDiscussionStart,
   onDiscussionSkip,
-  onStopDiscussion,
   onInputActivate,
   onSoftPause,
   onResumeTopic,
   onPlayPause,
-  currentSceneIndex = 0,
-  scenesCount = 1,
-  whiteboardOpen = false,
-  sidebarCollapsed,
-  chatCollapsed,
-  onToggleSidebar,
-  onToggleChat,
-  onPrevSlide,
-  onNextSlide,
-  onWhiteboardClose,
 }: RoundtableProps) {
   const { t } = useI18n();
-  const ttsMuted = useSettingsStore((s) => s.ttsMuted);
-  const setTTSMuted = useSettingsStore((s) => s.setTTSMuted);
-  const ttsEnabled = useSettingsStore((state) => state.ttsEnabled);
   const asrEnabled = useSettingsStore((state) => state.asrEnabled);
-  const ttsVolume = useSettingsStore((s) => s.ttsVolume);
-  const setTTSVolume = useSettingsStore((s) => s.setTTSVolume);
-  const autoPlayLecture = useSettingsStore((s) => s.autoPlayLecture);
-  const setAutoPlayLecture = useSettingsStore((s) => s.setAutoPlayLecture);
-  const playbackSpeed = useSettingsStore((s) => s.playbackSpeed);
-  const setPlaybackSpeed = useSettingsStore((s) => s.setPlaybackSpeed);
   const [isInputOpen, setIsInputOpen] = useState(false);
   const [isVoiceOpen, setIsVoiceOpen] = useState(false);
   const [inputValue, setInputValue] = useState('');
@@ -281,10 +247,6 @@ export function Roundtable({
     }
   };
 
-  // Show stop button whenever there's an active QA/discussion session or live mode.
-  // sessionType is only cleared in doSessionCleanup, so this stays stable through
-  // brief loading gaps (e.g. between user message and agent SSE response).
-  const showStopButton = engineMode === 'live' || sessionType === 'qa' || sessionType === 'discussion';
 
 
   // Determine active speaking state and bubble ownership
@@ -333,46 +295,9 @@ export function Roundtable({
     bubbleRole === 'teacher' ? 'teacher' :
     'idle';
 
-  const handleCycleSpeed = useCallback(() => {
-    const currentIndex = PLAYBACK_SPEEDS.indexOf(playbackSpeed as typeof PLAYBACK_SPEEDS[number]);
-    const nextIndex = (currentIndex + 1) % PLAYBACK_SPEEDS.length;
-    setPlaybackSpeed(PLAYBACK_SPEEDS[nextIndex]);
-  }, [playbackSpeed, setPlaybackSpeed]);
 
   return (
     <div className="h-[192px] w-full flex flex-col relative z-10 border-t border-gray-100 dark:border-gray-800 bg-white/60 dark:bg-gray-800/60 backdrop-blur-md">
-      {/* ── Toolbar strip — merged from CanvasArea ── */}
-      <CanvasToolbar
-        className="shrink-0 h-8 px-3 border-b border-gray-100/40 dark:border-gray-700/30"
-        currentSceneIndex={currentSceneIndex}
-        scenesCount={scenesCount}
-        engineState={
-          engineMode === 'playing' || engineMode === 'live' ? 'playing' :
-          engineMode === 'paused' ? 'paused' : 'idle'
-        }
-        isLiveSession={isStreaming || isTopicPending || engineMode === 'live'}
-        whiteboardOpen={whiteboardOpen}
-        sidebarCollapsed={sidebarCollapsed}
-        chatCollapsed={chatCollapsed}
-        onToggleSidebar={onToggleSidebar}
-        onToggleChat={onToggleChat}
-        onPrevSlide={onPrevSlide ?? (() => {})}
-        onNextSlide={onNextSlide ?? (() => {})}
-        onPlayPause={onPlayPause ?? (() => {})}
-        onWhiteboardClose={onWhiteboardClose ?? (() => {})}
-        showStopDiscussion={showStopButton}
-        onStopDiscussion={onStopDiscussion}
-        ttsEnabled={ttsEnabled}
-        ttsMuted={ttsMuted}
-        ttsVolume={ttsVolume}
-        onToggleMute={() => ttsEnabled && setTTSMuted(!ttsMuted)}
-        onVolumeChange={(v) => setTTSVolume(v)}
-        autoPlayLecture={autoPlayLecture}
-        onToggleAutoPlay={() => setAutoPlayLecture(!autoPlayLecture)}
-        playbackSpeed={playbackSpeed}
-        onCycleSpeed={handleCycleSpeed}
-      />
-
       {/* ── Interaction area — three-column layout ── */}
       <div className="flex-1 flex items-stretch min-h-0">
       {/* Left: Teacher identity */}

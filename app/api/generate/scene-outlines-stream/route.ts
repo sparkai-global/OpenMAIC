@@ -12,8 +12,6 @@
  */
 
 import { NextRequest } from 'next/server';
-import { getModel, parseModelString } from '@/lib/ai/providers';
-import { resolveApiKey, resolveBaseUrl, resolveProxy } from '@/lib/server/provider-config';
 import { streamLLM } from '@/lib/ai/llm';
 import { buildPrompt, PROMPT_IDS } from '@/lib/generation/prompts';
 import { formatImageDescription, formatImagePlaceholder, buildVisionUserContent, uniquifyMediaElementIds, formatTeacherPersonaForPrompt } from '@/lib/generation/generation-pipeline';
@@ -23,6 +21,7 @@ import { nanoid } from 'nanoid';
 import type { UserRequirements, PdfImage, SceneOutline, ImageMapping } from '@/lib/types/generation';
 import { apiError } from '@/lib/server/api-response'
 import { createLogger } from '@/lib/logger'
+import { resolveModelFromHeaders } from '@/lib/server/resolve-model';
 const log = createLogger('Outlines Stream')
 
 
@@ -83,25 +82,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
 
     // Get API configuration from request headers
-    const modelString = req.headers.get('x-model') || 'gpt-4o-mini';
-    const clientApiKey = req.headers.get('x-api-key') || '';
-    const clientBaseUrl = req.headers.get('x-base-url') || undefined;
-    const providerType = req.headers.get('x-provider-type') || undefined;
-    const requiresApiKey = req.headers.get('x-requires-api-key') === 'true';
-
-    const { providerId, modelId } = parseModelString(modelString);
-    const apiKey = resolveApiKey(providerId, clientApiKey);
-    const baseUrl = resolveBaseUrl(providerId, clientBaseUrl);
-    const proxy = resolveProxy(providerId);
-    const { model: languageModel, modelInfo } = getModel({
-      providerId,
-      modelId,
-      apiKey,
-      baseUrl,
-      proxy,
-      providerType: providerType as 'openai' | 'anthropic' | 'google' | undefined,
-      requiresApiKey,
-    });
+    const { model: languageModel, modelInfo, modelString } = resolveModelFromHeaders(req);
 
     if (!body.requirements) {
       return apiError('MISSING_REQUIRED_FIELD', 400, 'Requirements are required');

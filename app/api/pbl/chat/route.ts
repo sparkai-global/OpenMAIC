@@ -6,12 +6,11 @@
  */
 
 import { NextRequest } from 'next/server'
-import { getModel, parseModelString } from '@/lib/ai/providers'
-import { resolveApiKey, resolveBaseUrl, resolveProxy } from '@/lib/server/provider-config'
 import { callLLM } from '@/lib/ai/llm'
 import type { PBLAgent, PBLIssue } from '@/lib/pbl/types'
 import { createLogger } from '@/lib/logger'
 import { apiError, apiSuccess } from '@/lib/server/api-response'
+import { resolveModelFromHeaders } from '@/lib/server/resolve-model'
 const log = createLogger('PBL Chat')
 
 
@@ -33,26 +32,8 @@ export async function POST(req: NextRequest) {
       return apiError('MISSING_REQUIRED_FIELD', 400, 'Message and agent are required');
     }
 
-    // Get model config from headers (same pattern as scene-stream)
-    const modelString = req.headers.get('x-model') || 'gpt-4o-mini'
-    const clientApiKey = req.headers.get('x-api-key') || ''
-    const clientBaseUrl = req.headers.get('x-base-url') || undefined
-    const providerType = req.headers.get('x-provider-type') || undefined
-    const requiresApiKey = req.headers.get('x-requires-api-key') === 'true'
-
-    const { providerId, modelId } = parseModelString(modelString)
-    const apiKey = resolveApiKey(providerId, clientApiKey)
-    const baseUrl = resolveBaseUrl(providerId, clientBaseUrl)
-    const proxy = resolveProxy(providerId);
-    const { model } = getModel({
-      providerId,
-      modelId,
-      apiKey,
-      baseUrl,
-      proxy,
-      providerType: providerType as 'openai' | 'anthropic' | 'google' | undefined,
-      requiresApiKey,
-    })
+    // Get model config from headers
+    const { model } = resolveModelFromHeaders(req)
 
     // Build context for the agent, differentiating question vs judge
     let issueContext = ''

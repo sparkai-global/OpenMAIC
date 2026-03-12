@@ -1,9 +1,8 @@
 import { NextRequest } from 'next/server';
-import { getModel, parseModelString } from '@/lib/ai/providers';
-import { resolveApiKey, resolveBaseUrl, resolveProxy } from '@/lib/server/provider-config';
 import { generateText } from 'ai';
 import { createLogger } from '@/lib/logger'
 import { apiError, apiSuccess } from '@/lib/server/api-response';
+import { resolveModel } from '@/lib/server/resolve-model';
 const log = createLogger('Verify Model')
 
 
@@ -16,19 +15,13 @@ export async function POST(req: NextRequest) {
     }
 
     // Parse model string and resolve server-side fallback
-    const { providerId, modelId } = parseModelString(model);
-    const effectiveApiKey = resolveApiKey(providerId, apiKey);
-    const effectiveBaseUrl = resolveBaseUrl(providerId, baseUrl);
-    const proxy = resolveProxy(providerId);
     let languageModel;
     try {
-      const result = getModel({
-        providerId,
-        modelId,
-        apiKey: effectiveApiKey || "",
-        baseUrl: effectiveBaseUrl || undefined,
-        proxy,
-        providerType: providerType as "openai" | "anthropic" | "google" | undefined,
+      const result = resolveModel({
+        modelString: model,
+        apiKey: apiKey || '',
+        baseUrl: baseUrl || undefined,
+        providerType,
         requiresApiKey,
       });
       languageModel = result.model;

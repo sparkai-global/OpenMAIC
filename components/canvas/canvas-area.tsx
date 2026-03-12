@@ -7,15 +7,18 @@ import { cn } from '@/lib/utils';
 import { SceneRenderer } from '@/components/stage/scene-renderer';
 import { SceneProvider } from '@/lib/contexts/scene-context';
 import { Whiteboard } from '@/components/whiteboard';
-import { CanvasToolbar } from '@/components/canvas/canvas-toolbar';
-import type { CanvasToolbarProps } from '@/components/canvas/canvas-toolbar';
 import type { Scene, StageMode } from '@/lib/types/stage';
 import { useI18n } from '@/lib/hooks/use-i18n';
 
-interface CanvasAreaProps extends CanvasToolbarProps {
+interface CanvasAreaProps {
   readonly currentScene: Scene | null;
+  readonly currentSceneIndex: number;
   readonly mode: StageMode;
-  readonly hideToolbar?: boolean;
+  readonly engineState: 'idle' | 'playing' | 'paused';
+  readonly isLiveSession?: boolean;
+  readonly whiteboardOpen: boolean;
+  readonly onPlayPause: () => void;
+  readonly onWhiteboardClose: () => void;
   readonly isPendingScene?: boolean;
   readonly isGenerationFailed?: boolean;
   readonly onRetryGeneration?: () => void;
@@ -24,22 +27,12 @@ interface CanvasAreaProps extends CanvasToolbarProps {
 export function CanvasArea({
   currentScene,
   currentSceneIndex,
-  scenesCount,
   mode,
   engineState,
   isLiveSession,
   whiteboardOpen,
-  sidebarCollapsed,
-  chatCollapsed,
-  onToggleSidebar,
-  onToggleChat,
-  onPrevSlide,
-  onNextSlide,
   onPlayPause,
   onWhiteboardClose,
-  showStopDiscussion,
-  onStopDiscussion,
-  hideToolbar,
   isPendingScene,
   isGenerationFailed,
   onRetryGeneration,
@@ -189,31 +182,6 @@ export function CanvasArea({
         </div>
       </div>
 
-      {/* ── Canvas Toolbar — in document flow, only when not merged into roundtable ── */}
-      {!hideToolbar && (
-        <CanvasToolbar
-          className={cn(
-            'shrink-0 h-9 px-2',
-            'bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl',
-            'border-t border-gray-200/40 dark:border-gray-700/40',
-          )}
-          currentSceneIndex={currentSceneIndex}
-          scenesCount={scenesCount}
-          engineState={engineState}
-          isLiveSession={isLiveSession}
-          whiteboardOpen={whiteboardOpen}
-          sidebarCollapsed={sidebarCollapsed}
-          chatCollapsed={chatCollapsed}
-          onToggleSidebar={onToggleSidebar}
-          onToggleChat={onToggleChat}
-          onPrevSlide={onPrevSlide}
-          onNextSlide={onNextSlide}
-          onPlayPause={onPlayPause}
-          onWhiteboardClose={onWhiteboardClose}
-          showStopDiscussion={showStopDiscussion}
-          onStopDiscussion={onStopDiscussion}
-        />
-      )}
     </div>
   );
 }

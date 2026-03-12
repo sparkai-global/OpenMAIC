@@ -1,64 +1,285 @@
-# OpenMAIC
+<!-- <p align="center">
+  <img src="assets/logo-horizontal.png" alt="OpenMAIC" width="420"/>
+</p> -->
 
-AI-powered interactive classroom platform. Generate engaging, multi-agent lesson presentations from a simple topic — complete with slides, dialogues, quizzes, and multimedia.
+<p align="center">
+  <img src="assets/banner.png" alt="OpenMAIC Banner" width="680"/>
+</p>
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FTHU-MAIC%2FOpenMAIC&envDescription=Configure%20at%20least%20one%20LLM%20provider%20API%20key%20(e.g.%20OPENAI_API_KEY%2C%20ANTHROPIC_API_KEY).%20All%20providers%20are%20optional.&envLink=https%3A%2F%2Fgithub.com%2FTHU-MAIC%2FOpenMAIC%2Fblob%2Fmain%2F.env.example&project-name=openmaic&framework=nextjs)
+<p align="center">
+  Get an immersive, multi-agent learning experience in just one click
+</p>
 
-## Features
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square" alt="License: MIT"/></a>
+  <a href="https://open.maic.chat/"><img src="https://img.shields.io/badge/Demo-Live-brightgreen?style=flat-square" alt="Live Demo"/></a>
+  <a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FTHU-MAIC%2FOpenMAIC&envDescription=Configure%20at%20least%20one%20LLM%20provider%20API%20key%20(e.g.%20OPENAI_API_KEY%2C%20ANTHROPIC_API_KEY).%20All%20providers%20are%20optional.&envLink=https%3A%2F%2Fgithub.com%2FTHU-MAIC%2FOpenMAIC%2Fblob%2Fmain%2F.env.example&project-name=openmaic&framework=nextjs"><img src="https://vercel.com/button" alt="Deploy with Vercel" height="20"/></a>
+  <a href="https://github.com/THU-MAIC/OpenMAIC/stargazers"><img src="https://img.shields.io/github/stars/THU-MAIC/OpenMAIC?style=flat-square" alt="Stars"/></a>
+  <br/>
+  <img src="https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js" alt="Next.js"/>
+  <img src="https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=white" alt="React"/>
+  <img src="https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript"/>
+  <img src="https://img.shields.io/badge/LangGraph-1.1-purple?style=flat-square" alt="LangGraph"/>
+  <img src="https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white" alt="Tailwind CSS"/>
+</p>
 
-- **AI Lesson Generation** — Describe a topic and get a full interactive classroom experience
-- **Multi-Agent Dialogue** — AI teacher and student agents engage in natural classroom conversation
-- **Rich Multimedia** — Auto-generated slides, images, TTS audio, and video
-- **Multi-Provider Support** — OpenAI, Anthropic, Google, DeepSeek, Qwen, and more
-- **Internationalization** — Chinese and English UI
-- **Local-First Data** — All user data stored in browser (IndexedDB)
+<p align="center">
+  <a href="./README.md">English</a> | <a href="./README-zh.md">简体中文</a>
+  <br/>
+  <a href="https://open.maic.chat/">Live Demo</a> · <a href="#-quick-start">Quick Start</a> · <a href="#-features">Features</a> · <a href="#-use-cases">Use Cases</a>
+</p>
 
-## Getting Started
+## 📖 Overview
+
+**OpenMAIC** (Open Multi-Agent Interactive Classroom) is an open-source AI platform that turns any topic or document into a rich, interactive classroom experience. Powered by multi-agent orchestration, it generates slides, quizzes, interactive simulations, and project-based learning activities — all delivered by AI teachers and AI classmates who can speak, draw on a whiteboard, and engage in real-time discussions with you.
+
+<!-- PLACEHOLDER: product overview GIF -->
+<!-- <img src="assets/overview.gif" width="100%"/> -->
+
+### Highlights
+
+- **One-click lesson generation** — Describe a topic or attach your materials; the AI builds a full lesson in minutes
+- **Multi-agent classroom** — AI teachers and peers lecture, discuss, and interact with you in real time
+- **Rich scene types** — Slides, quizzes, interactive HTML simulations, and project-based learning (PBL)
+- **Whiteboard & TTS** — Agents draw diagrams, write formulas, and explain out loud
+- **Export anywhere** — Download editable `.pptx` slides or interactive `.html` pages
+
+---
+
+## 🚀 Quick Start
 
 ### Prerequisites
 
-- Node.js 18+
-- pnpm
+- **Node.js** >= 18
+- **pnpm** >= 10
 
-### Install & Run
+### 1. Clone & Install
 
 ```bash
+git clone https://github.com/THU-MAIC/OpenMAIC.git
+cd OpenMAIC
 pnpm install
-pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
-
-### Configuration
-
-Copy `.env.example` to `.env.local` and add your API keys:
+### 2. Configure
 
 ```bash
 cp .env.example .env.local
 ```
 
-At minimum, configure one LLM provider (e.g. `OPENAI_API_KEY`). See [`.env.example`](.env.example) for all available options.
+Fill in at least one LLM provider key:
 
-Alternatively, create a `server-providers.yml` file for more advanced provider configuration.
+```env
+OPENAI_API_KEY=sk-...
+ANTHROPIC_API_KEY=sk-ant-...
+GOOGLE_GENERATIVE_AI_API_KEY=...
+```
 
-## Deploy
+You can also configure providers via `server-providers.yml`:
 
-### Vercel (Recommended)
+```yaml
+providers:
+  - id: openai
+    apiKey: sk-...
+  - id: anthropic
+    apiKey: sk-ant-...
+```
 
-Click the button above, or:
+Supported providers: **OpenAI**, **Anthropic**, **Google Gemini**, **DeepSeek**, and any OpenAI-compatible API.
+
+> **Recommended model:** **Gemini 3 Flash** — best balance of quality and speed. For highest quality (at slower speed), try **Gemini 3.1 Pro**.
+
+### 3. Run
+
+```bash
+pnpm dev
+```
+
+Open **http://localhost:3000** and start learning!
+
+### 4. Build for Production
+
+```bash
+pnpm build && pnpm start
+```
+
+### Vercel Deployment
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FTHU-MAIC%2FOpenMAIC&envDescription=Configure%20at%20least%20one%20LLM%20provider%20API%20key%20(e.g.%20OPENAI_API_KEY%2C%20ANTHROPIC_API_KEY).%20All%20providers%20are%20optional.&envLink=https%3A%2F%2Fgithub.com%2FTHU-MAIC%2FOpenMAIC%2Fblob%2Fmain%2F.env.example&project-name=openmaic&framework=nextjs)
+
+Or manually:
 
 1. Fork this repository
 2. Import into [Vercel](https://vercel.com/new)
 3. Set environment variables (at minimum one LLM API key)
 4. Deploy
 
-### Docker
+### Docker Deployment
 
 ```bash
-docker build -t openmaic .
-docker run -p 3000:3000 --env-file .env.local openmaic
+cp .env.example .env.local
+# Edit .env.local with your API keys, then:
+docker compose up --build
 ```
 
-## License
+To use the optional MinerU document parser, uncomment the `mineru` service in `docker-compose.yml`.
 
-MIT
+### Optional: MinerU (Advanced Document Parsing)
+
+For enhanced parsing of complex tables and formulas:
+
+```bash
+docker pull opendatalab/mineru:latest
+docker run -d --name mineru -p 8080:8080 opendatalab/mineru:latest
+```
+
+Set `MINERU_API_URL=http://localhost:8080` in `.env.local`.
+
+---
+
+## ✨ Features
+
+### Lesson Generation
+
+Describe what you want to learn or attach reference materials. OpenMAIC's two-stage pipeline handles the rest:
+
+| Stage | What Happens |
+|-------|-------------|
+| **Outline** | AI analyzes your input and generates a structured lesson outline |
+| **Scenes** | Each outline item becomes a rich scene — slides, quizzes, interactive modules, or PBL activities |
+
+<!-- PLACEHOLDER: generation pipeline GIF -->
+<!-- <img src="assets/generation-pipeline.gif" width="100%"/> -->
+
+### Classroom Components
+
+<table>
+<tr>
+<td width="50%" valign="top">
+
+**🎓 Slides**
+
+AI teachers deliver lectures with voice narration, spotlight effects, and laser pointer animations — just like a real classroom.
+
+<img src="assets/slides.gif" width="100%"/>
+
+</td>
+<td width="50%" valign="top">
+
+**🧪 Quiz**
+
+Interactive quizzes (single / multiple choice, short answer) with real-time AI grading and feedback.
+
+<img src="assets/quiz.gif" width="100%"/>
+
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+
+**🔬 Interactive Simulation**
+
+HTML-based interactive experiments for visual, hands-on learning — physics simulators, flowcharts, and more.
+
+<img src="assets/interactive.gif" width="100%"/>
+
+</td>
+<td width="50%" valign="top">
+
+**🏗️ Project-Based Learning (PBL)**
+
+Choose a role and collaborate with AI agents on structured projects with milestones and deliverables.
+
+<img src="assets/pbl.gif" width="100%"/>
+
+</td>
+</tr>
+</table>
+
+### Multi-Agent Interaction
+
+- **Classroom Discussion** — Agents proactively initiate discussions; you can jump in anytime or get called on
+- **Roundtable Debate** — Multiple agents with different personas discuss a topic, with whiteboard illustrations
+- **Q&A Mode** — Ask questions freely; the AI teacher responds with slides, diagrams, or whiteboard drawings
+- **Whiteboard** — AI agents draw on a shared whiteboard in real time — solving equations step by step, sketching flowcharts, or illustrating concepts visually.
+
+<img src="assets/discussion.gif" width="100%"/>
+<img src="assets/whiteboard.gif" width="100%"/>
+
+### Export
+
+| Format | Description |
+|--------|-------------|
+| **PowerPoint (.pptx)** | Fully editable slides with images, charts, and LaTeX formulas |
+| **Interactive HTML** | Self-contained web pages with interactive simulations |
+
+### And More
+
+- **Text-to-Speech** — Multiple voice providers with customizable voices
+- **Speech Recognition** — Talk to your AI teacher using your microphone
+- **Web Search** — Agents search the web for up-to-date information during class
+- **i18n** — Interface supports Chinese and English
+- **Dark Mode** — Easy on the eyes for late-night study sessions
+
+---
+
+## 💡 Use Cases
+
+<table>
+<tr>
+<td width="50%" valign="top">
+
+> *"Teach me Python from scratch in 30 min"*
+
+<img src="assets/python.gif" width="100%"/>
+
+</td>
+<td width="50%" valign="top">
+
+> *"How to play the board game Avalon"*
+
+<img src="assets/avalon.gif" width="100%"/>
+
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+
+> *"Analyze the stock prices of Zhipu and MiniMax"*
+
+<img src="assets/zhipu-minimax.gif" width="100%"/>
+
+</td>
+<td width="50%" valign="top">
+
+> *"Break down the latest DeepSeek paper"*
+
+<img src="assets/deepseek.gif" width="100%"/>
+
+</td>
+</tr>
+</table>
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions from the community! Whether it's bug reports, feature ideas, or pull requests — every bit helps.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+---
+
+## 📬 Contact
+
+If you have any questions, feedback, or would like to get in touch, feel free to reach out via [Issues](https://github.com/THU-MAIC/OpenMAIC/issues).
+
+---
+
+## 📄 License
+
+This project is licensed under the [MIT License](LICENSE).

@@ -22,7 +22,7 @@ export const commonZhCN = {
     loading: '加载中...',
   },
   home: {
-    slogan: 'AI 驱动的交互式课堂，让学习更高效',
+    slogan: 'Generative Learning in Multi-Agent Interactive Classroom',
     greeting: '嗨，',
   },
   toolbar: {
@@ -97,7 +97,7 @@ export const commonEnUS = {
     loading: 'Loading...',
   },
   home: {
-    slogan: 'AI-powered interactive classrooms for more effective learning',
+    slogan: 'Generative Learning in Multi-Agent Interactive Classroom',
     greeting: 'Hi, ',
   },
   toolbar: {

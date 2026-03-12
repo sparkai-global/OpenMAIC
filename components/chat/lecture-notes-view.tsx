@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { BookOpen, MessageSquare, Flashlight, MousePointer2, Play } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useI18n } from '@/lib/use-i18n';
+import { useI18n } from '@/lib/hooks/use-i18n';
 import type { LectureNoteEntry } from '@/lib/types/chat';
 
 const ACTION_ICON_ONLY: Record<string, { Icon: typeof Flashlight; style: string }> = {

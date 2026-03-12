@@ -1,7 +1,7 @@
 'use client';
 
 import { Stage } from '@/components/stage';
-import { ThemeProvider } from '@/lib/use-theme';
+import { ThemeProvider } from '@/lib/hooks/use-theme';
 import { useStageStore } from '@/lib/store';
 import { loadImageMapping } from '@/lib/utils/image-storage';
 import { useEffect, useRef, useState, useCallback } from 'react';
@@ -9,7 +9,7 @@ import { useParams } from 'next/navigation';
 import { useSceneGenerator } from '@/lib/hooks/use-scene-generator';
 import { useMediaGenerationStore } from '@/lib/store/media-generation';
 import { createLogger } from '@/lib/logger';
-import { MediaStageProvider } from '@/lib/store/media-stage-context';
+import { MediaStageProvider } from '@/lib/contexts/media-stage-context';
 import { generateMediaForOutlines } from '@/lib/media/media-orchestrator';
 
 const log = createLogger('Classroom');

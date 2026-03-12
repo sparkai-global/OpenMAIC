@@ -6,7 +6,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
-import { useI18n } from '@/lib/use-i18n';
+import { useI18n } from '@/lib/hooks/use-i18n';
 import { toast } from 'sonner';
 import { useUserProfileStore, AVATAR_OPTIONS } from '@/lib/store/user-profile';
 

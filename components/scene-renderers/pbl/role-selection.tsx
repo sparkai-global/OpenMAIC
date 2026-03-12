@@ -1,7 +1,7 @@
 'use client'
 
 import type { PBLAgent, PBLProjectInfo } from '@/lib/pbl/types'
-import { useI18n } from '@/lib/use-i18n'
+import { useI18n } from '@/lib/hooks/use-i18n'
 import { PBLGuideInline } from './guide'
 
 interface PBLRoleSelectionProps {

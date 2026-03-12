@@ -17,7 +17,7 @@
  * }
  */
 
-import { useSceneData, useSceneSelector } from '@/lib/store/scene-context';
+import { useSceneData, useSceneSelector } from '@/lib/contexts/scene-context';
 import { useCanvasStore, type SpotlightOptions, type HighlightOverlayOptions } from '@/lib/store/canvas';
 import type { SlideContent } from '@/lib/types/stage';
 import type { PPTElement, Slide } from '@/lib/types/slides';

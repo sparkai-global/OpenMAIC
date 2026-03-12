@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useI18n } from "@/lib/use-i18n";
+import { useI18n } from "@/lib/hooks/use-i18n";
 import { useSettingsStore } from "@/lib/store/settings";
 import { TTS_PROVIDERS } from "@/lib/audio/constants";
 import type { TTSProviderId } from "@/lib/audio/types";

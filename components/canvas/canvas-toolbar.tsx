@@ -4,7 +4,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Play, Pause, PencilLine, LayoutList, MessageSquare, Volume1, Volume2, VolumeX, Repeat } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useStageStore } from '@/lib/store';
-import { useI18n } from '@/lib/use-i18n';
+import { useI18n } from '@/lib/hooks/use-i18n';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 export interface CanvasToolbarProps {

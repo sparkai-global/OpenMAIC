@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useI18n } from '@/lib/use-i18n';
+import { useI18n } from '@/lib/hooks/use-i18n';
 
 interface AgentRevealModalProps {
   agents: Array<{

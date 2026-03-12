@@ -5,12 +5,12 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Play } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SceneRenderer } from '@/components/stage/scene-renderer';
-import { SceneProvider } from '@/lib/store/scene-context';
+import { SceneProvider } from '@/lib/contexts/scene-context';
 import { Whiteboard } from '@/components/whiteboard';
-import { CanvasToolbar } from '@/components/canvas-toolbar';
-import type { CanvasToolbarProps } from '@/components/canvas-toolbar';
+import { CanvasToolbar } from '@/components/canvas/canvas-toolbar';
+import type { CanvasToolbarProps } from '@/components/canvas/canvas-toolbar';
 import type { Scene, StageMode } from '@/lib/types/stage';
-import { useI18n } from '@/lib/use-i18n';
+import { useI18n } from '@/lib/hooks/use-i18n';
 
 interface CanvasAreaProps extends CanvasToolbarProps {
   readonly currentScene: Scene | null;

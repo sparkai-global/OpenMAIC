@@ -6,7 +6,7 @@ import type { LectureNoteEntry } from '@/lib/types/chat';
 import type { DiscussionRequest } from '@/components/roundtable';
 import type { Action, SpeechAction, DiscussionAction } from '@/lib/types/action';
 import { cn } from '@/lib/utils';
-import { useI18n } from '@/lib/use-i18n';
+import { useI18n } from '@/lib/hooks/use-i18n';
 import { useStageStore } from '@/lib/store';
 import { PanelRightClose, BookOpen, MessageSquare } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';

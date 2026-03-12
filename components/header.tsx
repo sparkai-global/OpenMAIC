@@ -1,8 +1,8 @@
 "use client";
 
 import { Settings, Sun, Moon, Monitor, ArrowLeft, Loader2, Download, FileDown, Package } from 'lucide-react';
-import { useI18n } from '@/lib/use-i18n';
-import { useTheme } from '@/lib/use-theme';
+import { useI18n } from '@/lib/hooks/use-i18n';
+import { useTheme } from '@/lib/hooks/use-theme';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { SettingsDialog } from './settings';

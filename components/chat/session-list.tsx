@@ -2,7 +2,7 @@
 
 import type { ChatSession, SessionStatus } from '@/lib/types/chat';
 import { cn } from '@/lib/utils';
-import { useI18n } from '@/lib/use-i18n';
+import { useI18n } from '@/lib/hooks/use-i18n';
 import { ChevronDown, Circle, CheckCircle, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChatSessionComponent } from './chat-session';

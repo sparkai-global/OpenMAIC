@@ -8,10 +8,10 @@ import { useFilter } from './useFilter';
 import { ImageOutline } from './ImageOutline';
 import { useMediaGenerationStore, isMediaPlaceholder } from '@/lib/store/media-generation';
 import { useSettingsStore } from '@/lib/store/settings';
-import { useMediaStageId } from '@/lib/store/media-stage-context';
+import { useMediaStageId } from '@/lib/contexts/media-stage-context';
 import { retryMediaTask } from '@/lib/media/media-orchestrator';
 import { RotateCcw, Paintbrush, ShieldAlert, ImageOff } from 'lucide-react';
-import { useI18n } from '@/lib/use-i18n';
+import { useI18n } from '@/lib/hooks/use-i18n';
 
 export interface BaseImageElementProps {
   elementInfo: PPTImageElement;

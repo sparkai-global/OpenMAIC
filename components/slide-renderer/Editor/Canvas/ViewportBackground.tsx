@@ -1,6 +1,6 @@
 'use client';
 
-import { useSceneSelector } from '@/lib/store/scene-context';
+import { useSceneSelector } from '@/lib/contexts/scene-context';
 import { useSlideBackgroundStyle } from '@/lib/hooks/use-slide-background-style';
 import type { SlideContent } from '@/lib/types/stage';
 import type { SlideBackground } from '@/lib/types/slides';

@@ -2,7 +2,7 @@
 
 import { useRef, useState, useEffect } from 'react';
 import { useCanvasStore } from '@/lib/store/canvas';
-import { useSceneSelector } from '@/lib/store/scene-context';
+import { useSceneSelector } from '@/lib/contexts/scene-context';
 import { useKeyboardStore } from '@/lib/store/keyboard';
 import { useViewportSize } from './hooks/useViewportSize';
 import { useSelectElement } from './hooks/useSelectElement';

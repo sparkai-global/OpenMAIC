@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { useI18n } from "@/lib/use-i18n";
+import { useI18n } from "@/lib/hooks/use-i18n";
 import { useSettingsStore } from "@/lib/store/settings";
 import { PDF_PROVIDERS } from "@/lib/pdf/constants";
 import type { PDFProviderId } from "@/lib/pdf/types";

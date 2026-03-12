@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Plus } from "lucide-react";
-import { useI18n } from "@/lib/use-i18n";
+import { useI18n } from "@/lib/hooks/use-i18n";
 import { cn } from "@/lib/utils";
 
 export interface NewProviderData {

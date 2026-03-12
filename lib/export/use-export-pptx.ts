@@ -9,7 +9,7 @@ import { toast } from 'sonner'
 import { useStageStore } from '@/lib/store'
 import { useCanvasStore } from '@/lib/store/canvas'
 import { useMediaGenerationStore, isMediaPlaceholder } from '@/lib/store/media-generation'
-import { useI18n } from '@/lib/use-i18n'
+import { useI18n } from '@/lib/hooks/use-i18n'
 import type {
   Slide,
   PPTElementOutline,

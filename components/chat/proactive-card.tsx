@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { motion } from 'motion/react';
 import { Play, Pause, X } from 'lucide-react';
-import { useI18n } from '@/lib/use-i18n';
+import { useI18n } from '@/lib/hooks/use-i18n';
 import type { DiscussionAction } from '@/lib/types/action';
 
 interface ProactiveCardProps {

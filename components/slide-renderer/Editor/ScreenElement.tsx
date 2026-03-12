@@ -11,7 +11,7 @@ import { BaseChartElement } from '../components/element/ChartElement/BaseChartEl
 import { BaseLatexElement } from '../components/element/LatexElement/BaseLatexElement';
 import { BaseTableElement } from '../components/element/TableElement/BaseTableElement';
 import { BaseVideoElement } from '../components/element/VideoElement/BaseVideoElement';
-import { useSceneSelector } from '@/lib/store/scene-context';
+import { useSceneSelector } from '@/lib/contexts/scene-context';
 import type { SceneContent } from '@/lib/types/stage';
 
 interface ScreenElementProps {

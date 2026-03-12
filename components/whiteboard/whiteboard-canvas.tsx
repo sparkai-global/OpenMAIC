@@ -6,7 +6,7 @@ import { useStageStore } from '@/lib/store';
 import { useCanvasStore } from '@/lib/store/canvas';
 import { ScreenElement } from '@/components/slide-renderer/Editor/ScreenElement';
 import type { PPTElement } from '@/lib/types/slides';
-import { useI18n } from '@/lib/use-i18n';
+import { useI18n } from '@/lib/hooks/use-i18n';
 
 /**
  * Animated element wrapper

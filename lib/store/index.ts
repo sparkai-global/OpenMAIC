@@ -15,4 +15,4 @@ export {
 };
 
 // Scene Context API (for extensible scene types)
-export { SceneProvider, useSceneData, useSceneSelector } from './scene-context';
+export { SceneProvider, useSceneData, useSceneSelector } from '@/lib/contexts/scene-context';

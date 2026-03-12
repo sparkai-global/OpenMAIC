@@ -2,7 +2,7 @@
 
 import { useRef, useState, useLayoutEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { useSceneSelector } from '@/lib/store/scene-context';
+import { useSceneSelector } from '@/lib/contexts/scene-context';
 import { useCanvasStore } from '@/lib/store/canvas';
 import type { SlideContent } from '@/lib/types/stage';
 import type { PPTElement } from '@/lib/types/slides';

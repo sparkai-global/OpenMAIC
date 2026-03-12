@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { X, Trash2, Box, Settings, CheckCircle2, XCircle, FileText, Image as ImageIcon, Film, Search, Volume2, Mic } from "lucide-react";
-import { useI18n } from "@/lib/use-i18n";
+import { useI18n } from "@/lib/hooks/use-i18n";
 import { useSettingsStore } from "@/lib/store/settings";
 import { toast } from "sonner";
 import { type ProviderId } from "@/lib/ai/providers";

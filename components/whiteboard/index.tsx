@@ -8,7 +8,7 @@ import { useStageStore } from '@/lib/store';
 import { useCanvasStore } from '@/lib/store/canvas';
 import { createStageAPI } from '@/lib/api/stage-api';
 import { toast } from 'sonner';
-import { useI18n } from '@/lib/use-i18n';
+import { useI18n } from '@/lib/hooks/use-i18n';
 
 interface WhiteboardProps {
   readonly isOpen: boolean;

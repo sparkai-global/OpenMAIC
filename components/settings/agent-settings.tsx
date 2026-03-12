@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { AlertCircle, User, Users, Sparkles, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useI18n } from "@/lib/use-i18n";
+import { useI18n } from "@/lib/hooks/use-i18n";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface Agent {

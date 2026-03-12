@@ -6,7 +6,7 @@ import { SpotlightOverlay } from './SpotlightOverlay';
 import { LaserOverlay } from './LaserOverlay';
 import { useSlideBackgroundStyle } from '@/lib/hooks/use-slide-background-style';
 import { useCanvasStore } from '@/lib/store';
-import { useSceneSelector } from '@/lib/store/scene-context';
+import { useSceneSelector } from '@/lib/contexts/scene-context';
 import { findElementGeometry } from '@/lib/utils/geometry';
 import type { SlideContent } from '@/lib/types/stage';
 import type { PPTElement, SlideBackground } from '@/lib/types/slides';

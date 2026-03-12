@@ -6,7 +6,7 @@ import type { PBLProjectConfig } from '@/lib/pbl/types'
 import { useStageStore } from '@/lib/store/stage'
 import { PBLRoleSelection } from './pbl/role-selection'
 import { PBLWorkspace } from './pbl/workspace'
-import { useI18n } from '@/lib/use-i18n'
+import { useI18n } from '@/lib/hooks/use-i18n'
 
 interface PBLRendererProps {
   readonly content: PBLContent

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { useI18n } from "@/lib/use-i18n";
+import { useI18n } from "@/lib/hooks/use-i18n";
 import { useSettingsStore } from "@/lib/store/settings";
 import { WEB_SEARCH_PROVIDERS } from "@/lib/web-search/constants";
 import type { WebSearchProviderId } from "@/lib/web-search/types";

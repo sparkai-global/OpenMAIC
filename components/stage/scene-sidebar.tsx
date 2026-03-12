@@ -6,7 +6,7 @@ import { PanelLeftClose, PieChart, Cpu, MousePointer2, BookOpen, Globe, AlertCir
 import { cn } from '@/lib/utils';
 import { ThumbnailSlide } from '@/components/slide-renderer/components/ThumbnailSlide';
 import { useStageStore, useCanvasStore } from '@/lib/store';
-import { useI18n } from '@/lib/use-i18n';
+import { useI18n } from '@/lib/hooks/use-i18n';
 import type { SceneType, SlideContent } from '@/lib/types/stage';
 import { PENDING_SCENE_ID } from '@/lib/store/stage';
 

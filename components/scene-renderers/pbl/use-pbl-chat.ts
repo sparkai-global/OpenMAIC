@@ -7,7 +7,7 @@
 import { useState, useCallback } from 'react'
 import type { PBLProjectConfig, PBLChatMessage, PBLAgent, PBLIssue } from '@/lib/pbl/types'
 import { getCurrentModelConfig } from '@/lib/utils/model-config'
-import { useI18n } from '@/lib/use-i18n'
+import { useI18n } from '@/lib/hooks/use-i18n'
 import { createLogger } from '@/lib/logger'
 
 const log = createLogger('PBLChat')

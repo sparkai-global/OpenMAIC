@@ -1,7 +1,7 @@
 'use client';
 
 import React, {createContext, useContext, useMemo, useCallback, useSyncExternalStore, useRef, useEffect} from 'react';
-import { useStageStore } from './stage';
+import { useStageStore } from '@/lib/store/stage';
 import type { Scene } from '@/lib/types/stage';
 import { produce } from 'immer';
 

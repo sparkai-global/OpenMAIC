@@ -7,7 +7,7 @@ import { IssueboardPanel } from './issueboard-panel'
 import { ChatPanel } from './chat-panel'
 import { usePBLChat } from './use-pbl-chat'
 import { PBLGuidePanel } from './guide'
-import { useI18n } from '@/lib/use-i18n'
+import { useI18n } from '@/lib/hooks/use-i18n'
 
 interface PBLWorkspaceProps {
   readonly projectConfig: PBLProjectConfig

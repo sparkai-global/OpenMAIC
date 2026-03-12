@@ -17,7 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { useI18n } from "@/lib/use-i18n";
+import { useI18n } from "@/lib/hooks/use-i18n";
 import type { ProviderId } from "@/lib/ai/providers";
 import type { ProvidersConfig } from "@/lib/types/settings";
 import { formatContextWindow } from "./utils";

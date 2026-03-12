@@ -14,7 +14,7 @@ import {
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
 import { Loader2, Trash2, AlertTriangle } from "lucide-react";
-import { useI18n } from "@/lib/use-i18n";
+import { useI18n } from "@/lib/hooks/use-i18n";
 import { clearDatabase } from "@/lib/utils/database";
 import { toast } from "sonner";
 import { createLogger } from "@/lib/logger";

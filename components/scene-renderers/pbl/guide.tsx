@@ -1,7 +1,7 @@
 'use client'
 
 import { HelpCircle } from 'lucide-react'
-import { useI18n } from '@/lib/use-i18n'
+import { useI18n } from '@/lib/hooks/use-i18n'
 import { HoverCard, HoverCardTrigger, HoverCardContent } from '@/components/ui/hover-card'
 
 /**

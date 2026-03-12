@@ -19,15 +19,15 @@ import {
   BotOff,
   ChevronUp,
 } from 'lucide-react';
-import { useI18n } from '@/lib/use-i18n';
+import { useI18n } from '@/lib/hooks/use-i18n';
 import { createLogger } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
 import { Textarea as UITextarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { SettingsDialog } from '@/components/settings';
-import { GenerationToolbar } from '@/components/generation-toolbar';
-import { AgentBar } from '@/components/agent-bar';
-import { useTheme } from '@/lib/use-theme';
+import { GenerationToolbar } from '@/components/generation/generation-toolbar';
+import { AgentBar } from '@/components/agent/agent-bar';
+import { useTheme } from '@/lib/hooks/use-theme';
 import { nanoid } from 'nanoid';
 import { storePdfBlob } from '@/lib/utils/image-storage';
 import type { UserRequirements } from '@/lib/types/generation';
@@ -40,7 +40,7 @@ import { useMediaGenerationStore } from '@/lib/store/media-generation';
 import { toast } from 'sonner';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useDraftCache } from '@/lib/hooks/use-draft-cache';
-import { SpeechButton } from '@/components/speech-button';
+import { SpeechButton } from '@/components/audio/speech-button';
 
 const log = createLogger('Home');
 

@@ -6,10 +6,10 @@ import type { PPTVideoElement } from '@/lib/types/slides';
 import { useCanvasStore } from '@/lib/store/canvas';
 import { useMediaGenerationStore, isMediaPlaceholder } from '@/lib/store/media-generation';
 import { useSettingsStore } from '@/lib/store/settings';
-import { useMediaStageId } from '@/lib/store/media-stage-context';
+import { useMediaStageId } from '@/lib/contexts/media-stage-context';
 import { retryMediaTask } from '@/lib/media/media-orchestrator';
 import { RotateCcw, Film, ShieldAlert, VideoOff } from 'lucide-react';
-import { useI18n } from '@/lib/use-i18n';
+import { useI18n } from '@/lib/hooks/use-i18n';
 import { createLogger } from '@/lib/logger';
 
 const log = createLogger('BaseVideoElement');

@@ -72,7 +72,7 @@ cp .env.example .env.local
 ```env
 OPENAI_API_KEY=sk-...
 ANTHROPIC_API_KEY=sk-ant-...
-GOOGLE_GENERATIVE_AI_API_KEY=...
+GOOGLE_API_KEY=...
 ```
 
 也可以通过 `server-providers.yml` 配置服务商：
@@ -133,7 +133,7 @@ docker pull opendatalab/mineru:latest
 docker run -d --name mineru -p 8080:8080 opendatalab/mineru:latest
 ```
 
-在 `.env.local` 中设置 `MINERU_API_URL=http://localhost:8080`。
+在 `.env.local` 中设置 `PDF_MINERU_BASE_URL=http://localhost:8080`。
 
 ---
 

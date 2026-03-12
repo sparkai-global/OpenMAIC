@@ -72,7 +72,7 @@ Fill in at least one LLM provider key:
 ```env
 OPENAI_API_KEY=sk-...
 ANTHROPIC_API_KEY=sk-ant-...
-GOOGLE_GENERATIVE_AI_API_KEY=...
+GOOGLE_API_KEY=...
 ```
 
 You can also configure providers via `server-providers.yml`:
@@ -133,7 +133,7 @@ docker pull opendatalab/mineru:latest
 docker run -d --name mineru -p 8080:8080 opendatalab/mineru:latest
 ```
 
-Set `MINERU_API_URL=http://localhost:8080` in `.env.local`.
+Set `PDF_MINERU_BASE_URL=http://localhost:8080` in `.env.local`.
 
 ---
 

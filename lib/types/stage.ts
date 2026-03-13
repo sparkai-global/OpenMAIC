@@ -48,7 +48,6 @@ export interface Scene {
   multiAgent?: {
     enabled: boolean; // Enable multi-agent for this scene
     agentIds: string[]; // Which agents to include (from registry)
-    maxTurns: number; // Max discussion turns (default: 10)
     directorPrompt?: string; // Optional custom director instructions
   };
 

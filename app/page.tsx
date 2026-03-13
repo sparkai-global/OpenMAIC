@@ -131,6 +131,7 @@ function HomePage() {
   const [error, setError] = useState<string | null>(null);
   const [classrooms, setClassrooms] = useState<StageListItem[]>([]);
   const [thumbnails, setThumbnails] = useState<Record<string, Slide>>({});
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const toolbarRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -172,11 +173,15 @@ function HomePage() {
     loadClassrooms();
   }, []);
 
-  const handleDelete = async (id: string, e: React.MouseEvent) => {
+  const handleDelete = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
+    setPendingDeleteId(id);
+  };
+
+  const confirmDelete = async (id: string) => {
+    setPendingDeleteId(null);
     try {
       await deleteStageData(id);
-      toast.success('Classroom deleted');
       await loadClassrooms();
     } catch (err) {
       log.error('Failed to delete classroom:', err);
@@ -665,6 +670,9 @@ function HomePage() {
                         slide={thumbnails[classroom.id]}
                         formatDate={formatDate}
                         onDelete={handleDelete}
+                        confirmingDelete={pendingDeleteId === classroom.id}
+                        onConfirmDelete={() => confirmDelete(classroom.id)}
+                        onCancelDelete={() => setPendingDeleteId(null)}
                         onClick={() => router.push(`/classroom/${classroom.id}`)}
                       />
                     </motion.div>
@@ -980,12 +988,18 @@ function ClassroomCard({
   slide,
   formatDate,
   onDelete,
+  confirmingDelete,
+  onConfirmDelete,
+  onCancelDelete,
   onClick,
 }: {
   classroom: StageListItem;
   slide?: Slide;
   formatDate: (ts: number) => string;
   onDelete: (id: string, e: React.MouseEvent) => void;
+  confirmingDelete: boolean;
+  onConfirmDelete: () => void;
+  onCancelDelete: () => void;
   onClick: () => void;
 }) {
   const { t } = useI18n();
@@ -1003,7 +1017,7 @@ function ClassroomCard({
   }, []);
 
   return (
-    <div className="group cursor-pointer" onClick={onClick}>
+    <div className="group cursor-pointer" onClick={confirmingDelete ? undefined : onClick}>
       {/* Thumbnail — large radius, no border, subtle bg */}
       <div
         ref={thumbRef}
@@ -1025,17 +1039,60 @@ function ClassroomCard({
         ) : null}
 
         {/* Delete — top-right, only on hover */}
-        <Button
-          size="icon"
-          variant="ghost"
-          className="absolute top-2 right-2 size-7 opacity-0 group-hover:opacity-100 transition-opacity bg-black/30 hover:bg-destructive/80 text-white hover:text-white backdrop-blur-sm rounded-full"
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete(classroom.id, e);
-          }}
-        >
-          <Trash2 className="size-3.5" />
-        </Button>
+        <AnimatePresence>
+          {!confirmingDelete && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+            >
+              <Button
+                size="icon"
+                variant="ghost"
+                className="absolute top-2 right-2 size-7 opacity-0 group-hover:opacity-100 transition-opacity bg-black/30 hover:bg-destructive/80 text-white hover:text-white backdrop-blur-sm rounded-full"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(classroom.id, e);
+                }}
+              >
+                <Trash2 className="size-3.5" />
+              </Button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Inline delete confirmation overlay */}
+        <AnimatePresence>
+          {confirmingDelete && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-black/50 backdrop-blur-[6px]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <span className="text-[13px] font-medium text-white/90">
+                {t('classroom.deleteConfirmTitle')}?
+              </span>
+              <div className="flex gap-2">
+                <button
+                  className="px-3.5 py-1 rounded-lg text-[12px] font-medium bg-white/15 text-white/80 hover:bg-white/25 backdrop-blur-sm transition-colors"
+                  onClick={onCancelDelete}
+                >
+                  {t('common.cancel')}
+                </button>
+                <button
+                  className="px-3.5 py-1 rounded-lg text-[12px] font-medium bg-red-500/90 text-white hover:bg-red-500 transition-colors"
+                  onClick={onConfirmDelete}
+                >
+                  {t('classroom.delete')}
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Info — outside the thumbnail */}

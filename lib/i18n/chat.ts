@@ -1,21 +1,11 @@
 export const chatZhCN = {
   chat: {
-    title: 'AI助手',
-    placeholder: '输入你的问题...',
-    send: '发送',
-    area: '对话区',
-    qa: '问答',
     lecture: '授课',
-    discussion: '讨论',
     noConversations: '暂无对话',
-    startNew: '开始新对话',
     startConversation: '输入消息开始对话',
-    endTopic: '结束话题',
-    stopGeneration: '停止生成',
     noMessages: '暂无消息',
     ended: '已结束',
     unknown: '未知',
-    system: '系统',
     stopDiscussion: '结束讨论',
     endQA: '结束问答',
     tabs: {
@@ -32,12 +22,6 @@ export const chatZhCN = {
       qa: 'Q&A',
       discussion: '讨论',
       lecture: '授课',
-    },
-    status: {
-      active: '进行中',
-      interrupted: '已暂停',
-      completed: '已结束',
-      idle: '待开始',
     },
   },
   actions: {
@@ -69,11 +53,7 @@ export const chatZhCN = {
   },
   agentBar: {
     readyToLearn: '准备好一起学习了吗？',
-    title: '课堂智能体',
-    desc: '选择参与课堂的 AI 角色',
     expandedTitle: '课堂角色配置',
-    autoCustomize: '为你定制 {n} 个课堂角色',
-    roleCount: '{n} 个课堂角色',
     configTooltip: '点击配置课堂角色',
   },
   proactiveCard: {
@@ -86,33 +66,17 @@ export const chatZhCN = {
   voice: {
     startListening: '语音输入',
     stopListening: '停止录音',
-    listening: '正在听...',
-    notSupported: '浏览器不支持语音输入',
-    noSpeech: '未检测到语音，请重试',
-    micDenied: '麦克风权限被拒绝',
-    micFailed: '无法访问麦克风',
-    networkError: '网络错误',
   },
 } as const;
 
 export const chatEnUS = {
   chat: {
-    title: 'AI Assistant',
-    placeholder: 'Enter your question...',
-    send: 'Send',
-    area: 'Chat Area',
-    qa: 'Q&A',
     lecture: 'Lecture',
-    discussion: 'Discussion',
     noConversations: 'No conversations',
-    startNew: 'Start a new conversation',
     startConversation: 'Type a message below to begin chatting',
-    endTopic: 'End Topic',
-    stopGeneration: 'Stop generation',
     noMessages: 'No messages yet',
     ended: 'ended',
     unknown: 'Unknown',
-    system: 'System',
     stopDiscussion: 'Stop Discussion',
     endQA: 'End Q&A',
     tabs: {
@@ -129,12 +93,6 @@ export const chatEnUS = {
       qa: 'Q&A',
       discussion: 'DISC',
       lecture: 'LEC',
-    },
-    status: {
-      active: 'Active',
-      interrupted: 'Paused',
-      completed: 'Completed',
-      idle: 'Idle',
     },
   },
   actions: {
@@ -166,11 +124,7 @@ export const chatEnUS = {
   },
   agentBar: {
     readyToLearn: 'Ready to learn together?',
-    title: 'Classroom Agents',
-    desc: 'Choose AI characters for the classroom',
     expandedTitle: 'Classroom Role Config',
-    autoCustomize: 'Crafting {n} classroom roles for you',
-    roleCount: '{n} classroom roles',
     configTooltip: 'Click to configure classroom roles',
   },
   proactiveCard: {
@@ -183,11 +137,5 @@ export const chatEnUS = {
   voice: {
     startListening: 'Voice input',
     stopListening: 'Stop recording',
-    listening: 'Listening...',
-    notSupported: 'Voice input not supported in this browser',
-    noSpeech: 'No speech detected, please try again',
-    micDenied: 'Microphone access denied',
-    micFailed: 'Failed to access microphone',
-    networkError: 'Network error',
   },
 } as const;

@@ -204,7 +204,6 @@ Choose a role and collaborate with AI agents on structured projects with milesto
 - **Whiteboard** — AI agents draw on a shared whiteboard in real time — solving equations step by step, sketching flowcharts, or illustrating concepts visually.
 
 <img src="assets/discussion.gif" width="100%"/>
-<img src="assets/whiteboard.gif" width="100%"/>
 
 ### Export
 

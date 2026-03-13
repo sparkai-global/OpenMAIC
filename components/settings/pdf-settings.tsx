@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -55,7 +55,7 @@ export function PDFSettings({ selectedProviderId }: PDFSettingsProps) {
     setTestMessage('');
   }
 
-  const handleTestConnection = useCallback(async () => {
+  const handleTestConnection = async () => {
     const baseUrl = providerConfig?.baseUrl;
     if (!baseUrl) return;
 
@@ -87,7 +87,7 @@ export function PDFSettings({ selectedProviderId }: PDFSettingsProps) {
       const message = err instanceof Error ? err.message : String(err);
       setTestMessage(`${t('settings.connectionFailed')}: ${message}`);
     }
-  }, [providerConfig?.baseUrl, providerConfig?.apiKey, selectedProviderId, t]);
+  };
 
   return (
     <div className="space-y-6 max-w-3xl">

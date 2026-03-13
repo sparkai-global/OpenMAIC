@@ -11,6 +11,7 @@
 </p>
 
 <p align="center">
+  <a href="https://jcst.ict.ac.cn/en/article/doi/10.1007/s11390-025-6000-0"><img src="https://img.shields.io/badge/Paper-JCST'26-blue?style=flat-square" alt="Paper"/></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-AGPL--3.0-blue.svg?style=flat-square" alt="License: AGPL-3.0"/></a>
   <a href="https://open.maic.chat/"><img src="https://img.shields.io/badge/Demo-Live-brightgreen?style=flat-square" alt="Live Demo"/></a>
   <a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FTHU-MAIC%2FOpenMAIC&envDescription=Configure%20at%20least%20one%20LLM%20provider%20API%20key%20(e.g.%20OPENAI_API_KEY%2C%20ANTHROPIC_API_KEY).%20All%20providers%20are%20optional.&envLink=https%3A%2F%2Fgithub.com%2FTHU-MAIC%2FOpenMAIC%2Fblob%2Fmain%2F.env.example&project-name=openmaic&framework=nextjs"><img src="https://vercel.com/button" alt="Deploy with Vercel" height="20"/></a>
@@ -331,6 +332,27 @@ OpenMAIC/
 ## 💼 商业合作
 
 本项目基于 AGPL-3.0 协议开源。商业授权合作请联系：**thu_maic@tsinghua.edu.cn**
+
+---
+
+## 📝 引用
+
+如果 OpenMAIC 对您的研究有帮助，请考虑引用：
+
+```bibtex
+@Article{JCST-2509-16000,
+  title = {From MOOC to MAIC: Reimagine Online Teaching and Learning through LLM-driven Agents},
+  journal = {Journal of Computer Science and Technology},
+  volume = {},
+  number = {},
+  pages = {},
+  year = {2026},
+  issn = {1000-9000(Print) /1860-4749(Online)},
+  doi = {10.1007/s11390-025-6000-0},
+  url = {https://jcst.ict.ac.cn/en/article/doi/10.1007/s11390-025-6000-0},
+  author = {Ji-Fan Yu and Daniel Zhang-Li and Zhe-Yuan Zhang and Yu-Cheng Wang and Hao-Xuan Li and Joy Jia Yin Lim and Zhan-Xin Hao and Shang-Qing Tu and Lu Zhang and Xu-Sheng Dai and Jian-Xiao Jiang and Shen Yang and Fei Qin and Ze-Kun Li and Xin Cong and Bin Xu and Lei Hou and Man-Li Li and Juan-Zi Li and Hui-Qin Liu and Yu Zhang and Zhi-Yuan Liu and Mao-Song Sun}
+}
+```
 
 ---
 

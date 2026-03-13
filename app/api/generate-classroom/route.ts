@@ -1,46 +1,88 @@
 import { NextRequest } from 'next/server';
-import { callLLM } from '@/lib/ai/llm';
-import { z } from 'zod';
 import { nanoid } from 'nanoid';
-import type { ParsedPdfContent } from '@/lib/types/pdf';
+import { promises as fs } from 'fs';
+import path from 'path';
+import { callLLM } from '@/lib/ai/llm';
+import type { UserRequirements } from '@/lib/types/generation';
+import type { Stage, Scene } from '@/lib/types/stage';
+import type { StageStore } from '@/lib/api/stage-api-types';
+import type { AICallFn } from '@/lib/generation/pipeline-types';
+import {
+  generateSceneOutlinesFromRequirements,
+  applyOutlineFallbacks,
+} from '@/lib/generation/outline-generator';
+import { generateSceneContent, generateSceneActions, createSceneWithActions } from '@/lib/generation/scene-generator';
+import { createStageAPI } from '@/lib/api/stage-api';
 import { createLogger } from '@/lib/logger';
 import { apiError, apiSuccess } from '@/lib/server/api-response';
 import { resolveModel } from '@/lib/server/resolve-model';
+
 const log = createLogger('Classroom');
 
-// Schema for the generated classroom structure
-const SlideSchema = z.object({
-  title: z.string().describe('Slide title'),
-  content: z.string().describe('Main text content for the slide'),
-  keyPoints: z.array(z.string()).describe('Key bullet points'),
-  imageIndex: z
-    .number()
-    .optional()
-    .describe('Index of image to use from PDF (0-based), if applicable'),
-});
+export const maxDuration = 300; // 5 minutes for full pipeline
 
-const ClassroomSchema = z.object({
-  title: z.string().describe('Course title'),
-  description: z.string().describe('Course description'),
-  slides: z.array(SlideSchema).describe('Generated slides'),
-});
+const DATA_DIR = path.join(process.cwd(), 'data', 'classrooms');
+
+async function ensureDataDir() {
+  await fs.mkdir(DATA_DIR, { recursive: true });
+}
+
+/**
+ * Create an in-memory StageStore compatible with the stage API.
+ * This lets us reuse createSceneWithActions server-side without a real Zustand store.
+ */
+function createInMemoryStore(stage: Stage): StageStore {
+  let state = {
+    stage: stage as Stage | null,
+    scenes: [] as Scene[],
+    currentSceneId: null as string | null,
+    mode: 'playback' as const,
+  };
+
+  const listeners: Array<(s: typeof state, prev: typeof state) => void> = [];
+
+  return {
+    getState: () => state,
+    setState: (partial: Partial<typeof state>) => {
+      const prev = state;
+      state = { ...state, ...partial };
+      listeners.forEach((fn) => fn(state, prev));
+    },
+    subscribe: (listener: (s: typeof state, prev: typeof state) => void) => {
+      listeners.push(listener);
+      return () => {
+        const idx = listeners.indexOf(listener);
+        if (idx >= 0) listeners.splice(idx, 1);
+      };
+    },
+  };
+}
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { pdfContent, background, model, apiKey, baseUrl, providerType, requiresApiKey } =
-      body as {
-        pdfContent: ParsedPdfContent;
-        background?: string;
-        model?: string;
-        apiKey?: string;
-        baseUrl?: string;
-        providerType?: string;
-        requiresApiKey?: boolean;
-      };
+    const {
+      requirement,
+      pdfContent,
+      language,
+      model,
+      apiKey,
+      baseUrl,
+      providerType,
+      requiresApiKey,
+    } = body as {
+      requirement: string;
+      pdfContent?: { text: string; images: string[] };
+      language?: string;
+      model?: string;
+      apiKey?: string;
+      baseUrl?: string;
+      providerType?: string;
+      requiresApiKey?: boolean;
+    };
 
-    if (!pdfContent || !pdfContent.text) {
-      return apiError('MISSING_REQUIRED_FIELD', 400, 'No PDF content provided');
+    if (!requirement) {
+      return apiError('MISSING_REQUIRED_FIELD', 400, 'Missing required field: requirement');
     }
 
     const { model: languageModel, modelInfo } = resolveModel({
@@ -52,201 +94,113 @@ export async function POST(req: NextRequest) {
     });
     log.info(`Using model: ${model || 'gpt-4o-mini'}`);
 
-    const backgroundContext = background
-      ? `\n\nStudent background: ${background}\nPlease adapt the content complexity and examples based on this background.`
-      : '';
+    // Build AICallFn from callLLM
+    const aiCall: AICallFn = async (systemPrompt, userPrompt, _images) => {
+      const result = await callLLM(
+        {
+          model: languageModel,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt },
+          ],
+          maxOutputTokens: modelInfo?.outputWindow,
+        },
+        'generate-classroom',
+      );
+      return result.text;
+    };
 
-    const imagesContext =
-      pdfContent.images.length > 0
-        ? `\n\nNote: This PDF contains ${pdfContent.images.length} images. You can reference them in slides by including "imageIndex" field (0-based index).`
-        : '';
+    // 1. Build UserRequirements
+    const lang = (language || 'zh-CN') as 'zh-CN' | 'en-US';
 
-    const systemMessage =
-      'You are an expert educator. You MUST respond with valid JSON only, no additional text or markdown formatting.';
-    const userMessage = `Create a presentation from the following PDF content.
+    const requirements: UserRequirements = {
+      requirement,
+      language: lang,
+    };
 
-PDF Content:
-${pdfContent.text}${backgroundContext}${imagesContext}
+    const pdfText = pdfContent?.text || undefined;
 
-Generate a JSON object with this exact structure:
-{
-  "title": "Course title",
-  "description": "Course description",
-  "slides": [
-    {
-      "title": "Slide title",
-      "content": "Main text content for the slide",
-      "keyPoints": ["Point 1", "Point 2", "Point 3"],
-      "imageIndex": 0  // Optional: index of image to display (0-based), only include if relevant
-    }
-  ]
-}
-
-Requirements:
-1. Create an engaging title and description
-2. Generate 10-15 slides that cover the main topics
-3. Each slide should have a title, main content, and 3-5 key points
-4. Structure the content logically and pedagogically
-5. Use clear explanations with practical examples
-6. If images are available, use "imageIndex" to reference them in appropriate slides
-
-Respond with ONLY the JSON object, no markdown code blocks or additional text.`;
-
-    log.debug('AI Generation', {
-      systemMessage: systemMessage.substring(0, 100),
-      userMessageLength: userMessage.length,
-      background: background || '(none)',
-      imagesAvailable: pdfContent.images.length,
-    });
-
-    const result = await callLLM(
-      {
-        model: languageModel,
-        messages: [
-          {
-            role: 'system',
-            content: systemMessage,
-          },
-          {
-            role: 'user',
-            content: userMessage,
-          },
-        ],
-        maxOutputTokens: modelInfo?.outputWindow,
-      },
-      'generate-classroom',
+    // 2. Generate scene outlines
+    log.info('Stage 1: Generating scene outlines...');
+    const outlinesResult = await generateSceneOutlinesFromRequirements(
+      requirements,
+      pdfText,
+      undefined, // no pdfImages metadata
+      aiCall,
     );
 
-    log.debug('AI Response', {
-      length: result.text.length,
-      preview: result.text.substring(0, 200),
-    });
-
-    // Parse the JSON response
-    let outputData: z.infer<typeof ClassroomSchema>;
-    try {
-      const jsonText = result.text
-        .replace(/```json\n?/g, '')
-        .replace(/```\n?/g, '')
-        .trim();
-      outputData = ClassroomSchema.parse(JSON.parse(jsonText));
-
-      log.debug('Parsed data', {
-        title: outputData.title,
-        slides: outputData.slides.length,
-      });
-    } catch (parseError) {
-      log.error('Failed to parse AI response', parseError);
-      throw new Error('Failed to parse AI-generated content');
+    if (!outlinesResult.success || !outlinesResult.data) {
+      log.error('Failed to generate outlines:', outlinesResult.error);
+      return apiError('GENERATION_FAILED', 500, 'Failed to generate scene outlines', outlinesResult.error);
     }
 
-    // Transform the result into the Stage format
-    const stageId = nanoid(10);
-    const scenes = outputData.slides.map((slide, index) => ({
-      id: `scene_${nanoid(10)}`,
-      type: 'slide' as const,
-      title: slide.title,
-      transcript: slide.content,
-      order: index,
-      content: {
-        type: 'slide' as const,
-        canvas: {
-          id: `slide_${nanoid(10)}`,
-          viewportSize: 1000,
-          viewportRatio: 0.5625,
-          theme: {
-            themeColors: ['#5b9bd5', '#70ad47', '#ffc000', '#ed7d31'],
-            fontColor: '#333333',
-            fontName: 'Microsoft YaHei',
-            backgroundColor: '#ffffff',
-            outline: {
-              width: 0,
-              color: '#000000',
-              style: 'solid' as const,
-            },
-            shadow: {
-              h: 0,
-              v: 0,
-              blur: 0,
-              color: '#000000',
-            },
-          },
-          elements: [
-            // Title element
-            {
-              type: 'text' as const,
-              id: `text_${nanoid(10)}`,
-              left: 100,
-              top: 100,
-              width: 800,
-              height: 80,
-              rotate: 0,
-              content: `<p style="text-align: center;"><span style="font-size: 36px; color: #5b9bd5;"><strong>${slide.title}</strong></span></p>`,
-              defaultFontName: 'Microsoft YaHei',
-              defaultColor: '#5b9bd5',
-              lineHeight: 1.2,
-              opacity: 1,
-            },
-            // Image element (if imageIndex is provided and valid)
-            ...(slide.imageIndex !== undefined &&
-            slide.imageIndex >= 0 &&
-            slide.imageIndex < pdfContent.images.length
-              ? [
-                  {
-                    type: 'image' as const,
-                    id: `image_${nanoid(10)}`,
-                    left: 550,
-                    top: 220,
-                    width: 350,
-                    height: 350,
-                    rotate: 0,
-                    src: pdfContent.images[slide.imageIndex],
-                    fixedRatio: true,
-                    opacity: 1,
-                  },
-                ]
-              : []),
-            // Content element
-            {
-              type: 'text' as const,
-              id: `text_${nanoid(10)}`,
-              left: 100,
-              top: 220,
-              width: slide.imageIndex !== undefined ? 400 : 800,
-              height: 400,
-              rotate: 0,
-              content: `<p>${slide.content}</p><ul>${slide.keyPoints.map((point) => `<li>${point}</li>`).join('')}</ul>`,
-              defaultFontName: 'Microsoft YaHei',
-              defaultColor: '#333333',
-              lineHeight: 1.8,
-              opacity: 1,
-            },
-          ],
-          background: {
-            type: 'solid' as const,
-            color: '#ffffff',
-          },
-        },
-      },
-    }));
+    const outlines = outlinesResult.data;
+    log.info(`Generated ${outlines.length} scene outlines`);
 
-    const stage = {
+    // 3. Create in-memory stage + store
+    const stageId = nanoid(10);
+    const stage: Stage = {
       id: stageId,
-      name: outputData.title,
-      description: outputData.description,
-      language: 'zh-CN',
+      name: outlines[0]?.title || requirement.slice(0, 50),
+      description: undefined,
+      language: lang,
       style: 'interactive',
       createdAt: Date.now(),
       updatedAt: Date.now(),
     };
 
-    log.debug('Final output', {
-      stageId: stage.id,
-      stageName: stage.name,
-      scenesCount: scenes.length,
-    });
+    const store = createInMemoryStore(stage);
+    const api = createStageAPI(store);
 
-    return apiSuccess({ stage, scenes });
+    // 4. Process each outline sequentially: fallback → content → actions → scene
+    log.info('Stage 2: Generating scene content and actions...');
+    for (const outline of outlines) {
+      const safeOutline = applyOutlineFallbacks(outline, true);
+
+      const content = await generateSceneContent(safeOutline, aiCall);
+      if (!content) {
+        log.warn(`Skipping scene "${safeOutline.title}" — content generation failed`);
+        continue;
+      }
+
+      const actions = await generateSceneActions(safeOutline, content, aiCall);
+      log.info(`Scene "${safeOutline.title}": ${actions.length} actions`);
+
+      const sceneId = createSceneWithActions(safeOutline, content, actions, api);
+      if (!sceneId) {
+        log.warn(`Skipping scene "${safeOutline.title}" — scene creation failed`);
+      }
+    }
+
+    const scenes = store.getState().scenes;
+    log.info(`Pipeline complete: ${scenes.length} scenes generated`);
+
+    if (scenes.length === 0) {
+      return apiError('GENERATION_FAILED', 500, 'No scenes were generated');
+    }
+
+    // 5. Persist to data/classrooms/{id}.json
+    const id = stageId;
+    const classroomData = {
+      id,
+      stage,
+      scenes,
+      createdAt: new Date().toISOString(),
+    };
+
+    await ensureDataDir();
+    const filePath = path.join(DATA_DIR, `${id}.json`);
+    await fs.writeFile(filePath, JSON.stringify(classroomData, null, 2), 'utf-8');
+
+    const baseUrl2 = req.headers.get('x-forwarded-host')
+      ? `${req.headers.get('x-forwarded-proto') || 'http'}://${req.headers.get('x-forwarded-host')}`
+      : req.nextUrl.origin;
+
+    const url = `${baseUrl2}/classroom/${id}`;
+
+    log.info(`Classroom persisted: ${id}, URL: ${url}`);
+
+    return apiSuccess({ id, url, stage, scenes, scenesCount: scenes.length });
   } catch (error) {
     log.error('Error generating classroom:', error);
     return apiError(

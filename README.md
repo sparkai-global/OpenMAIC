@@ -255,6 +255,56 @@ Choose a role and collaborate with AI agents on structured projects with milesto
 
 ---
 
+## 🤖 OpenClaw Plugin
+
+OpenMAIC ships with an [OpenClaw](https://github.com/anthropics/openclaw) plugin that lets any OpenClaw-powered AI agent manage and generate classrooms programmatically.
+
+### Installation
+
+```bash
+# In your OpenClaw project, install the plugin from the openclaw/ directory:
+openclaw plugin add /path/to/OpenMAIC/openclaw
+```
+
+### Configuration
+
+Add the plugin config to your OpenClaw project's `openclaw.config.json`:
+
+```jsonc
+{
+  "plugins": {
+    "openmaic": {
+      "url": "http://localhost:3000",       // OpenMAIC server URL
+      "projectDir": "/path/to/OpenMAIC"     // Project directory (for start/stop/install)
+    }
+  }
+}
+```
+
+### Tools Provided
+
+| Tool | Description |
+|------|-------------|
+| `openmaic_manage` | Start, stop, check status, or install dependencies for the OpenMAIC server |
+| `openmaic_generate` | Generate a full interactive classroom from a free-form requirement and/or PDF |
+
+### Example Usage
+
+```
+You: "Generate a classroom about quantum mechanics for high school students"
+Agent: calls openmaic_generate { requirement: "Quantum mechanics for high school students" }
+Agent: "Classroom generated! URL: http://localhost:3000/classroom/abc123"
+```
+
+```
+You: "Use this PDF to create a lesson" (with /path/to/paper.pdf)
+Agent: calls openmaic_generate { requirement: "Create a lesson from the PDF", pdfPath: "/path/to/paper.pdf" }
+```
+
+The agent can also manage the server lifecycle — deploy, start, stop — all through natural language.
+
+---
+
 ## 🤝 Contributing
 
 We welcome contributions from the community! Whether it's bug reports, feature ideas, or pull requests — every bit helps.
@@ -305,6 +355,12 @@ OpenMAIC/
 ├── packages/                   # Workspace packages
 │   ├── pptxgenjs/              #   Customized PowerPoint generation
 │   └── mathml2omml/            #   MathML → Office Math conversion
+│
+├── openclaw/                   # OpenClaw plugin
+│   ├── openclaw.plugin.json    #   Plugin manifest (config schema, skills)
+│   ├── index.ts                #   Plugin entry — registers tools
+│   ├── src/tools.ts            #   Tool implementations (manage & generate)
+│   └── skills/openmaic/        #   Skill definitions for AI agents
 │
 ├── configs/                    # Shared constants (shapes, fonts, hotkeys, themes …)
 └── public/                     # Static assets (logos, avatars)

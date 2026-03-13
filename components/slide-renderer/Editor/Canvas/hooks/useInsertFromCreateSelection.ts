@@ -29,7 +29,7 @@ export function useInsertFromCreateSelection(viewportRef: RefObject<HTMLElement 
 
       return { left, top, width, height };
     },
-    [viewportRef, canvasScale]
+    [viewportRef, canvasScale],
   );
 
   // Calculate line position and start/end points on canvas from the start and end points of mouse drag selection
@@ -62,7 +62,7 @@ export function useInsertFromCreateSelection(viewportRef: RefObject<HTMLElement 
         end: _end,
       };
     },
-    [viewportRef, canvasScale]
+    [viewportRef, canvasScale],
   );
 
   // Insert element based on mouse selection position and size
@@ -89,7 +89,7 @@ export function useInsertFromCreateSelection(viewportRef: RefObject<HTMLElement 
       }
       setCreatingElement(null);
     },
-    [creatingElement, formatCreateSelection, formatCreateSelectionForLine, setCreatingElement]
+    [creatingElement, formatCreateSelection, formatCreateSelectionForLine, setCreatingElement],
   );
 
   return {

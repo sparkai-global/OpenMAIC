@@ -5,14 +5,10 @@
  * Handles whiteboard CRUD and whiteboard element operations.
  */
 
-import type {
-  Whiteboard,
-} from "@/lib/types/stage";
-import type {
-  PPTElement,
-} from "@/lib/types/slides";
-import type { StageStore, APIResult } from "./stage-api-types";
-import { generateId } from "./stage-api-defaults";
+import type { Whiteboard } from '@/lib/types/stage';
+import type { PPTElement } from '@/lib/types/slides';
+import type { StageStore, APIResult } from './stage-api-types';
+import { generateId } from './stage-api-defaults';
 
 /**
  * Create the whiteboard management API
@@ -33,7 +29,7 @@ export function createWhiteboardAPI(store: StageStore) {
         const whiteboard: Whiteboard = {
           id: generateId('whiteboard'),
           viewportSize: 1000,
-          viewportRatio: 16/9,
+          viewportRatio: 16 / 9,
           elements: [],
           background: {
             type: 'solid',
@@ -41,8 +37,12 @@ export function createWhiteboardAPI(store: StageStore) {
           },
           animations: [],
         };
-        const whiteboardList = state.stage?.whiteboard ? [...state.stage.whiteboard, whiteboard] : [whiteboard];
-        store.setState({ stage: { ...state.stage, whiteboard: whiteboardList } });
+        const whiteboardList = state.stage?.whiteboard
+          ? [...state.stage.whiteboard, whiteboard]
+          : [whiteboard];
+        store.setState({
+          stage: { ...state.stage, whiteboard: whiteboardList },
+        });
         return { success: true, data: whiteboard };
       } catch (error) {
         return { success: false, error: String(error) };
@@ -77,10 +77,14 @@ export function createWhiteboardAPI(store: StageStore) {
       try {
         const state = store.getState();
         const whiteboard = state.stage?.whiteboard?.find((wb) => wb.id === whiteboardId);
-        if (!whiteboard) return { success: false, error: "Whiteboard not found" };
+        if (!whiteboard) return { success: false, error: 'Whiteboard not found' };
         const newWhiteboard = { ...whiteboard, ...updates };
-        const whiteboardList = state.stage!.whiteboard!.map((wb) => wb.id === whiteboardId ? newWhiteboard : wb);
-        store.setState({ stage: { ...state.stage, whiteboard: whiteboardList } });
+        const whiteboardList = state.stage!.whiteboard!.map((wb) =>
+          wb.id === whiteboardId ? newWhiteboard : wb,
+        );
+        store.setState({
+          stage: { ...state.stage, whiteboard: whiteboardList },
+        });
         return { success: true, data: true };
       } catch (error) {
         return { success: false, error: String(error) };
@@ -97,7 +101,9 @@ export function createWhiteboardAPI(store: StageStore) {
       try {
         const state = store.getState();
         const whiteboardList = state.stage!.whiteboard!.filter((wb) => wb.id !== whiteboardId);
-        store.setState({ stage: { ...state.stage, whiteboard: whiteboardList } });
+        store.setState({
+          stage: { ...state.stage, whiteboard: whiteboardList },
+        });
         return { success: true, data: true };
       } catch (error) {
         return { success: false, error: String(error) };
@@ -129,8 +135,11 @@ export function createWhiteboardAPI(store: StageStore) {
       try {
         const state = store.getState();
         const whiteboard = state.stage!.whiteboard!.find((wb) => wb.id === whiteboardId);
-        if (!whiteboard) return { success: false, error: "Whiteboard not found" };
-        return { success: true, data: whiteboard.elements.find((el) => el.id === elementId) };
+        if (!whiteboard) return { success: false, error: 'Whiteboard not found' };
+        return {
+          success: true,
+          data: whiteboard.elements.find((el) => el.id === elementId),
+        };
       } catch (error) {
         return { success: false, error: String(error) };
       }
@@ -147,11 +156,21 @@ export function createWhiteboardAPI(store: StageStore) {
       try {
         const state = store.getState();
         const whiteboard = state.stage!.whiteboard!.find((wb) => wb.id === whiteboardId);
-        if (!whiteboard) return { success: false, error: "Whiteboard not found" };
-        const newElement = { ...element, id: element.id || generateId(element.type) };
-        const newWhiteboard = { ...whiteboard, elements: [...whiteboard.elements, newElement] };
-        const whiteboardList = state.stage!.whiteboard!.map((wb) => wb.id === whiteboardId ? newWhiteboard : wb);
-        store.setState({ stage: { ...state.stage, whiteboard: whiteboardList } });
+        if (!whiteboard) return { success: false, error: 'Whiteboard not found' };
+        const newElement = {
+          ...element,
+          id: element.id || generateId(element.type),
+        };
+        const newWhiteboard = {
+          ...whiteboard,
+          elements: [...whiteboard.elements, newElement],
+        };
+        const whiteboardList = state.stage!.whiteboard!.map((wb) =>
+          wb.id === whiteboardId ? newWhiteboard : wb,
+        );
+        store.setState({
+          stage: { ...state.stage, whiteboard: whiteboardList },
+        });
         return { success: true, data: true };
       } catch (error) {
         return { success: false, error: String(error) };
@@ -169,10 +188,17 @@ export function createWhiteboardAPI(store: StageStore) {
       try {
         const state = store.getState();
         const whiteboard = state.stage!.whiteboard!.find((wb) => wb.id === whiteboardId);
-        if (!whiteboard) return { success: false, error: "Whiteboard not found" };
-        const newWhiteboard = { ...whiteboard, elements: whiteboard.elements.filter((el) => el.id !== elementId) };
-        const whiteboardList = state.stage!.whiteboard!.map((wb) => wb.id === whiteboardId ? newWhiteboard : wb);
-        store.setState({ stage: { ...state.stage, whiteboard: whiteboardList } });
+        if (!whiteboard) return { success: false, error: 'Whiteboard not found' };
+        const newWhiteboard = {
+          ...whiteboard,
+          elements: whiteboard.elements.filter((el) => el.id !== elementId),
+        };
+        const whiteboardList = state.stage!.whiteboard!.map((wb) =>
+          wb.id === whiteboardId ? newWhiteboard : wb,
+        );
+        store.setState({
+          stage: { ...state.stage, whiteboard: whiteboardList },
+        });
         return { success: true, data: true };
       } catch (error) {
         return { success: false, error: String(error) };
@@ -190,10 +216,17 @@ export function createWhiteboardAPI(store: StageStore) {
       try {
         const state = store.getState();
         const whiteboard = state.stage!.whiteboard!.find((wb) => wb.id === whiteboardId);
-        if (!whiteboard) return { success: false, error: "Whiteboard not found" };
-        const newWhiteboard = { ...whiteboard, elements: whiteboard.elements.map((el) => el.id === element.id ? element : el) };
-        const whiteboardList = state.stage!.whiteboard!.map((wb) => wb.id === whiteboardId ? newWhiteboard : wb);
-        store.setState({ stage: { ...state.stage, whiteboard: whiteboardList } });
+        if (!whiteboard) return { success: false, error: 'Whiteboard not found' };
+        const newWhiteboard = {
+          ...whiteboard,
+          elements: whiteboard.elements.map((el) => (el.id === element.id ? element : el)),
+        };
+        const whiteboardList = state.stage!.whiteboard!.map((wb) =>
+          wb.id === whiteboardId ? newWhiteboard : wb,
+        );
+        store.setState({
+          stage: { ...state.stage, whiteboard: whiteboardList },
+        });
         return { success: true, data: true };
       } catch (error) {
         return { success: false, error: String(error) };
@@ -210,7 +243,7 @@ export function createWhiteboardAPI(store: StageStore) {
       try {
         const state = store.getState();
         const whiteboard = state.stage!.whiteboard!.find((wb) => wb.id === whiteboardId);
-        if (!whiteboard) return { success: false, error: "Whiteboard not found" };
+        if (!whiteboard) return { success: false, error: 'Whiteboard not found' };
         return { success: true, data: whiteboard.elements };
       } catch (error) {
         return { success: false, error: String(error) };

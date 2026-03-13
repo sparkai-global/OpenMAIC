@@ -14,16 +14,26 @@
 import { NextRequest } from 'next/server';
 import { streamLLM } from '@/lib/ai/llm';
 import { buildPrompt, PROMPT_IDS } from '@/lib/generation/prompts';
-import { formatImageDescription, formatImagePlaceholder, buildVisionUserContent, uniquifyMediaElementIds, formatTeacherPersonaForPrompt } from '@/lib/generation/generation-pipeline';
+import {
+  formatImageDescription,
+  formatImagePlaceholder,
+  buildVisionUserContent,
+  uniquifyMediaElementIds,
+  formatTeacherPersonaForPrompt,
+} from '@/lib/generation/generation-pipeline';
 import type { AgentInfo } from '@/lib/generation/generation-pipeline';
 import { MAX_PDF_CONTENT_CHARS, MAX_VISION_IMAGES } from '@/lib/constants/generation';
 import { nanoid } from 'nanoid';
-import type { UserRequirements, PdfImage, SceneOutline, ImageMapping } from '@/lib/types/generation';
-import { apiError } from '@/lib/server/api-response'
-import { createLogger } from '@/lib/logger'
+import type {
+  UserRequirements,
+  PdfImage,
+  SceneOutline,
+  ImageMapping,
+} from '@/lib/types/generation';
+import { apiError } from '@/lib/server/api-response';
+import { createLogger } from '@/lib/logger';
 import { resolveModelFromHeaders } from '@/lib/server/resolve-model';
-const log = createLogger('Outlines Stream')
-
+const log = createLogger('Outlines Stream');
 
 export const maxDuration = 300;
 
@@ -49,9 +59,18 @@ function extractNewOutlines(buffer: string, alreadyParsed: number): SceneOutline
   for (let i = arrayStart + 1; i < stripped.length; i++) {
     const char = stripped[i];
 
-    if (escaped) { escaped = false; continue; }
-    if (char === '\\' && inString) { escaped = true; continue; }
-    if (char === '"') { inString = !inString; continue; }
+    if (escaped) {
+      escaped = false;
+      continue;
+    }
+    if (char === '\\' && inString) {
+      escaped = true;
+      continue;
+    }
+    if (char === '"') {
+      inString = !inString;
+      continue;
+    }
     if (inString) continue;
 
     if (char === '{') {
@@ -101,27 +120,37 @@ export async function POST(req: NextRequest) {
     const hasVision = !!modelInfo?.capabilities?.vision;
 
     // Build prompt (same logic as generateSceneOutlinesFromRequirements)
-    let availableImagesText = requirements.language === 'zh-CN' ? '无可用图片' : 'No images available';
+    let availableImagesText =
+      requirements.language === 'zh-CN' ? '无可用图片' : 'No images available';
     let visionImages: Array<{ id: string; src: string }> | undefined;
 
     if (pdfImages && pdfImages.length > 0) {
       if (hasVision && imageMapping) {
         // Vision mode: split into vision images (first N) and text-only (rest)
-        const allWithSrc = pdfImages.filter(img => imageMapping[img.id]);
+        const allWithSrc = pdfImages.filter((img) => imageMapping[img.id]);
         const visionSlice = allWithSrc.slice(0, MAX_VISION_IMAGES);
         const textOnlySlice = allWithSrc.slice(MAX_VISION_IMAGES);
-        const noSrcImages = pdfImages.filter(img => !imageMapping[img.id]);
+        const noSrcImages = pdfImages.filter((img) => !imageMapping[img.id]);
 
-        const visionDescriptions = visionSlice.map(img => formatImagePlaceholder(img, requirements.language));
-        const textDescriptions = [...textOnlySlice, ...noSrcImages].map(img => formatImageDescription(img, requirements.language));
+        const visionDescriptions = visionSlice.map((img) =>
+          formatImagePlaceholder(img, requirements.language),
+        );
+        const textDescriptions = [...textOnlySlice, ...noSrcImages].map((img) =>
+          formatImageDescription(img, requirements.language),
+        );
         availableImagesText = [...visionDescriptions, ...textDescriptions].join('\n');
 
-        visionImages = visionSlice.map(img => ({ id: img.id, src: imageMapping[img.id], width: img.width, height: img.height }));
+        visionImages = visionSlice.map((img) => ({
+          id: img.id,
+          src: imageMapping[img.id],
+          width: img.width,
+          height: img.height,
+        }));
       } else {
         // Text-only mode: full descriptions
-        availableImagesText = pdfImages.map(img =>
-          formatImageDescription(img, requirements.language)
-        ).join('\n');
+        availableImagesText = pdfImages
+          .map((img) => formatImageDescription(img, requirements.language))
+          .join('\n');
       }
     }
 
@@ -130,11 +159,14 @@ export async function POST(req: NextRequest) {
     const videoGenerationEnabled = req.headers.get('x-video-generation-enabled') === 'true';
     let mediaGenerationPolicy = '';
     if (!imageGenerationEnabled && !videoGenerationEnabled) {
-      mediaGenerationPolicy = '**IMPORTANT: Do NOT include any mediaGenerations in the outlines. Both image and video generation are disabled.**';
+      mediaGenerationPolicy =
+        '**IMPORTANT: Do NOT include any mediaGenerations in the outlines. Both image and video generation are disabled.**';
     } else if (!imageGenerationEnabled) {
-      mediaGenerationPolicy = '**IMPORTANT: Do NOT include any image mediaGenerations (type: "image") in the outlines. Image generation is disabled. Video generation is allowed.**';
+      mediaGenerationPolicy =
+        '**IMPORTANT: Do NOT include any image mediaGenerations (type: "image") in the outlines. Image generation is disabled. Video generation is allowed.**';
     } else if (!videoGenerationEnabled) {
-      mediaGenerationPolicy = '**IMPORTANT: Do NOT include any video mediaGenerations (type: "video") in the outlines. Video generation is disabled. Image generation is allowed.**';
+      mediaGenerationPolicy =
+        '**IMPORTANT: Do NOT include any video mediaGenerations (type: "video") in the outlines. Video generation is disabled. Image generation is allowed.**';
     }
 
     // Build teacher context from agents (if available)
@@ -143,7 +175,11 @@ export async function POST(req: NextRequest) {
     const prompts = buildPrompt(PROMPT_IDS.REQUIREMENTS_TO_OUTLINES, {
       requirement: requirements.requirement,
       language: requirements.language,
-      pdfContent: pdfText ? pdfText.substring(0, MAX_PDF_CONTENT_CHARS) : (requirements.language === 'zh-CN' ? '无' : 'None'),
+      pdfContent: pdfText
+        ? pdfText.substring(0, MAX_PDF_CONTENT_CHARS)
+        : requirements.language === 'zh-CN'
+          ? '无'
+          : 'None',
       availableImages: availableImagesText,
       researchContext: researchContext || (requirements.language === 'zh-CN' ? '无' : 'None'),
       mediaGenerationPolicy,
@@ -154,7 +190,9 @@ export async function POST(req: NextRequest) {
       return apiError('INTERNAL_ERROR', 500, 'Prompt template not found');
     }
 
-    log.info(`Generating outlines: "${requirements.requirement.substring(0, 50)}" [model=${modelString}]`);
+    log.info(
+      `Generating outlines: "${requirements.requirement.substring(0, 50)}" [model=${modelString}]`,
+    );
 
     // Create SSE stream with heartbeat to prevent connection timeout
     const encoder = new TextEncoder();
@@ -185,11 +223,16 @@ export async function POST(req: NextRequest) {
         try {
           startHeartbeat();
 
-          const streamParams = (visionImages?.length)
+          const streamParams = visionImages?.length
             ? {
                 model: languageModel,
                 system: prompts.system,
-                messages: [{ role: 'user' as const, content: buildVisionUserContent(prompts.user, visionImages) }],
+                messages: [
+                  {
+                    role: 'user' as const,
+                    content: buildVisionUserContent(prompts.user, visionImages),
+                  },
+                ],
                 maxOutputTokens: modelInfo?.outputWindow,
               }
             : {
@@ -241,17 +284,30 @@ export async function POST(req: NextRequest) {
                 : 'LLM returned empty response';
 
               if (attempt <= MAX_STREAM_RETRIES) {
-                log.warn(`Empty outlines (attempt ${attempt}/${MAX_STREAM_RETRIES + 1}), retrying...`);
+                log.warn(
+                  `Empty outlines (attempt ${attempt}/${MAX_STREAM_RETRIES + 1}), retrying...`,
+                );
                 // Notify client a retry is happening
-                const retryEvent = JSON.stringify({ type: 'retry', attempt, maxAttempts: MAX_STREAM_RETRIES + 1 });
+                const retryEvent = JSON.stringify({
+                  type: 'retry',
+                  attempt,
+                  maxAttempts: MAX_STREAM_RETRIES + 1,
+                });
                 controller.enqueue(encoder.encode(`data: ${retryEvent}\n\n`));
               }
             } catch (error) {
               lastError = error instanceof Error ? error.message : String(error);
 
               if (attempt <= MAX_STREAM_RETRIES) {
-                log.warn(`Stream error (attempt ${attempt}/${MAX_STREAM_RETRIES + 1}), retrying...`, error);
-                const retryEvent = JSON.stringify({ type: 'retry', attempt, maxAttempts: MAX_STREAM_RETRIES + 1 });
+                log.warn(
+                  `Stream error (attempt ${attempt}/${MAX_STREAM_RETRIES + 1}), retrying...`,
+                  error,
+                );
+                const retryEvent = JSON.stringify({
+                  type: 'retry',
+                  attempt,
+                  maxAttempts: MAX_STREAM_RETRIES + 1,
+                });
                 controller.enqueue(encoder.encode(`data: ${retryEvent}\n\n`));
                 continue;
               }
@@ -269,7 +325,9 @@ export async function POST(req: NextRequest) {
             controller.enqueue(encoder.encode(`data: ${doneEvent}\n\n`));
           } else {
             // All retries exhausted, no outlines produced
-            log.error(`Outline generation failed after ${MAX_STREAM_RETRIES + 1} attempts: ${lastError}`);
+            log.error(
+              `Outline generation failed after ${MAX_STREAM_RETRIES + 1} attempts: ${lastError}`,
+            );
             const errorEvent = JSON.stringify({
               type: 'error',
               error: lastError || 'Failed to generate outlines',

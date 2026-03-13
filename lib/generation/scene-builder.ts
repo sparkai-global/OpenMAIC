@@ -48,11 +48,11 @@ export function uniquifyMediaElementIds(outlines: SceneOutline[]): SceneOutline[
   if (idMap.size === 0) return outlines;
 
   // Second pass: replace IDs in mediaGenerations
-  return outlines.map(outline => {
+  return outlines.map((outline) => {
     if (!outline.mediaGenerations) return outline;
     return {
       ...outline,
-      mediaGenerations: outline.mediaGenerations.map(mg => ({
+      mediaGenerations: outline.mediaGenerations.map((mg) => ({
         ...mg,
         elementId: idMap.get(mg.elementId) || mg.elementId,
       })),
@@ -84,10 +84,23 @@ export async function buildSceneFromOutline(
   onPhaseChange?.('content');
   log.debug(`Step 1: Generating content for: ${outline.title}`);
   if (assignedImages && assignedImages.length > 0) {
-    log.debug(`Using ${assignedImages.length} assigned images: ${assignedImages.map(img => img.id).join(', ')}`);
+    log.debug(
+      `Using ${assignedImages.length} assigned images: ${assignedImages.map((img) => img.id).join(', ')}`,
+    );
   }
-  log.debug(`imageMapping available: ${imageMapping ? Object.keys(imageMapping).length + ' keys' : 'undefined'}`);
-  const content = await generateSceneContent(outline, aiCall, assignedImages, imageMapping, languageModel, visionEnabled, undefined, agents);
+  log.debug(
+    `imageMapping available: ${imageMapping ? Object.keys(imageMapping).length + ' keys' : 'undefined'}`,
+  );
+  const content = await generateSceneContent(
+    outline,
+    aiCall,
+    assignedImages,
+    imageMapping,
+    languageModel,
+    visionEnabled,
+    undefined,
+    agents,
+  );
   if (!content) {
     log.error(`Failed to generate content for: ${outline.title}`);
     return null;
@@ -108,9 +121,13 @@ export async function buildSceneFromOutline(
  */
 export function buildCompleteScene(
   outline: SceneOutline,
-  content: GeneratedSlideContent | GeneratedQuizContent | GeneratedInteractiveContent | GeneratedPBLContent,
+  content:
+    | GeneratedSlideContent
+    | GeneratedQuizContent
+    | GeneratedInteractiveContent
+    | GeneratedPBLContent,
   actions: Action[],
-  stageId: string
+  stageId: string,
 ): Scene | null {
   const sceneId = nanoid();
 

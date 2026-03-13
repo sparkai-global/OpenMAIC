@@ -24,7 +24,7 @@ export async function searchWithTavily(params: {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`,
+      Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
       query,
@@ -39,7 +39,7 @@ export async function searchWithTavily(params: {
     throw new Error(`Tavily API error (${res.status}): ${errorText || res.statusText}`);
   }
 
-  const data = await res.json() as {
+  const data = (await res.json()) as {
     answer?: string;
     query: string;
     response_time: number;

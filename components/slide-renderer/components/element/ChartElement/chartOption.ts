@@ -1,23 +1,25 @@
-import type { ComposeOption } from 'echarts/core'
+import type { ComposeOption } from 'echarts/core';
 import type {
   BarSeriesOption,
   LineSeriesOption,
   PieSeriesOption,
   ScatterSeriesOption,
   RadarSeriesOption,
-} from 'echarts/charts'
-import type { ChartData, ChartType } from '@/lib/types/slides'
+} from 'echarts/charts';
+import type { ChartData, ChartType } from '@/lib/types/slides';
 
-type EChartOption = ComposeOption<BarSeriesOption | LineSeriesOption | PieSeriesOption | ScatterSeriesOption | RadarSeriesOption>
+type EChartOption = ComposeOption<
+  BarSeriesOption | LineSeriesOption | PieSeriesOption | ScatterSeriesOption | RadarSeriesOption
+>;
 
 export interface ChartOptionPayload {
-  type: ChartType
-  data: ChartData
-  themeColors: string[]
-  textColor?: string
-  lineColor?: string
-  lineSmooth?: boolean
-  stack?: boolean
+  type: ChartType;
+  data: ChartData;
+  themeColors: string[];
+  textColor?: string;
+  lineColor?: string;
+  lineSmooth?: boolean;
+  stack?: boolean;
 }
 
 export const getChartOption = ({
@@ -29,30 +31,41 @@ export const getChartOption = ({
   lineSmooth,
   stack,
 }: ChartOptionPayload): EChartOption | null => {
-  const textStyle = textColor ? {
-    color: textColor
-  } : {}
+  const textStyle = textColor
+    ? {
+        color: textColor,
+      }
+    : {};
 
-  const axisLine = textColor ? {
-    lineStyle: {
-      color: textColor,
-    }
-  } : undefined
+  const axisLine = textColor
+    ? {
+        lineStyle: {
+          color: textColor,
+        },
+      }
+    : undefined;
 
-  const axisLabel = textColor ? {
-    color: textColor,
-  } : undefined
+  const axisLabel = textColor
+    ? {
+        color: textColor,
+      }
+    : undefined;
 
-  const splitLine = lineColor ? {
-    lineStyle: {
-      color: lineColor,
-    }
-  } : {}
+  const splitLine = lineColor
+    ? {
+        lineStyle: {
+          color: lineColor,
+        },
+      }
+    : {};
 
-  const legend = data.series.length > 1 ? {
-    top: 'bottom',
-    textStyle,
-  } : undefined
+  const legend =
+    data.series.length > 1
+      ? {
+          top: 'bottom',
+          textStyle,
+        }
+      : undefined;
 
   if (type === 'bar') {
     return {
@@ -82,11 +95,11 @@ export const getChartOption = ({
           itemStyle: {
             borderRadius: [2, 2, 0, 0],
           },
-        }
-        if (stack) seriesItem.stack = 'A'
-        return seriesItem
+        };
+        if (stack) seriesItem.stack = 'A';
+        return seriesItem;
       }),
-    }
+    };
   }
   if (type === 'column') {
     return {
@@ -116,11 +129,11 @@ export const getChartOption = ({
           itemStyle: {
             borderRadius: [0, 2, 2, 0],
           },
-        }
-        if (stack) seriesItem.stack = 'A'
-        return seriesItem
+        };
+        if (stack) seriesItem.stack = 'A';
+        return seriesItem;
       }),
-    }
+    };
   }
   if (type === 'line') {
     return {
@@ -148,11 +161,11 @@ export const getChartOption = ({
           label: {
             show: true,
           },
-        }
-        if (stack) seriesItem.stack = 'A'
-        return seriesItem
+        };
+        if (stack) seriesItem.stack = 'A';
+        return seriesItem;
       }),
-    }
+    };
   }
   if (type === 'pie') {
     return {
@@ -164,10 +177,15 @@ export const getChartOption = ({
       },
       series: [
         {
-          data: data.series[0].map((item, index) => ({ value: item, name: data.labels[index] })),
-          label: textColor ? {
-            color: textColor,
-          } : {},
+          data: data.series[0].map((item, index) => ({
+            value: item,
+            name: data.labels[index],
+          })),
+          label: textColor
+            ? {
+                color: textColor,
+              }
+            : {},
           type: 'pie',
           radius: '70%',
           emphasis: {
@@ -179,12 +197,12 @@ export const getChartOption = ({
             label: {
               show: true,
               fontSize: 14,
-              fontWeight: 'bold'
+              fontWeight: 'bold',
             },
           },
-        }
+        },
       ],
-    }
+    };
   }
   if (type === 'ring') {
     return {
@@ -196,10 +214,15 @@ export const getChartOption = ({
       },
       series: [
         {
-          data: data.series[0].map((item, index) => ({ value: item, name: data.labels[index] })),
-          label: textColor ? {
-            color: textColor,
-          } : {},
+          data: data.series[0].map((item, index) => ({
+            value: item,
+            name: data.labels[index],
+          })),
+          label: textColor
+            ? {
+                color: textColor,
+              }
+            : {},
           type: 'pie',
           radius: ['40%', '70%'],
           padAngle: 1,
@@ -211,12 +234,12 @@ export const getChartOption = ({
             label: {
               show: true,
               fontSize: 14,
-              fontWeight: 'bold'
+              fontWeight: 'bold',
             },
           },
-        }
+        },
       ],
-    }
+    };
   }
   if (type === 'area') {
     return {
@@ -245,11 +268,11 @@ export const getChartOption = ({
           label: {
             show: true,
           },
-        }
-        if (stack) seriesItem.stack = 'A'
-        return seriesItem
+        };
+        if (stack) seriesItem.stack = 'A';
+        return seriesItem;
       }),
-    }
+    };
   }
   if (type === 'radar') {
     // Display is broken without max in indicator; setting max triggers console warnings. No workaround — waiting for ECharts to fix this bug
@@ -264,28 +287,33 @@ export const getChartOption = ({
       textStyle,
       legend,
       radar: {
-        indicator: data.labels.map(item => ({ name: item })),
+        indicator: data.labels.map((item) => ({ name: item })),
         splitLine,
-        axisLine: lineColor ? {
-          lineStyle: {
-            color: lineColor,
-          }
-        } : undefined,
+        axisLine: lineColor
+          ? {
+              lineStyle: {
+                color: lineColor,
+              },
+            }
+          : undefined,
       },
       series: [
         {
-          data: data.series.map((item, index) => ({ value: item, name: data.legends[index] })),
+          data: data.series.map((item, index) => ({
+            value: item,
+            name: data.legends[index],
+          })),
           type: 'radar',
         },
       ],
-    }
+    };
   }
   if (type === 'scatter') {
-    const formatedData = []
+    const formatedData = [];
     for (let i = 0; i < data.series[0].length; i++) {
-      const x = data.series[0][i]
-      const y = data.series[1] ? data.series[1][i] : x
-      formatedData.push([x, y])
+      const x = data.series[0][i];
+      const y = data.series[1] ? data.series[1][i] : x;
+      formatedData.push([x, y]);
     }
 
     return {
@@ -306,10 +334,10 @@ export const getChartOption = ({
           symbolSize: 12,
           data: formatedData,
           type: 'scatter',
-        }
+        },
       ],
-    }
+    };
   }
 
-  return null
-}
+  return null;
+};

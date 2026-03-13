@@ -42,7 +42,10 @@ export function BaseVideoElement({ elementInfo }: BaseVideoElementProps) {
   const videoGenerationEnabled = useSettingsStore((s) => s.videoGenerationEnabled);
   const resolvedSrc = task?.status === 'done' && task.objectUrl ? task.objectUrl : elementInfo.src;
   const showDisabled = isPlaceholder && !task && !videoGenerationEnabled;
-  const showSkeleton = isPlaceholder && !showDisabled && (!task || task.status === 'pending' || task.status === 'generating');
+  const showSkeleton =
+    isPlaceholder &&
+    !showDisabled &&
+    (!task || task.status === 'pending' || task.status === 'generating');
   const showError = isPlaceholder && task?.status === 'failed';
   const isReady = !isPlaceholder || task?.status === 'done';
 
@@ -64,11 +67,15 @@ export function BaseVideoElement({ elementInfo }: BaseVideoElementProps) {
 
     if (isMe && !wasMe) {
       // "Tap" press animation — a deliberate, teacher-paced click feel
-      animate(scope.current, { scale: [1, 1.035, 1] }, {
-        duration: 0.6,
-        ease: [0.25, 0.1, 0.25, 1],
-        times: [0, 0.35, 1],
-      });
+      animate(
+        scope.current,
+        { scale: [1, 1.035, 1] },
+        {
+          duration: 0.6,
+          ease: [0.25, 0.1, 0.25, 1],
+          times: [0, 0.35, 1],
+        },
+      );
       video.play().catch((err) => {
         log.warn('[BaseVideoElement] play() failed:', err);
       });
@@ -114,8 +121,16 @@ export function BaseVideoElement({ elementInfo }: BaseVideoElementProps) {
               @keyframes vid-pulse-ring { 0%, 100% { opacity: 0.15; transform: scale(0.85); } 50% { opacity: 0.35; transform: scale(1.1); } }
             `}</style>
             <div className="relative w-14 h-14">
-              <div className="absolute inset-0 rounded-full border-2 border-indigo-300/40 dark:border-indigo-500/30" style={{ animation: 'vid-pulse-ring 2.4s ease-in-out infinite' }} />
-              <Film className="absolute inset-0 m-auto w-5 h-5 text-indigo-400/80 dark:text-indigo-500/70" strokeWidth={1.5} />
+              <div
+                className="absolute inset-0 rounded-full border-2 border-indigo-300/40 dark:border-indigo-500/30"
+                style={{
+                  animation: 'vid-pulse-ring 2.4s ease-in-out infinite',
+                }}
+              />
+              <Film
+                className="absolute inset-0 m-auto w-5 h-5 text-indigo-400/80 dark:text-indigo-500/70"
+                strokeWidth={1.5}
+              />
             </div>
           </div>
         ) : showError ? (
@@ -132,7 +147,10 @@ export function BaseVideoElement({ elementInfo }: BaseVideoElementProps) {
               </div>
             ) : (
               <button
-                onClick={(e) => { e.stopPropagation(); retryMediaTask(elementInfo.src); }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  retryMediaTask(elementInfo.src);
+                }}
                 onPointerDown={(e) => e.stopPropagation()}
                 className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/40 rounded hover:bg-red-200 dark:hover:bg-red-900/60 transition-colors"
               >
@@ -141,7 +159,8 @@ export function BaseVideoElement({ elementInfo }: BaseVideoElementProps) {
               </button>
             )}
           </div>
-        ) : isReady && resolvedSrc && !isPlaceholder || (isPlaceholder && task?.status === 'done') ? (
+        ) : (isReady && resolvedSrc && !isPlaceholder) ||
+          (isPlaceholder && task?.status === 'done') ? (
           <video
             ref={videoRef}
             className="w-full h-full"

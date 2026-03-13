@@ -10,10 +10,15 @@ import type { PercentageGeometry } from '@/lib/types/action';
  */
 export function getElementPercentageGeometry(
   element: PPTElement,
-  viewportSize: number = 1000
+  viewportSize: number = 1000,
 ): PercentageGeometry | null {
   // Only positioned elements have left/top/width/height
-  if (!('left' in element) || !('top' in element) || !('width' in element) || !('height' in element)) {
+  if (
+    !('left' in element) ||
+    !('top' in element) ||
+    !('width' in element) ||
+    !('height' in element)
+  ) {
     return null;
   }
 
@@ -51,7 +56,7 @@ export function findElementGeometry(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- scene can be old or new format with different shapes
   scene: Record<string, any>,
   elementId: string,
-  viewportSize: number = 1000
+  viewportSize: number = 1000,
 ): PercentageGeometry | null {
   // Support two scene structures:
   // 1. scene.elements (old format)
@@ -86,7 +91,10 @@ export function findElementGeometry(
  * @param geometry - Percentage geometry info
  * @returns Nearest corner coordinates { x: 0-100, y: 0-100 }
  */
-export function findNearestCorner(geometry: PercentageGeometry): { x: number; y: number } {
+export function findNearestCorner(geometry: PercentageGeometry): {
+  x: number;
+  y: number;
+} {
   const { centerX, centerY } = geometry;
 
   // Coordinates of the four corners
@@ -102,9 +110,7 @@ export function findNearestCorner(geometry: PercentageGeometry): { x: number; y:
   let nearestCorner = corners[0];
 
   for (const corner of corners) {
-    const distance = Math.sqrt(
-      Math.pow(corner.x - centerX, 2) + Math.pow(corner.y - centerY, 2)
-    );
+    const distance = Math.sqrt(Math.pow(corner.x - centerX, 2) + Math.pow(corner.y - centerY, 2));
     if (distance < minDistance) {
       minDistance = distance;
       nearestCorner = corner;

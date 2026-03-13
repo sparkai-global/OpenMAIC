@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import {useKeyboardStore, useCanvasStore} from '@/lib/store';
+import { useKeyboardStore, useCanvasStore } from '@/lib/store';
 import { KEYS } from '@/configs/hotkey';
 import { OperateResizeHandlers } from '@/lib/types/edit';
 import type { ImageClipedEmitData } from '@/lib/types/edit';
@@ -49,7 +49,12 @@ export function ImageClipHandler({
 
   // Get clip area info (clip area's width/height ratio relative to the original image and its position within it)
   const getClipDataTransformInfo = useCallback(() => {
-    const [start, end] = clipData ? clipData.range : [[0, 0], [100, 100]];
+    const [start, end] = clipData
+      ? clipData.range
+      : [
+          [0, 0],
+          [100, 100],
+        ];
 
     const widthScale = (end[0] - start[0]) / 100;
     const heightScale = (end[1] - start[1]) / 100;
@@ -101,8 +106,8 @@ export function ImageClipHandler({
     return {
       left: -left * (100 / width) + '%',
       top: -top * (100 / height) + '%',
-      width: bottomWidth / width * 100 + '%',
-      height: bottomHeight / height * 100 + '%',
+      width: (bottomWidth / width) * 100 + '%',
+      height: (bottomHeight / height) * 100 + '%',
     };
   }, [imgPosition, topImgWrapperPosition]);
 
@@ -134,10 +139,10 @@ export function ImageClipHandler({
     const { left, top } = getClipDataTransformInfo();
 
     const position = {
-      left: (topImgWrapperPosition.left - left) / 100 * width,
-      top: (topImgWrapperPosition.top - top) / 100 * height,
-      width: (topImgWrapperPosition.width - 100) / 100 * width,
-      height: (topImgWrapperPosition.height - 100) / 100 * height,
+      left: ((topImgWrapperPosition.left - left) / 100) * width,
+      top: ((topImgWrapperPosition.top - top) / 100) * height,
+      width: ((topImgWrapperPosition.width - 100) / 100) * width,
+      height: ((topImgWrapperPosition.height - 100) / 100) * height,
     };
 
     const clipedEmitData: ImageClipedEmitData = {
@@ -145,7 +150,15 @@ export function ImageClipHandler({
       position,
     };
     onClip(clipedEmitData);
-  }, [isSettingClipRange, currentRange, getClipDataTransformInfo, topImgWrapperPosition, width, height, onClip]);
+  }, [
+    isSettingClipRange,
+    currentRange,
+    getClipDataTransformInfo,
+    topImgWrapperPosition,
+    width,
+    height,
+    onClip,
+  ]);
 
   // Calculate and update clip area range data
   const updateRange = useCallback(() => {
@@ -163,258 +176,271 @@ export function ImageClipHandler({
       -retPosition.left * widthScale,
       -retPosition.top * heightScale,
     ];
-    const end: [number, number] = [
-      widthScale * 100 + start[0],
-      heightScale * 100 + start[1],
-    ];
+    const end: [number, number] = [widthScale * 100 + start[0], heightScale * 100 + start[1]];
 
     setCurrentRange([start, end]);
   }, [topImgPositionStyle]);
 
   // Move clip area
-  const moveClipRange = useCallback((e: React.MouseEvent) => {
-    setIsSettingClipRange(true);
-    let isMouseDown = true;
+  const moveClipRange = useCallback(
+    (e: React.MouseEvent) => {
+      setIsSettingClipRange(true);
+      let isMouseDown = true;
 
-    const startPageX = e.pageX;
-    const startPageY = e.pageY;
-    const bottomPosition = imgPosition;
-    const originPosition = { ...topImgWrapperPosition };
+      const startPageX = e.pageX;
+      const startPageY = e.pageY;
+      const bottomPosition = imgPosition;
+      const originPosition = { ...topImgWrapperPosition };
 
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!isMouseDown) return;
+      const handleMouseMove = (e: MouseEvent) => {
+        if (!isMouseDown) return;
 
-      const currentPageX = e.pageX;
-      const currentPageY = e.pageY;
+        const currentPageX = e.pageX;
+        const currentPageY = e.pageY;
 
-      const _moveX = (currentPageX - startPageX) / canvasScale;
-      const _moveY = (currentPageY - startPageY) / canvasScale;
+        const _moveX = (currentPageX - startPageX) / canvasScale;
+        const _moveY = (currentPageY - startPageY) / canvasScale;
 
-      const _moveL = Math.sqrt(_moveX * _moveX + _moveY * _moveY);
-      const _moveLRotate = Math.atan2(_moveY, _moveX);
+        const _moveL = Math.sqrt(_moveX * _moveX + _moveY * _moveY);
+        const _moveLRotate = Math.atan2(_moveY, _moveX);
 
-      const rotateRad = _moveLRotate - (rotate / 180) * Math.PI;
+        const rotateRad = _moveLRotate - (rotate / 180) * Math.PI;
 
-      const moveX = ((_moveL * Math.cos(rotateRad)) / width) * 100;
-      const moveY = ((_moveL * Math.sin(rotateRad)) / height) * 100;
+        const moveX = ((_moveL * Math.cos(rotateRad)) / width) * 100;
+        const moveY = ((_moveL * Math.sin(rotateRad)) / height) * 100;
 
-      let targetLeft = originPosition.left + moveX;
-      let targetTop = originPosition.top + moveY;
+        let targetLeft = originPosition.left + moveX;
+        let targetTop = originPosition.top + moveY;
 
-      if (targetLeft < 0) targetLeft = 0;
-      else if (targetLeft + originPosition.width > bottomPosition.width) {
-        targetLeft = bottomPosition.width - originPosition.width;
-      }
-      if (targetTop < 0) targetTop = 0;
-      else if (targetTop + originPosition.height > bottomPosition.height) {
-        targetTop = bottomPosition.height - originPosition.height;
-      }
+        if (targetLeft < 0) targetLeft = 0;
+        else if (targetLeft + originPosition.width > bottomPosition.width) {
+          targetLeft = bottomPosition.width - originPosition.width;
+        }
+        if (targetTop < 0) targetTop = 0;
+        else if (targetTop + originPosition.height > bottomPosition.height) {
+          targetTop = bottomPosition.height - originPosition.height;
+        }
 
-      setTopImgWrapperPosition({
-        ...topImgWrapperPosition,
-        left: targetLeft,
-        top: targetTop,
-      });
-    };
+        setTopImgWrapperPosition({
+          ...topImgWrapperPosition,
+          left: targetLeft,
+          top: targetTop,
+        });
+      };
 
-    const handleMouseUp = () => {
-      isMouseDown = false;
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+      const handleMouseUp = () => {
+        isMouseDown = false;
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
 
-      updateRange();
+        updateRange();
 
-      setTimeout(() => {
-        setIsSettingClipRange(false);
-      }, 0);
-    };
+        setTimeout(() => {
+          setIsSettingClipRange(false);
+        }, 0);
+      };
 
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
-  }, [canvasScale, rotate, width, height, imgPosition, topImgWrapperPosition, updateRange]);
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+    },
+    [canvasScale, rotate, width, height, imgPosition, topImgWrapperPosition, updateRange],
+  );
 
   // Scale clip area
-  const scaleClipRange = useCallback((e: React.MouseEvent, type: OperateResizeHandlers) => {
-    e.stopPropagation();
-    setIsSettingClipRange(true);
-    let isMouseDown = true;
+  const scaleClipRange = useCallback(
+    (e: React.MouseEvent, type: OperateResizeHandlers) => {
+      e.stopPropagation();
+      setIsSettingClipRange(true);
+      let isMouseDown = true;
 
-    const minWidth = 50 / width * 100;
-    const minHeight = 50 / height * 100;
+      const minWidth = (50 / width) * 100;
+      const minHeight = (50 / height) * 100;
 
-    const startPageX = e.pageX;
-    const startPageY = e.pageY;
-    const bottomPosition = imgPosition;
-    const originPosition = { ...topImgWrapperPosition };
+      const startPageX = e.pageX;
+      const startPageY = e.pageY;
+      const bottomPosition = imgPosition;
+      const originPosition = { ...topImgWrapperPosition };
 
-    const aspectRatio = topImgWrapperPosition.width / topImgWrapperPosition.height;
+      const aspectRatio = topImgWrapperPosition.width / topImgWrapperPosition.height;
 
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!isMouseDown) return;
+      const handleMouseMove = (e: MouseEvent) => {
+        if (!isMouseDown) return;
 
-      const currentPageX = e.pageX;
-      const currentPageY = e.pageY;
+        const currentPageX = e.pageX;
+        const currentPageY = e.pageY;
 
-      const _moveX = (currentPageX - startPageX) / canvasScale;
-      const _moveY = (currentPageY - startPageY) / canvasScale;
+        const _moveX = (currentPageX - startPageX) / canvasScale;
+        const _moveY = (currentPageY - startPageY) / canvasScale;
 
-      const _moveL = Math.sqrt(_moveX * _moveX + _moveY * _moveY);
-      const _moveLRotate = Math.atan2(_moveY, _moveX);
+        const _moveL = Math.sqrt(_moveX * _moveX + _moveY * _moveY);
+        const _moveLRotate = Math.atan2(_moveY, _moveX);
 
-      const rotateRad = _moveLRotate - (rotate / 180) * Math.PI;
+        const rotateRad = _moveLRotate - (rotate / 180) * Math.PI;
 
-      let moveX = ((_moveL * Math.cos(rotateRad)) / width) * 100;
-      let moveY = ((_moveL * Math.sin(rotateRad)) / height) * 100;
+        let moveX = ((_moveL * Math.cos(rotateRad)) / width) * 100;
+        let moveY = ((_moveL * Math.sin(rotateRad)) / height) * 100;
 
-      if (ctrlOrShiftKeyActive) {
-        if (type === OperateResizeHandlers.RIGHT_BOTTOM || type === OperateResizeHandlers.LEFT_TOP) moveY = moveX / aspectRatio;
-        if (type === OperateResizeHandlers.LEFT_BOTTOM || type === OperateResizeHandlers.RIGHT_TOP) moveY = -moveX / aspectRatio;
-      }
+        if (ctrlOrShiftKeyActive) {
+          if (
+            type === OperateResizeHandlers.RIGHT_BOTTOM ||
+            type === OperateResizeHandlers.LEFT_TOP
+          )
+            moveY = moveX / aspectRatio;
+          if (
+            type === OperateResizeHandlers.LEFT_BOTTOM ||
+            type === OperateResizeHandlers.RIGHT_TOP
+          )
+            moveY = -moveX / aspectRatio;
+        }
 
-      let targetLeft: number, targetTop: number, targetWidth: number, targetHeight: number;
+        let targetLeft: number, targetTop: number, targetWidth: number, targetHeight: number;
 
-      if (type === OperateResizeHandlers.LEFT_TOP) {
-        if (originPosition.left + moveX < 0) {
-          moveX = -originPosition.left;
+        if (type === OperateResizeHandlers.LEFT_TOP) {
+          if (originPosition.left + moveX < 0) {
+            moveX = -originPosition.left;
+          }
+          if (originPosition.top + moveY < 0) {
+            moveY = -originPosition.top;
+          }
+          if (originPosition.width - moveX < minWidth) {
+            moveX = originPosition.width - minWidth;
+          }
+          if (originPosition.height - moveY < minHeight) {
+            moveY = originPosition.height - minHeight;
+          }
+          targetWidth = originPosition.width - moveX;
+          targetHeight = originPosition.height - moveY;
+          targetLeft = originPosition.left + moveX;
+          targetTop = originPosition.top + moveY;
+        } else if (type === OperateResizeHandlers.RIGHT_TOP) {
+          if (originPosition.left + originPosition.width + moveX > bottomPosition.width) {
+            moveX = bottomPosition.width - (originPosition.left + originPosition.width);
+          }
+          if (originPosition.top + moveY < 0) {
+            moveY = -originPosition.top;
+          }
+          if (originPosition.width + moveX < minWidth) {
+            moveX = minWidth - originPosition.width;
+          }
+          if (originPosition.height - moveY < minHeight) {
+            moveY = originPosition.height - minHeight;
+          }
+          targetWidth = originPosition.width + moveX;
+          targetHeight = originPosition.height - moveY;
+          targetLeft = originPosition.left;
+          targetTop = originPosition.top + moveY;
+        } else if (type === OperateResizeHandlers.LEFT_BOTTOM) {
+          if (originPosition.left + moveX < 0) {
+            moveX = -originPosition.left;
+          }
+          if (originPosition.top + originPosition.height + moveY > bottomPosition.height) {
+            moveY = bottomPosition.height - (originPosition.top + originPosition.height);
+          }
+          if (originPosition.width - moveX < minWidth) {
+            moveX = originPosition.width - minWidth;
+          }
+          if (originPosition.height + moveY < minHeight) {
+            moveY = minHeight - originPosition.height;
+          }
+          targetWidth = originPosition.width - moveX;
+          targetHeight = originPosition.height + moveY;
+          targetLeft = originPosition.left + moveX;
+          targetTop = originPosition.top;
+        } else if (type === OperateResizeHandlers.RIGHT_BOTTOM) {
+          if (originPosition.left + originPosition.width + moveX > bottomPosition.width) {
+            moveX = bottomPosition.width - (originPosition.left + originPosition.width);
+          }
+          if (originPosition.top + originPosition.height + moveY > bottomPosition.height) {
+            moveY = bottomPosition.height - (originPosition.top + originPosition.height);
+          }
+          if (originPosition.width + moveX < minWidth) {
+            moveX = minWidth - originPosition.width;
+          }
+          if (originPosition.height + moveY < minHeight) {
+            moveY = minHeight - originPosition.height;
+          }
+          targetWidth = originPosition.width + moveX;
+          targetHeight = originPosition.height + moveY;
+          targetLeft = originPosition.left;
+          targetTop = originPosition.top;
+        } else if (type === OperateResizeHandlers.TOP) {
+          if (originPosition.top + moveY < 0) {
+            moveY = -originPosition.top;
+          }
+          if (originPosition.height - moveY < minHeight) {
+            moveY = originPosition.height - minHeight;
+          }
+          targetWidth = originPosition.width;
+          targetHeight = originPosition.height - moveY;
+          targetLeft = originPosition.left;
+          targetTop = originPosition.top + moveY;
+        } else if (type === OperateResizeHandlers.BOTTOM) {
+          if (originPosition.top + originPosition.height + moveY > bottomPosition.height) {
+            moveY = bottomPosition.height - (originPosition.top + originPosition.height);
+          }
+          if (originPosition.height + moveY < minHeight) {
+            moveY = minHeight - originPosition.height;
+          }
+          targetWidth = originPosition.width;
+          targetHeight = originPosition.height + moveY;
+          targetLeft = originPosition.left;
+          targetTop = originPosition.top;
+        } else if (type === OperateResizeHandlers.LEFT) {
+          if (originPosition.left + moveX < 0) {
+            moveX = -originPosition.left;
+          }
+          if (originPosition.width - moveX < minWidth) {
+            moveX = originPosition.width - minWidth;
+          }
+          targetWidth = originPosition.width - moveX;
+          targetHeight = originPosition.height;
+          targetLeft = originPosition.left + moveX;
+          targetTop = originPosition.top;
+        } else {
+          if (originPosition.left + originPosition.width + moveX > bottomPosition.width) {
+            moveX = bottomPosition.width - (originPosition.left + originPosition.width);
+          }
+          if (originPosition.width + moveX < minWidth) {
+            moveX = minWidth - originPosition.width;
+          }
+          targetHeight = originPosition.height;
+          targetWidth = originPosition.width + moveX;
+          targetLeft = originPosition.left;
+          targetTop = originPosition.top;
         }
-        if (originPosition.top + moveY < 0) {
-          moveY = -originPosition.top;
-        }
-        if (originPosition.width - moveX < minWidth) {
-          moveX = originPosition.width - minWidth;
-        }
-        if (originPosition.height - moveY < minHeight) {
-          moveY = originPosition.height - minHeight;
-        }
-        targetWidth = originPosition.width - moveX;
-        targetHeight = originPosition.height - moveY;
-        targetLeft = originPosition.left + moveX;
-        targetTop = originPosition.top + moveY;
-      }
-      else if (type === OperateResizeHandlers.RIGHT_TOP) {
-        if (originPosition.left + originPosition.width + moveX > bottomPosition.width) {
-          moveX = bottomPosition.width - (originPosition.left + originPosition.width);
-        }
-        if (originPosition.top + moveY < 0) {
-          moveY = -originPosition.top;
-        }
-        if (originPosition.width + moveX < minWidth) {
-          moveX = minWidth - originPosition.width;
-        }
-        if (originPosition.height - moveY < minHeight) {
-          moveY = originPosition.height - minHeight;
-        }
-        targetWidth = originPosition.width + moveX;
-        targetHeight = originPosition.height - moveY;
-        targetLeft = originPosition.left;
-        targetTop = originPosition.top + moveY;
-      }
-      else if (type === OperateResizeHandlers.LEFT_BOTTOM) {
-        if (originPosition.left + moveX < 0) {
-          moveX = -originPosition.left;
-        }
-        if (originPosition.top + originPosition.height + moveY > bottomPosition.height) {
-          moveY = bottomPosition.height - (originPosition.top + originPosition.height);
-        }
-        if (originPosition.width - moveX < minWidth) {
-          moveX = originPosition.width - minWidth;
-        }
-        if (originPosition.height + moveY < minHeight) {
-          moveY = minHeight - originPosition.height;
-        }
-        targetWidth = originPosition.width - moveX;
-        targetHeight = originPosition.height + moveY;
-        targetLeft = originPosition.left + moveX;
-        targetTop = originPosition.top;
-      }
-      else if (type === OperateResizeHandlers.RIGHT_BOTTOM) {
-        if (originPosition.left + originPosition.width + moveX > bottomPosition.width) {
-          moveX = bottomPosition.width - (originPosition.left + originPosition.width);
-        }
-        if (originPosition.top + originPosition.height + moveY > bottomPosition.height) {
-          moveY = bottomPosition.height - (originPosition.top + originPosition.height);
-        }
-        if (originPosition.width + moveX < minWidth) {
-          moveX = minWidth - originPosition.width;
-        }
-        if (originPosition.height + moveY < minHeight) {
-          moveY = minHeight - originPosition.height;
-        }
-        targetWidth = originPosition.width + moveX;
-        targetHeight = originPosition.height + moveY;
-        targetLeft = originPosition.left;
-        targetTop = originPosition.top;
-      }
-      else if (type === OperateResizeHandlers.TOP) {
-        if (originPosition.top + moveY < 0) {
-          moveY = -originPosition.top;
-        }
-        if (originPosition.height - moveY < minHeight) {
-          moveY = originPosition.height - minHeight;
-        }
-        targetWidth = originPosition.width;
-        targetHeight = originPosition.height - moveY;
-        targetLeft = originPosition.left;
-        targetTop = originPosition.top + moveY;
-      }
-      else if (type === OperateResizeHandlers.BOTTOM) {
-        if (originPosition.top + originPosition.height + moveY > bottomPosition.height) {
-          moveY = bottomPosition.height - (originPosition.top + originPosition.height);
-        }
-        if (originPosition.height + moveY < minHeight) {
-          moveY = minHeight - originPosition.height;
-        }
-        targetWidth = originPosition.width;
-        targetHeight = originPosition.height + moveY;
-        targetLeft = originPosition.left;
-        targetTop = originPosition.top;
-      }
-      else if (type === OperateResizeHandlers.LEFT) {
-        if (originPosition.left + moveX < 0) {
-          moveX = -originPosition.left;
-        }
-        if (originPosition.width - moveX < minWidth) {
-          moveX = originPosition.width - minWidth;
-        }
-        targetWidth = originPosition.width - moveX;
-        targetHeight = originPosition.height;
-        targetLeft = originPosition.left + moveX;
-        targetTop = originPosition.top;
-      }
-      else {
-        if (originPosition.left + originPosition.width + moveX > bottomPosition.width) {
-          moveX = bottomPosition.width - (originPosition.left + originPosition.width);
-        }
-        if (originPosition.width + moveX < minWidth) {
-          moveX = minWidth - originPosition.width;
-        }
-        targetHeight = originPosition.height;
-        targetWidth = originPosition.width + moveX;
-        targetLeft = originPosition.left;
-        targetTop = originPosition.top;
-      }
 
-      setTopImgWrapperPosition({
-        left: targetLeft,
-        top: targetTop,
-        width: targetWidth,
-        height: targetHeight,
-      });
-    };
+        setTopImgWrapperPosition({
+          left: targetLeft,
+          top: targetTop,
+          width: targetWidth,
+          height: targetHeight,
+        });
+      };
 
-    const handleMouseUp = () => {
-      isMouseDown = false;
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+      const handleMouseUp = () => {
+        isMouseDown = false;
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
 
-      updateRange();
+        updateRange();
 
-      setTimeout(() => setIsSettingClipRange(false), 0);
-    };
+        setTimeout(() => setIsSettingClipRange(false), 0);
+      };
 
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
-  }, [canvasScale, rotate, width, height, imgPosition, topImgWrapperPosition, ctrlOrShiftKeyActive, updateRange]);
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+    },
+    [
+      canvasScale,
+      rotate,
+      width,
+      height,
+      imgPosition,
+      topImgWrapperPosition,
+      ctrlOrShiftKeyActive,
+      updateRange,
+    ],
+  );
 
   // Rotate class name
   const rotateClassName = useMemo(() => {
@@ -536,11 +562,7 @@ export function ImageClipHandler({
             onMouseDown={(e) => scaleClipRange(e, point)}
           >
             <svg width="16" height="16" fill="#fff" stroke="#333">
-              <path
-                strokeWidth="0.3"
-                shapeRendering="crispEdges"
-                d="M 16 0 L 0 0 L 0 4 L 16 4 Z"
-              />
+              <path strokeWidth="0.3" shapeRendering="crispEdges" d="M 16 0 L 0 0 L 0 4 L 16 4 Z" />
             </svg>
           </div>
         ))}

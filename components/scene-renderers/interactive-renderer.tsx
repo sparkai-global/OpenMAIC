@@ -9,11 +9,7 @@ interface InteractiveRendererProps {
   readonly sceneId: string;
 }
 
-export function InteractiveRenderer({
-  content,
-  mode: _mode,
-  sceneId,
-}: InteractiveRendererProps) {
+export function InteractiveRenderer({ content, mode: _mode, sceneId }: InteractiveRendererProps) {
   const patchedHtml = useMemo(
     () => (content.html ? patchHtmlForIframe(content.html) : undefined),
     [content.html],

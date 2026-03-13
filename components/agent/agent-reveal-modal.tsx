@@ -153,7 +153,9 @@ export function AgentRevealModal({ agents, open, onClose, onAllRevealed }: Agent
                 >
                   <motion.div
                     className="relative size-full"
-                    style={{ transformStyle: flipsComplete ? 'flat' : 'preserve-3d' }}
+                    style={{
+                      transformStyle: flipsComplete ? 'flat' : 'preserve-3d',
+                    }}
                     animate={{ rotateY: isRevealed ? 0 : 180 }}
                     transition={{ duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
                   >
@@ -172,10 +174,7 @@ export function AgentRevealModal({ agents, open, onClose, onAllRevealed }: Agent
                         {/* Inner card body */}
                         <div className="relative flex size-full flex-col overflow-clip rounded-[14px] bg-white dark:bg-zinc-900">
                           {/* Top gradient band with texture */}
-                          <div
-                            className="relative shrink-0 overflow-hidden"
-                            style={{ height: 56 }}
-                          >
+                          <div className="relative shrink-0 overflow-hidden" style={{ height: 56 }}>
                             {/* Color gradient fill */}
                             <div
                               className="absolute inset-0"
@@ -191,10 +190,34 @@ export function AgentRevealModal({ agents, open, onClose, onAllRevealed }: Agent
                               }}
                             />
                             {/* Decorative corner accent lines */}
-                            <svg className="absolute right-0 top-0 size-16 text-white/[0.06]" viewBox="0 0 64 64">
-                              <line x1="64" y1="0" x2="0" y2="64" stroke="currentColor" strokeWidth="1" />
-                              <line x1="64" y1="16" x2="16" y2="64" stroke="currentColor" strokeWidth="1" />
-                              <line x1="64" y1="32" x2="32" y2="64" stroke="currentColor" strokeWidth="1" />
+                            <svg
+                              className="absolute right-0 top-0 size-16 text-white/[0.06]"
+                              viewBox="0 0 64 64"
+                            >
+                              <line
+                                x1="64"
+                                y1="0"
+                                x2="0"
+                                y2="64"
+                                stroke="currentColor"
+                                strokeWidth="1"
+                              />
+                              <line
+                                x1="64"
+                                y1="16"
+                                x2="16"
+                                y2="64"
+                                stroke="currentColor"
+                                strokeWidth="1"
+                              />
+                              <line
+                                x1="64"
+                                y1="32"
+                                x2="32"
+                                y2="64"
+                                stroke="currentColor"
+                                strokeWidth="1"
+                              />
                             </svg>
                           </div>
 
@@ -208,14 +231,15 @@ export function AgentRevealModal({ agents, open, onClose, onAllRevealed }: Agent
                               }}
                             >
                               {isUrl(agent.avatar) ? (
-                                 
                                 <img
                                   src={agent.avatar}
                                   alt={agent.name}
                                   className="size-full rounded-full object-cover"
                                 />
                               ) : (
-                                <span className="text-2xl">{agent.avatar || agent.name.charAt(0)}</span>
+                                <span className="text-2xl">
+                                  {agent.avatar || agent.name.charAt(0)}
+                                </span>
                               )}
                             </div>
                           </div>
@@ -242,9 +266,22 @@ export function AgentRevealModal({ agents, open, onClose, onAllRevealed }: Agent
 
                           {/* Thin ornamental divider */}
                           <div className="mx-5 mt-2 flex items-center gap-2">
-                            <div className="h-px flex-1" style={{ background: `linear-gradient(to right, transparent, ${agent.color}40, transparent)` }} />
-                            <div className="size-1 rounded-full" style={{ backgroundColor: `${agent.color}60` }} />
-                            <div className="h-px flex-1" style={{ background: `linear-gradient(to right, transparent, ${agent.color}40, transparent)` }} />
+                            <div
+                              className="h-px flex-1"
+                              style={{
+                                background: `linear-gradient(to right, transparent, ${agent.color}40, transparent)`,
+                              }}
+                            />
+                            <div
+                              className="size-1 rounded-full"
+                              style={{ backgroundColor: `${agent.color}60` }}
+                            />
+                            <div
+                              className="h-px flex-1"
+                              style={{
+                                background: `linear-gradient(to right, transparent, ${agent.color}40, transparent)`,
+                              }}
+                            />
                           </div>
 
                           {/* Persona text — fills remaining space */}
@@ -283,22 +320,35 @@ export function AgentRevealModal({ agents, open, onClose, onAllRevealed }: Agent
                         <div
                           className="relative flex size-full flex-col items-center justify-center rounded-[14px]"
                           style={{
-                            background: 'linear-gradient(145deg, #1e1b4b 0%, #312e81 40%, #1e1b4b 100%)',
+                            background:
+                              'linear-gradient(145deg, #1e1b4b 0%, #312e81 40%, #1e1b4b 100%)',
                           }}
                         >
                           {/* Decorative inner border */}
                           <div className="absolute inset-3 rounded-xl border border-white/[0.08]" />
                           {/* Diamond pattern corners */}
-                          <svg className="absolute left-3 top-3 size-5 text-white/[0.07]" viewBox="0 0 20 20">
+                          <svg
+                            className="absolute left-3 top-3 size-5 text-white/[0.07]"
+                            viewBox="0 0 20 20"
+                          >
                             <path d="M10 0 L20 10 L10 20 L0 10 Z" fill="currentColor" />
                           </svg>
-                          <svg className="absolute right-3 top-3 size-5 text-white/[0.07]" viewBox="0 0 20 20">
+                          <svg
+                            className="absolute right-3 top-3 size-5 text-white/[0.07]"
+                            viewBox="0 0 20 20"
+                          >
                             <path d="M10 0 L20 10 L10 20 L0 10 Z" fill="currentColor" />
                           </svg>
-                          <svg className="absolute bottom-3 left-3 size-5 text-white/[0.07]" viewBox="0 0 20 20">
+                          <svg
+                            className="absolute bottom-3 left-3 size-5 text-white/[0.07]"
+                            viewBox="0 0 20 20"
+                          >
                             <path d="M10 0 L20 10 L10 20 L0 10 Z" fill="currentColor" />
                           </svg>
-                          <svg className="absolute bottom-3 right-3 size-5 text-white/[0.07]" viewBox="0 0 20 20">
+                          <svg
+                            className="absolute bottom-3 right-3 size-5 text-white/[0.07]"
+                            viewBox="0 0 20 20"
+                          >
                             <path d="M10 0 L20 10 L10 20 L0 10 Z" fill="currentColor" />
                           </svg>
                           {/* Center icon */}

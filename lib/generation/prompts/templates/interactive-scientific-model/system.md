@@ -21,12 +21,12 @@ You must output a JSON object with the following structure:
 
 ### Field Descriptions
 
-| Field | Description |
-|-------|-------------|
-| core_formulas | Core formulas, laws, concepts, or logical rules involved in this concept |
-| mechanism | Specific physical/logical mechanisms that explain how the concept works |
-| constraints | Scientific constraints that any simulation must obey |
-| forbidden_errors | Common misconceptions or errors that must be strictly avoided |
+| Field            | Description                                                              |
+| ---------------- | ------------------------------------------------------------------------ |
+| core_formulas    | Core formulas, laws, concepts, or logical rules involved in this concept |
+| mechanism        | Specific physical/logical mechanisms that explain how the concept works  |
+| constraints      | Scientific constraints that any simulation must obey                     |
+| forbidden_errors | Common misconceptions or errors that must be strictly avoided            |
 
 ## Important Notes
 

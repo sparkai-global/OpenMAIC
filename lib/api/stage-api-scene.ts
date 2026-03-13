@@ -4,12 +4,9 @@
  * Factory function that creates the scene namespace of the Stage API.
  */
 
-import type {
-  Scene,
-  SceneContent,
-} from "@/lib/types/stage";
-import type { StageStore, APIResult, CreateSceneParams } from "./stage-api-types";
-import { generateId, validateSceneId, getScene, createDefaultContent } from "./stage-api-defaults";
+import type { Scene, SceneContent } from '@/lib/types/stage';
+import type { StageStore, APIResult, CreateSceneParams } from './stage-api-types';
+import { generateId, validateSceneId, getScene, createDefaultContent } from './stage-api-defaults';
 
 /**
  * Create the scene management API
@@ -37,10 +34,13 @@ export function createSceneAPI(store: StageStore) {
         const state = store.getState();
 
         if (!state.stage) {
-          return { success: false, error: "No stage set - cannot create scene without a stage" };
+          return {
+            success: false,
+            error: 'No stage set - cannot create scene without a stage',
+          };
         }
 
-        const sceneId = generateId("scene");
+        const sceneId = generateId('scene');
 
         // Determine order
         const order = params.order ?? state.scenes.length;
@@ -68,9 +68,7 @@ export function createSceneAPI(store: StageStore) {
           updatedAt: Date.now(),
         };
 
-        const newScenes = [...state.scenes, newScene].sort(
-          (a, b) => a.order - b.order,
-        );
+        const newScenes = [...state.scenes, newScene].sort((a, b) => a.order - b.order);
 
         store.setState({ scenes: newScenes });
 
@@ -129,9 +127,7 @@ export function createSceneAPI(store: StageStore) {
         }
 
         const newScenes = state.scenes.map((scene) =>
-          scene.id === sceneId
-            ? { ...scene, ...updates, updatedAt: Date.now() }
-            : scene,
+          scene.id === sceneId ? { ...scene, ...updates, updatedAt: Date.now() } : scene,
         );
 
         store.setState({ scenes: newScenes });

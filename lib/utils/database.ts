@@ -1,7 +1,13 @@
 import Dexie, { type EntityTable } from 'dexie';
 import type { Scene, SceneType, SceneContent, Whiteboard } from '@/lib/types/stage';
 import type { Action } from '@/lib/types/action';
-import type { SessionType, SessionStatus, SessionConfig, ToolCallRecord, ToolCallRequest } from '@/lib/types/chat';
+import type {
+  SessionType,
+  SessionStatus,
+  SessionConfig,
+  ToolCallRecord,
+  ToolCallRequest,
+} from '@/lib/types/chat';
 import type { SceneOutline } from '@/lib/types/generation';
 import type { UIMessage } from 'ai';
 import { createLogger } from '@/lib/logger';
@@ -70,7 +76,7 @@ export interface AudioFileRecord {
   text?: string; // Corresponding text content
   voice?: string; // Voice used
   createdAt: number;
-  ossKey?: string;        // Full CDN URL for this audio blob
+  ossKey?: string; // Full CDN URL for this audio blob
 }
 
 /**
@@ -89,12 +95,12 @@ export interface ImageFileRecord {
  * ChatSession table - Chat session data
  */
 export interface ChatSessionRecord {
-  id: string;                // PK (session id)
-  stageId: string;           // FK -> stages.id
+  id: string; // PK (session id)
+  stageId: string; // FK -> stages.id
   type: SessionType;
   title: string;
   status: SessionStatus;
-  messages: UIMessage[];     // JSON-safe serialized messages
+  messages: UIMessage[]; // JSON-safe serialized messages
   config: SessionConfig;
   toolCalls: ToolCallRecord[];
   pendingToolCalls: ToolCallRequest[];
@@ -108,7 +114,7 @@ export interface ChatSessionRecord {
  * PlaybackState table - Playback state snapshot (at most one per stage)
  */
 export interface PlaybackStateRecord {
-  stageId: string;           // PK
+  stageId: string; // PK
   sceneIndex: number;
   actionIndex: number;
   consumedDiscussions: string[];
@@ -129,19 +135,19 @@ export interface StageOutlinesRecord {
  * MediaFile table - AI-generated media files (images/videos)
  */
 export interface MediaFileRecord {
-  id: string;           // Compound key: `${stageId}:${elementId}`
-  stageId: string;      // FK → stages.id
+  id: string; // Compound key: `${stageId}:${elementId}`
+  stageId: string; // FK → stages.id
   type: 'image' | 'video';
-  blob: Blob;           // Media binary
-  mimeType: string;     // image/png, video/mp4
+  blob: Blob; // Media binary
+  mimeType: string; // image/png, video/mp4
   size: number;
-  poster?: Blob;        // Video thumbnail blob
-  prompt: string;       // Original prompt (for retry)
-  params: string;       // JSON-serialized generation params
-  error?: string;       // If set, this is a failed task (blob is empty placeholder)
-  errorCode?: string;   // Structured error code (e.g. 'CONTENT_SENSITIVE')
-  ossKey?: string;        // Full CDN URL for this media blob
-  posterOssKey?: string;  // Full CDN URL for the poster blob
+  poster?: Blob; // Video thumbnail blob
+  prompt: string; // Original prompt (for retry)
+  params: string; // JSON-serialized generation params
+  error?: string; // If set, this is a failed task (blob is empty placeholder)
+  errorCode?: string; // Structured error code (e.g. 'CONTENT_SENSITIVE')
+  ossKey?: string; // Full CDN URL for this media blob
+  posterOssKey?: string; // Full CDN URL for the poster blob
   createdAt: number;
 }
 
@@ -149,10 +155,10 @@ export interface MediaFileRecord {
  * GeneratedAgent table - AI-generated agent profiles
  */
 export interface GeneratedAgentRecord {
-  id: string;           // PK: agent ID (e.g. "gen-abc123")
-  stageId: string;      // FK -> stages.id
+  id: string; // PK: agent ID (e.g. "gen-abc123")
+  stageId: string; // FK -> stages.id
   name: string;
-  role: string;         // 'teacher' | 'assistant' | 'student'
+  role: string; // 'teacher' | 'assistant' | 'student'
   persona: string;
   avatar: string;
   color: string;
@@ -251,27 +257,29 @@ class MAICDatabase extends Dexie {
 
     // Version 6: Fix mediaFiles primary key — use compound key stageId:elementId
     // to prevent cross-course collisions (gen_img_1 is NOT globally unique)
-    this.version(6).stores({
-      stages: 'id, updatedAt',
-      scenes: 'id, stageId, order, [stageId+order]',
-      audioFiles: 'id, createdAt',
-      imageFiles: 'id, createdAt',
-      snapshots: '++id',
-      chatSessions: 'id, stageId, [stageId+createdAt]',
-      playbackState: 'stageId',
-      stageOutlines: 'stageId',
-      mediaFiles: 'id, stageId, [stageId+type]',
-    }).upgrade(async (tx) => {
-      const table = tx.table('mediaFiles');
-      const allRecords = await table.toArray();
-      for (const rec of allRecords) {
-        const newKey = `${rec.stageId}:${rec.id}`;
-        // Skip if already migrated (idempotent)
-        if (rec.id.includes(':')) continue;
-        await table.delete(rec.id);
-        await table.put({ ...rec, id: newKey });
-      }
-    });
+    this.version(6)
+      .stores({
+        stages: 'id, updatedAt',
+        scenes: 'id, stageId, order, [stageId+order]',
+        audioFiles: 'id, createdAt',
+        imageFiles: 'id, createdAt',
+        snapshots: '++id',
+        chatSessions: 'id, stageId, [stageId+createdAt]',
+        playbackState: 'stageId',
+        stageOutlines: 'stageId',
+        mediaFiles: 'id, stageId, [stageId+type]',
+      })
+      .upgrade(async (tx) => {
+        const table = tx.table('mediaFiles');
+        const allRecords = await table.toArray();
+        for (const rec of allRecords) {
+          const newKey = `${rec.stageId}:${rec.id}`;
+          // Skip if already migrated (idempotent)
+          if (rec.id.includes(':')) continue;
+          await table.delete(rec.id);
+          await table.put({ ...rec, id: newKey });
+        }
+      });
 
     // Version 7: Add ossKey fields to mediaFiles and audioFiles for OSS storage plugin
     // Non-indexed optional fields — Dexie handles these transparently.
@@ -360,12 +368,16 @@ export async function importDatabase(data: {
   chatSessions?: ChatSessionRecord[];
   playbackState?: PlaybackStateRecord[];
 }): Promise<void> {
-  await db.transaction('rw', [db.stages, db.scenes, db.chatSessions, db.playbackState], async () => {
-    if (data.stages) await db.stages.bulkPut(data.stages);
-    if (data.scenes) await db.scenes.bulkPut(data.scenes);
-    if (data.chatSessions) await db.chatSessions.bulkPut(data.chatSessions);
-    if (data.playbackState) await db.playbackState.bulkPut(data.playbackState);
-  });
+  await db.transaction(
+    'rw',
+    [db.stages, db.scenes, db.chatSessions, db.playbackState],
+    async () => {
+      if (data.stages) await db.stages.bulkPut(data.stages);
+      if (data.scenes) await db.scenes.bulkPut(data.scenes);
+      if (data.chatSessions) await db.chatSessions.bulkPut(data.chatSessions);
+      if (data.playbackState) await db.playbackState.bulkPut(data.playbackState);
+    },
+  );
   log.info('Database imported successfully');
 }
 
@@ -375,31 +387,42 @@ export async function importDatabase(data: {
  * Get all scenes for a course
  */
 export async function getScenesByStageId(stageId: string): Promise<SceneRecord[]> {
-  return db.scenes
-    .where('stageId')
-    .equals(stageId)
-    .sortBy('order');
+  return db.scenes.where('stageId').equals(stageId).sortBy('order');
 }
 
 /**
  * Delete a course and all its related data
  */
 export async function deleteStageWithRelatedData(stageId: string): Promise<void> {
-  await db.transaction('rw', [db.stages, db.scenes, db.chatSessions, db.playbackState, db.stageOutlines, db.mediaFiles, db.generatedAgents], async () => {
-    await db.stages.delete(stageId);
-    await db.scenes.where('stageId').equals(stageId).delete();
-    await db.chatSessions.where('stageId').equals(stageId).delete();
-    await db.playbackState.delete(stageId);
-    await db.stageOutlines.delete(stageId);
-    await db.mediaFiles.where('stageId').equals(stageId).delete();
-    await db.generatedAgents.where('stageId').equals(stageId).delete();
-  });
+  await db.transaction(
+    'rw',
+    [
+      db.stages,
+      db.scenes,
+      db.chatSessions,
+      db.playbackState,
+      db.stageOutlines,
+      db.mediaFiles,
+      db.generatedAgents,
+    ],
+    async () => {
+      await db.stages.delete(stageId);
+      await db.scenes.where('stageId').equals(stageId).delete();
+      await db.chatSessions.where('stageId').equals(stageId).delete();
+      await db.playbackState.delete(stageId);
+      await db.stageOutlines.delete(stageId);
+      await db.mediaFiles.where('stageId').equals(stageId).delete();
+      await db.generatedAgents.where('stageId').equals(stageId).delete();
+    },
+  );
 }
 
 /**
  * Get all generated agents for a course
  */
-export async function getGeneratedAgentsByStageId(stageId: string): Promise<GeneratedAgentRecord[]> {
+export async function getGeneratedAgentsByStageId(
+  stageId: string,
+): Promise<GeneratedAgentRecord[]> {
   return db.generatedAgents.where('stageId').equals(stageId).toArray();
 }
 

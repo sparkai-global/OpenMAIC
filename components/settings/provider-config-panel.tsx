@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useState, useCallback, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
+import { useState, useCallback, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,7 +14,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
 import {
   Loader2,
   CheckCircle2,
@@ -30,12 +30,12 @@ import {
   Wrench,
   FileText,
   Send,
-} from "lucide-react";
-import { useI18n } from "@/lib/hooks/use-i18n";
-import type { ProviderConfig } from "@/lib/ai/providers";
-import type { ProvidersConfig } from "@/lib/types/settings";
-import { formatContextWindow } from "./utils";
-import { cn } from "@/lib/utils";
+} from 'lucide-react';
+import { useI18n } from '@/lib/hooks/use-i18n';
+import type { ProviderConfig } from '@/lib/ai/providers';
+import type { ProvidersConfig } from '@/lib/types/settings';
+import { formatContextWindow } from './utils';
+import { cn } from '@/lib/utils';
 
 interface ProviderConfigPanelProps {
   provider: ProviderConfig;
@@ -43,11 +43,7 @@ interface ProviderConfigPanelProps {
   initialBaseUrl: string;
   initialRequiresApiKey: boolean;
   providersConfig: ProvidersConfig;
-  onConfigChange: (
-    apiKey: string,
-    baseUrl: string,
-    requiresApiKey: boolean
-  ) => void;
+  onConfigChange: (apiKey: string, baseUrl: string, requiresApiKey: boolean) => void;
   onSave: () => void; // Auto-save on blur
   onEditModel: (index: number) => void;
   onDeleteModel: (index: number) => void;
@@ -77,24 +73,22 @@ export function ProviderConfigPanel({
   const [baseUrl, setBaseUrl] = useState(initialBaseUrl);
   const [requiresApiKey, setRequiresApiKey] = useState(initialRequiresApiKey);
   const [showApiKey, setShowApiKey] = useState(false);
-  const [testStatus, setTestStatus] = useState<
-    "idle" | "testing" | "success" | "error"
-  >("idle");
-  const [testMessage, setTestMessage] = useState("");
+  const [testStatus, setTestStatus] = useState<'idle' | 'testing' | 'success' | 'error'>('idle');
+  const [testMessage, setTestMessage] = useState('');
   const [showResetDialog, setShowResetDialog] = useState(false);
 
   // Update local state when provider changes or initial values change
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- Sync local state from props on provider change
     setApiKey(initialApiKey);
-     
+
     setBaseUrl(initialBaseUrl);
-     
+
     setRequiresApiKey(initialRequiresApiKey);
-     
-    setTestStatus("idle");
-     
-    setTestMessage("");
+
+    setTestStatus('idle');
+
+    setTestMessage('');
   }, [provider.id, initialApiKey, initialBaseUrl, initialRequiresApiKey]);
 
   // Notify parent of changes
@@ -114,25 +108,23 @@ export function ProviderConfigPanel({
   };
 
   const handleTestApi = useCallback(async () => {
-    setTestStatus("testing");
-    setTestMessage("");
+    setTestStatus('testing');
+    setTestMessage('');
 
     const availableModels = providersConfig[provider.id]?.models || [];
 
     if (availableModels.length === 0) {
-      setTestStatus("error");
-      setTestMessage(
-        t("settings.noModelsAvailable") || "No models available for testing"
-      );
+      setTestStatus('error');
+      setTestMessage(t('settings.noModelsAvailable') || 'No models available for testing');
       return;
     }
 
     const testModelId = availableModels[0].id;
 
     try {
-      const response = await fetch("/api/verify-model", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('/api/verify-model', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           apiKey,
           baseUrl,
@@ -145,15 +137,15 @@ export function ProviderConfigPanel({
       const data = await response.json();
 
       if (data.success) {
-        setTestStatus("success");
-        setTestMessage(t("settings.connectionSuccess"));
+        setTestStatus('success');
+        setTestMessage(t('settings.connectionSuccess'));
       } else {
-        setTestStatus("error");
-        setTestMessage(data.error || t("settings.connectionFailed"));
+        setTestStatus('error');
+        setTestMessage(data.error || t('settings.connectionFailed'));
       }
     } catch (_error) {
-      setTestStatus("error");
-      setTestMessage(t("settings.connectionFailed"));
+      setTestStatus('error');
+      setTestMessage(t('settings.connectionFailed'));
     }
   }, [apiKey, baseUrl, provider.id, provider.type, requiresApiKey, providersConfig, t]);
 
@@ -165,18 +157,18 @@ export function ProviderConfigPanel({
       {/* Server-configured notice */}
       {isServerConfigured && (
         <div className="rounded-lg border border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30 p-3 text-sm text-blue-700 dark:text-blue-300">
-          {t("settings.serverConfiguredNotice")}
+          {t('settings.serverConfiguredNotice')}
         </div>
       )}
 
       {/* API Key */}
       <div className="space-y-2">
-        <Label>{t("settings.apiSecret")}</Label>
+        <Label>{t('settings.apiSecret')}</Label>
         <div className="flex gap-2">
           <div className="relative flex-1">
             <Input
-              type={showApiKey ? "text" : "password"}
-              placeholder={isServerConfigured ? t("settings.optionalOverride") : "sk-..."}
+              type={showApiKey ? 'text' : 'password'}
+              placeholder={isServerConfigured ? t('settings.optionalOverride') : 'sk-...'}
               value={apiKey}
               onChange={(e) => handleApiKeyChange(e.target.value)}
               onBlur={onSave}
@@ -189,26 +181,24 @@ export function ProviderConfigPanel({
               className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               disabled={!requiresApiKey}
             >
-              {showApiKey ? (
-                <EyeOff className="h-4 w-4" />
-              ) : (
-                <Eye className="h-4 w-4" />
-              )}
+              {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
           <Button
             variant="outline"
             size="sm"
             onClick={handleTestApi}
-            disabled={testStatus === "testing" || (requiresApiKey && !apiKey && !isServerConfigured)}
+            disabled={
+              testStatus === 'testing' || (requiresApiKey && !apiKey && !isServerConfigured)
+            }
             className="gap-1.5"
           >
-            {testStatus === "testing" ? (
+            {testStatus === 'testing' ? (
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
             ) : (
               <>
                 <Zap className="h-3.5 w-3.5" />
-                {t("settings.testConnection")}
+                {t('settings.testConnection')}
               </>
             )}
           </Button>
@@ -216,20 +206,14 @@ export function ProviderConfigPanel({
         {testMessage && (
           <div
             className={cn(
-              "rounded-lg p-3 text-sm overflow-hidden",
-              testStatus === "success" &&
-                "bg-green-50 text-green-700 border border-green-200",
-              testStatus === "error" &&
-                "bg-red-50 text-red-700 border border-red-200"
+              'rounded-lg p-3 text-sm overflow-hidden',
+              testStatus === 'success' && 'bg-green-50 text-green-700 border border-green-200',
+              testStatus === 'error' && 'bg-red-50 text-red-700 border border-red-200',
             )}
           >
             <div className="flex items-start gap-2 min-w-0">
-              {testStatus === "success" && (
-                <CheckCircle2 className="h-4 w-4 mt-0.5 shrink-0" />
-              )}
-              {testStatus === "error" && (
-                <XCircle className="h-4 w-4 mt-0.5 shrink-0" />
-              )}
+              {testStatus === 'success' && <CheckCircle2 className="h-4 w-4 mt-0.5 shrink-0" />}
+              {testStatus === 'error' && <XCircle className="h-4 w-4 mt-0.5 shrink-0" />}
               <p className="flex-1 min-w-0 break-all">{testMessage}</p>
             </div>
           </div>
@@ -247,47 +231,47 @@ export function ProviderConfigPanel({
             htmlFor={`requires-api-key-${provider.id}`}
             className="text-sm cursor-pointer text-muted-foreground"
           >
-            {t("settings.requiresApiKey")}
+            {t('settings.requiresApiKey')}
           </label>
         </div>
       </div>
 
       {/* API Host */}
       <div className="space-y-2">
-        <Label>{t("settings.apiHost")}</Label>
+        <Label>{t('settings.apiHost')}</Label>
         <Input
           type="url"
-          placeholder={provider.defaultBaseUrl || "https://api.example.com/v1"}
+          placeholder={provider.defaultBaseUrl || 'https://api.example.com/v1'}
           value={baseUrl}
           onChange={(e) => handleBaseUrlChange(e.target.value)}
           onBlur={onSave}
           className="h-8"
         />
         {(() => {
-          const effectiveBaseUrl = baseUrl || provider.defaultBaseUrl || "";
+          const effectiveBaseUrl = baseUrl || provider.defaultBaseUrl || '';
           if (!effectiveBaseUrl) return null;
 
           // Generate endpoint path based on provider type
-          let endpointPath = "";
+          let endpointPath = '';
           switch (provider.type) {
-            case "openai":
-              endpointPath = "/chat/completions";
+            case 'openai':
+              endpointPath = '/chat/completions';
               break;
-            case "anthropic":
-              endpointPath = "/messages";
+            case 'anthropic':
+              endpointPath = '/messages';
               break;
-            case "google":
-              endpointPath = "/models/[model]";
+            case 'google':
+              endpointPath = '/models/[model]';
               break;
             default:
-              endpointPath = "";
+              endpointPath = '';
           }
 
           const fullUrl = effectiveBaseUrl + endpointPath;
 
           return (
             <p className="text-xs text-muted-foreground break-all">
-              {t("settings.requestUrl")}: {fullUrl}
+              {t('settings.requestUrl')}: {fullUrl}
             </p>
           );
         })()}
@@ -296,7 +280,7 @@ export function ProviderConfigPanel({
       {/* Models - No selection state, just list for management */}
       <div className="space-y-3">
         <div className="flex items-center justify-between flex-wrap gap-2">
-          <Label className="text-base">{t("settings.models")}</Label>
+          <Label className="text-base">{t('settings.models')}</Label>
           <div className="flex items-center gap-2 flex-wrap">
             {isBuiltIn && onResetToDefault && (
               <Button
@@ -306,23 +290,16 @@ export function ProviderConfigPanel({
                 className="gap-1.5"
               >
                 <RotateCcw className="h-3.5 w-3.5" />
-                {t("settings.reset")}
+                {t('settings.reset')}
               </Button>
             )}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onAddModel}
-              className="gap-1.5"
-            >
+            <Button variant="outline" size="sm" onClick={onAddModel} className="gap-1.5">
               <Plus className="h-3.5 w-3.5" />
-              {t("settings.addNewModel")}
+              {t('settings.addNewModel')}
             </Button>
           </div>
         </div>
-        <p className="text-xs text-muted-foreground">
-          {t("settings.modelsManagementDescription")}
-        </p>
+        <p className="text-xs text-muted-foreground">{t('settings.modelsManagementDescription')}</p>
 
         <div className="space-y-1.5">
           {models.map((model, index) => {
@@ -332,24 +309,22 @@ export function ProviderConfigPanel({
                 className="flex items-center justify-between p-3 rounded-lg border border-border/50 bg-card"
               >
                 <div className="flex-1">
-                  <div className="font-mono text-sm font-medium mb-1.5">
-                    {model.name}
-                  </div>
+                  <div className="font-mono text-sm font-medium mb-1.5">{model.name}</div>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     {/* Capabilities */}
                     <div className="flex items-center gap-1">
                       {model.capabilities?.vision && (
-                        <div title={t("settings.capabilities.vision")}>
+                        <div title={t('settings.capabilities.vision')}>
                           <Sparkles className="h-3 w-3" />
                         </div>
                       )}
                       {model.capabilities?.tools && (
-                        <div title={t("settings.capabilities.tools")}>
+                        <div title={t('settings.capabilities.tools')}>
                           <Wrench className="h-3 w-3" />
                         </div>
                       )}
                       {model.capabilities?.streaming && (
-                        <div title={t("settings.capabilities.streaming")}>
+                        <div title={t('settings.capabilities.streaming')}>
                           <Zap className="h-3 w-3" />
                         </div>
                       )}
@@ -382,7 +357,7 @@ export function ProviderConfigPanel({
                     size="sm"
                     className="h-8 px-2"
                     onClick={() => onEditModel(index)}
-                    title={t("settings.editModel")}
+                    title={t('settings.editModel')}
                   >
                     <Settings2 className="h-3.5 w-3.5" />
                   </Button>
@@ -391,7 +366,7 @@ export function ProviderConfigPanel({
                     size="sm"
                     className="h-8 px-2 text-destructive hover:text-destructive hover:bg-destructive/10"
                     onClick={() => onDeleteModel(index)}
-                    title={t("settings.deleteModel")}
+                    title={t('settings.deleteModel')}
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </Button>
@@ -406,20 +381,18 @@ export function ProviderConfigPanel({
       <AlertDialog open={showResetDialog} onOpenChange={setShowResetDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t("settings.resetToDefault")}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t("settings.resetConfirmDescription")}
-            </AlertDialogDescription>
+            <AlertDialogTitle>{t('settings.resetToDefault')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('settings.resetConfirmDescription')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t("settings.cancelEdit")}</AlertDialogCancel>
+            <AlertDialogCancel>{t('settings.cancelEdit')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 setShowResetDialog(false);
                 onResetToDefault?.();
               }}
             >
-              {t("settings.confirmReset")}
+              {t('settings.confirmReset')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

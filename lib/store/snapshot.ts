@@ -100,7 +100,7 @@ export const useSnapshotStore = create<SnapshotState>((set, get) => ({
     if (snapshotLength >= 2) {
       const currentSceneIndex = stageStore.getSceneIndex(stageStore.currentSceneId || '');
       await db.snapshots.update(allKeys[snapshotLength - 2] as number, {
-        index: currentSceneIndex
+        index: currentSceneIndex,
       });
     }
 

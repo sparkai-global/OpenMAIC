@@ -20,8 +20,7 @@ export const IMAGE_PROVIDERS: Record<ImageProviderId, ImageProviderConfig> = {
     requiresApiKey: true,
     defaultBaseUrl: 'https://ark.cn-beijing.volces.com',
     models: [
-      { id: 'doubao-seedream-5-0-260128', name: 'Seedream 5.0' },
-      { id: 'doubao-seedream-5-0-lite-260128', name: 'Seedream 5.0 Lite' },
+      { id: 'doubao-seedream-5-0-260128', name: 'Seedream 5.0 Lite' },
       { id: 'doubao-seedream-4-5-251128', name: 'Seedream 4.5' },
       { id: 'doubao-seedream-4-0-250828', name: 'Seedream 4.0' },
       { id: 'doubao-seedream-3-0-t2i-250415', name: 'Seedream 3.0' },
@@ -37,7 +36,10 @@ export const IMAGE_PROVIDERS: Record<ImageProviderId, ImageProviderConfig> = {
       { id: 'qwen-image-max', name: 'Qwen Image Max' },
       { id: 'qwen-image-max-2025-12-30', name: 'Qwen Image Max (2025-12-30)' },
       { id: 'qwen-image-plus', name: 'Qwen Image Plus' },
-      { id: 'qwen-image-plus-2026-01-09', name: 'Qwen Image Plus (2026-01-09)' },
+      {
+        id: 'qwen-image-plus-2026-01-09',
+        name: 'Qwen Image Plus (2026-01-09)',
+      },
       { id: 'qwen-image', name: 'Qwen Image' },
       { id: 'z-image-turbo', name: 'Z-Image Turbo' },
     ],
@@ -49,16 +51,25 @@ export const IMAGE_PROVIDERS: Record<ImageProviderId, ImageProviderConfig> = {
     requiresApiKey: true,
     defaultBaseUrl: 'https://generativelanguage.googleapis.com',
     models: [
-      { id: 'gemini-3.1-flash-image-preview', name: 'Gemini 3.1 Flash Image (Nano Banana 2)' },
-      { id: 'gemini-3-pro-image-preview', name: 'Gemini 3 Pro Image (Nano Banana Pro)' },
-      { id: 'gemini-2.5-flash-image', name: 'Gemini 2.5 Flash Image (Nano Banana)' },
+      {
+        id: 'gemini-3.1-flash-image-preview',
+        name: 'Gemini 3.1 Flash Image (Nano Banana 2)',
+      },
+      {
+        id: 'gemini-3-pro-image-preview',
+        name: 'Gemini 3 Pro Image (Nano Banana Pro)',
+      },
+      {
+        id: 'gemini-2.5-flash-image',
+        name: 'Gemini 2.5 Flash Image (Nano Banana)',
+      },
     ],
     supportedAspectRatios: ['16:9', '4:3', '1:1'],
   },
 };
 
 export async function testImageConnectivity(
-  config: ImageGenerationConfig
+  config: ImageGenerationConfig,
 ): Promise<{ success: boolean; message: string }> {
   switch (config.providerId) {
     case 'seedream':
@@ -68,13 +79,16 @@ export async function testImageConnectivity(
     case 'nano-banana':
       return testNanoBananaConnectivity(config);
     default:
-      return { success: false, message: `Unsupported image provider: ${config.providerId}` };
+      return {
+        success: false,
+        message: `Unsupported image provider: ${config.providerId}`,
+      };
   }
 }
 
 export async function generateImage(
   config: ImageGenerationConfig,
-  options: ImageGenerationOptions
+  options: ImageGenerationOptions,
 ): Promise<ImageGenerationResult> {
   switch (config.providerId) {
     case 'seedream':
@@ -90,7 +104,7 @@ export async function generateImage(
 
 export function aspectRatioToDimensions(
   ratio: string,
-  maxWidth = 1024
+  maxWidth = 1024,
 ): { width: number; height: number } {
   const [w, h] = ratio.split(':').map(Number);
   if (!w || !h) return { width: maxWidth, height: Math.round((maxWidth * 9) / 16) };

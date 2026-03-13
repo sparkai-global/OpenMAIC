@@ -1,30 +1,35 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { ArrowLeft } from 'lucide-react'
-import type { PBLProjectConfig } from '@/lib/pbl/types'
-import { IssueboardPanel } from './issueboard-panel'
-import { ChatPanel } from './chat-panel'
-import { usePBLChat } from './use-pbl-chat'
-import { PBLGuidePanel } from './guide'
-import { useI18n } from '@/lib/hooks/use-i18n'
+import { useState } from 'react';
+import { ArrowLeft } from 'lucide-react';
+import type { PBLProjectConfig } from '@/lib/pbl/types';
+import { IssueboardPanel } from './issueboard-panel';
+import { ChatPanel } from './chat-panel';
+import { usePBLChat } from './use-pbl-chat';
+import { PBLGuidePanel } from './guide';
+import { useI18n } from '@/lib/hooks/use-i18n';
 
 interface PBLWorkspaceProps {
-  readonly projectConfig: PBLProjectConfig
-  readonly userRole: string
-  readonly onConfigUpdate: (config: PBLProjectConfig) => void
-  readonly onReset: () => void
+  readonly projectConfig: PBLProjectConfig;
+  readonly userRole: string;
+  readonly onConfigUpdate: (config: PBLProjectConfig) => void;
+  readonly onReset: () => void;
 }
 
-export function PBLWorkspace({ projectConfig, userRole, onConfigUpdate, onReset }: PBLWorkspaceProps) {
-  const { t } = useI18n()
-  const [showConfirm, setShowConfirm] = useState(false)
+export function PBLWorkspace({
+  projectConfig,
+  userRole,
+  onConfigUpdate,
+  onReset,
+}: PBLWorkspaceProps) {
+  const { t } = useI18n();
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const { messages, isLoading, sendMessage, currentIssue } = usePBLChat({
     projectConfig,
     userRole,
     onConfigUpdate,
-  })
+  });
 
   return (
     <div className="flex h-full w-full">
@@ -49,7 +54,10 @@ export function PBLWorkspace({ projectConfig, userRole, onConfigUpdate, onReset 
             <div className="flex items-center gap-1.5 text-xs">
               <span className="text-muted-foreground">{t('pbl.workspace.confirmRestart')}</span>
               <button
-                onClick={() => { setShowConfirm(false); onReset() }}
+                onClick={() => {
+                  setShowConfirm(false);
+                  onReset();
+                }}
                 className="px-2 py-0.5 rounded bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors"
               >
                 {t('pbl.workspace.confirm')}
@@ -80,5 +88,5 @@ export function PBLWorkspace({ projectConfig, userRole, onConfigUpdate, onReset 
         />
       </div>
     </div>
-  )
+  );
 }

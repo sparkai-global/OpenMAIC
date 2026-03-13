@@ -37,16 +37,14 @@ import { VisuallyHidden } from 'radix-ui';
  * Combines sidebar (scene navigation) and content area (scene viewer).
  * Supports two modes: autonomous and playback.
  */
-export function Stage({ onRetryOutline }: { onRetryOutline?: (outlineId: string) => Promise<void> }) {
+export function Stage({
+  onRetryOutline,
+}: {
+  onRetryOutline?: (outlineId: string) => Promise<void>;
+}) {
   const { t } = useI18n();
-  const {
-    mode,
-    getCurrentScene,
-    scenes,
-    currentSceneId,
-    setCurrentSceneId,
-    generatingOutlines,
-  } = useStageStore();
+  const { mode, getCurrentScene, scenes, currentSceneId, setCurrentSceneId, generatingOutlines } =
+    useStageStore();
   const failedOutlines = useStageStore.use.failedOutlines();
 
   const currentScene = getCurrentScene();
@@ -61,9 +59,9 @@ export function Stage({ onRetryOutline }: { onRetryOutline?: (outlineId: string)
 
   // PlaybackEngine state
   const [engineMode, setEngineMode] = useState<EngineMode>('idle');
-  const [playbackCompleted, setPlaybackCompleted] = useState(false);  // Distinguishes "never played" idle from "finished" idle
-  const [lectureSpeech, setLectureSpeech] = useState<string | null>(null);  // From PlaybackEngine (lecture)
-  const [liveSpeech, setLiveSpeech] = useState<string | null>(null);         // From buffer (discussion/QA)
+  const [playbackCompleted, setPlaybackCompleted] = useState(false); // Distinguishes "never played" idle from "finished" idle
+  const [lectureSpeech, setLectureSpeech] = useState<string | null>(null); // From PlaybackEngine (lecture)
+  const [liveSpeech, setLiveSpeech] = useState<string | null>(null); // From buffer (discussion/QA)
   const [speechProgress, setSpeechProgress] = useState<number | null>(null); // StreamBuffer reveal progress (0–1)
   const [discussionTrigger, setDiscussionTrigger] = useState<TriggerEvent | null>(null);
 
@@ -71,7 +69,10 @@ export function Stage({ onRetryOutline }: { onRetryOutline?: (outlineId: string)
   const [speakingAgentId, setSpeakingAgentId] = useState<string | null>(null);
 
   // Thinking state (Issue 5)
-  const [thinkingState, setThinkingState] = useState<{ stage: string; agentId?: string } | null>(null);
+  const [thinkingState, setThinkingState] = useState<{
+    stage: string;
+    agentId?: string;
+  } | null>(null);
 
   // Cue user state (Issue 7)
   const [isCueUser, setIsCueUser] = useState(false);
@@ -103,20 +104,20 @@ export function Stage({ onRetryOutline }: { onRetryOutline?: (outlineId: string)
   // Generate participants from selected agents
   const participants = useMemo(
     () => agentsToParticipants(selectedAgentIds, t),
-    [selectedAgentIds, t]
+    [selectedAgentIds, t],
   );
 
   // Pick a student agent for discussion trigger (prioritize student > non-teacher > fallback)
   const pickStudentAgent = useCallback((): string => {
     const registry = useAgentRegistry.getState();
     const agents = selectedAgentIds
-      .map(id => registry.getAgent(id))
+      .map((id) => registry.getAgent(id))
       .filter((a): a is AgentConfig => a != null);
-    const students = agents.filter(a => a.role === 'student');
+    const students = agents.filter((a) => a.role === 'student');
     if (students.length > 0) {
       return students[Math.floor(Math.random() * students.length)].id;
     }
-    const nonTeachers = agents.filter(a => a.role !== 'teacher');
+    const nonTeachers = agents.filter((a) => a.role !== 'teacher');
     if (nonTeachers.length > 0) {
       return nonTeachers[Math.floor(Math.random() * nonTeachers.length)].id;
     }
@@ -149,7 +150,7 @@ export function Stage({ onRetryOutline }: { onRetryOutline?: (outlineId: string)
     // Only annotate when there's actual text being interrupted — during pure
     // director-thinking (prev is null, no agent assigned), leave liveSpeech
     // as-is so no spurious teacher bubble appears.
-    setLiveSpeech(prev => prev !== null ? prev + '...' : null);
+    setLiveSpeech((prev) => (prev !== null ? prev + '...' : null));
     // Keep speakingAgentId — bubble identity is preserved
     setThinkingState(null);
     setChatIsStreaming(false);
@@ -219,9 +220,14 @@ export function Stage({ onRetryOutline }: { onRetryOutline?: (outlineId: string)
     resetLiveState();
   }, [chatSessionType, resetLiveState]);
 
+  // Shared stop-discussion handler (used by both Roundtable and Canvas toolbar)
+  const handleStopDiscussion = useCallback(async () => {
+    await chatAreaRef.current?.endActiveSession();
+    doSessionCleanup();
+  }, [doSessionCleanup]);
+
   // Initialize playback engine when scene changes
   useEffect(() => {
-     
     // Bump epoch so any stale SSE callbacks from the previous scene are discarded
     sceneEpochRef.current++;
 
@@ -242,7 +248,7 @@ export function Stage({ onRetryOutline }: { onRetryOutline?: (outlineId: string)
     if (!currentScene || !currentScene.actions || currentScene.actions.length === 0) {
       engineRef.current = null;
       setEngineMode('idle');
-       
+
       return;
     }
 
@@ -250,7 +256,6 @@ export function Stage({ onRetryOutline }: { onRetryOutline?: (outlineId: string)
     if (engineRef.current) {
       engineRef.current.stop();
     }
-     
 
     // Create ActionEngine for playback (with audioPlayer for TTS)
     const actionEngine = new ActionEngine(useStageStore, audioPlayerRef.current);
@@ -273,7 +278,7 @@ export function Stage({ onRetryOutline }: { onRetryOutline?: (outlineId: string)
           chatAreaRef.current?.addLectureMessage(
             lectureSessionIdRef.current,
             { id: speechId, type: 'speech', text } as Action,
-            idx
+            idx,
           );
           // Track active bubble for highlight (Issue 8)
           const msgId = chatAreaRef.current?.getLectureMessageId(lectureSessionIdRef.current!);
@@ -288,12 +293,19 @@ export function Stage({ onRetryOutline }: { onRetryOutline?: (outlineId: string)
       },
       onEffectFire: (effect: Effect) => {
         // Add to lecture session with incrementing index
-        if (lectureSessionIdRef.current && (effect.kind === 'spotlight' || effect.kind === 'laser')) {
+        if (
+          lectureSessionIdRef.current &&
+          (effect.kind === 'spotlight' || effect.kind === 'laser')
+        ) {
           const idx = lectureActionCounterRef.current++;
           chatAreaRef.current?.addLectureMessage(
             lectureSessionIdRef.current,
-            { id: `${effect.kind}-${Date.now()}`, type: effect.kind, elementId: effect.targetId } as Action,
-            idx
+            {
+              id: `${effect.kind}-${Date.now()}`,
+              type: effect.kind,
+              elementId: effect.targetId,
+            } as Action,
+            idx,
           );
         }
       },
@@ -364,7 +376,11 @@ export function Stage({ onRetryOutline }: { onRetryOutline?: (outlineId: string)
             const idx = allScenes.findIndex((s) => s.id === curId);
             if (idx >= 0 && idx < allScenes.length - 1) {
               const currentScene = allScenes[idx];
-              if (currentScene.type === 'quiz' || currentScene.type === 'interactive' || currentScene.type === 'pbl') {
+              if (
+                currentScene.type === 'quiz' ||
+                currentScene.type === 'interactive' ||
+                currentScene.type === 'pbl'
+              ) {
                 return;
               }
               autoStartRef.current = true;
@@ -372,7 +388,11 @@ export function Stage({ onRetryOutline }: { onRetryOutline?: (outlineId: string)
             } else if (idx === allScenes.length - 1 && stageState.generatingOutlines.length > 0) {
               // Last scene exhausted but next is still generating — go to pending page
               const currentScene = allScenes[idx];
-              if (currentScene.type === 'quiz' || currentScene.type === 'interactive' || currentScene.type === 'pbl') {
+              if (
+                currentScene.type === 'quiz' ||
+                currentScene.type === 'interactive' ||
+                currentScene.type === 'pbl'
+              ) {
                 return;
               }
               autoStartRef.current = true;
@@ -399,7 +419,7 @@ export function Stage({ onRetryOutline }: { onRetryOutline?: (outlineId: string)
     } else {
       // Load saved playback state and restore position (but never auto-play).
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- Only re-run when scene changes, functions are stable refs
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- Only re-run when scene changes, functions are stable refs
   }, [currentScene]);
 
   // Cleanup on unmount
@@ -439,30 +459,29 @@ export function Stage({ onRetryOutline }: { onRetryOutline?: (outlineId: string)
   /**
    * Handle discussion SSE — POST /api/chat and push events to engine
    */
-  const handleDiscussionSSE = useCallback(async (
-    topic: string,
-    prompt?: string,
-    agentId?: string
-  ) => {
-    // Start discussion display in ChatArea (lecture speech is preserved independently)
-    chatAreaRef.current?.startDiscussion({
-      topic,
-      prompt,
-      agentId: agentId || 'default-1',
-    });
-    // Auto-switch to chat tab when discussion starts
-    chatAreaRef.current?.switchToTab('chat');
-    // Immediately mark streaming for synchronized stop button
-    setChatIsStreaming(true);
-    setChatSessionType('discussion');
-    // Optimistic thinking: show thinking dots immediately (same as onMessageSend)
-    setThinkingState({ stage: 'director' });
-  }, []);
+  const handleDiscussionSSE = useCallback(
+    async (topic: string, prompt?: string, agentId?: string) => {
+      // Start discussion display in ChatArea (lecture speech is preserved independently)
+      chatAreaRef.current?.startDiscussion({
+        topic,
+        prompt,
+        agentId: agentId || 'default-1',
+      });
+      // Auto-switch to chat tab when discussion starts
+      chatAreaRef.current?.switchToTab('chat');
+      // Immediately mark streaming for synchronized stop button
+      setChatIsStreaming(true);
+      setChatSessionType('discussion');
+      // Optimistic thinking: show thinking dots immediately (same as onMessageSend)
+      setThinkingState({ stage: 'director' });
+    },
+    [],
+  );
 
   // First speech text for idle display (extracted here for playbackView)
   const firstSpeechText = useMemo(
-    () => (currentScene?.actions?.find((a): a is SpeechAction => a.type === 'speech'))?.text ?? null,
-    [currentScene]
+    () => currentScene?.actions?.find((a): a is SpeechAction => a.type === 'speech')?.text ?? null,
+    [currentScene],
   );
 
   // Whether the speaking agent is a student (for bubble role derivation)
@@ -473,26 +492,39 @@ export function Stage({ onRetryOutline }: { onRetryOutline?: (outlineId: string)
   }, [speakingAgentId]);
 
   // Centralised derived playback view
-  const playbackView = useMemo(() => computePlaybackView({
-    engineMode,
-    lectureSpeech,
-    liveSpeech,
-    speakingAgentId,
-    thinkingState,
-    isCueUser,
-    isTopicPending,
-    chatIsStreaming,
-    discussionTrigger,
-    playbackCompleted,
-    idleText: firstSpeechText,
-    speakingStudent: speakingStudentFlag,
-    sessionType: chatSessionType,
-  }), [
-    engineMode, lectureSpeech, liveSpeech, speakingAgentId,
-    thinkingState, isCueUser, isTopicPending, chatIsStreaming,
-    discussionTrigger, playbackCompleted, firstSpeechText, speakingStudentFlag,
-    chatSessionType,
-  ]);
+  const playbackView = useMemo(
+    () =>
+      computePlaybackView({
+        engineMode,
+        lectureSpeech,
+        liveSpeech,
+        speakingAgentId,
+        thinkingState,
+        isCueUser,
+        isTopicPending,
+        chatIsStreaming,
+        discussionTrigger,
+        playbackCompleted,
+        idleText: firstSpeechText,
+        speakingStudent: speakingStudentFlag,
+        sessionType: chatSessionType,
+      }),
+    [
+      engineMode,
+      lectureSpeech,
+      liveSpeech,
+      speakingAgentId,
+      thinkingState,
+      isCueUser,
+      isTopicPending,
+      chatIsStreaming,
+      discussionTrigger,
+      playbackCompleted,
+      firstSpeechText,
+      speakingStudentFlag,
+      chatSessionType,
+    ],
+  );
 
   const isTopicActive = playbackView.isTopicActive;
 
@@ -500,15 +532,18 @@ export function Stage({ onRetryOutline }: { onRetryOutline?: (outlineId: string)
    * Gated scene switch — if a topic is active, show AlertDialog before switching.
    * Returns true if the switch was immediate, false if gated (dialog shown).
    */
-  const gatedSceneSwitch = useCallback((targetSceneId: string): boolean => {
-    if (targetSceneId === currentSceneId) return false;
-    if (isTopicActive) {
-      setPendingSceneId(targetSceneId);
-      return false;
-    }
-    setCurrentSceneId(targetSceneId);
-    return true;
-  }, [currentSceneId, isTopicActive, setCurrentSceneId]);
+  const gatedSceneSwitch = useCallback(
+    (targetSceneId: string): boolean => {
+      if (targetSceneId === currentSceneId) return false;
+      if (isTopicActive) {
+        setPendingSceneId(targetSceneId);
+        return false;
+      }
+      setCurrentSceneId(targetSceneId);
+      return true;
+    },
+    [currentSceneId, isTopicActive, setCurrentSceneId],
+  );
 
   /** User confirmed scene switch via AlertDialog */
   const confirmSceneSwitch = useCallback(() => {
@@ -561,12 +596,40 @@ export function Stage({ onRetryOutline }: { onRetryOutline?: (outlineId: string)
     }
   };
 
+  // previous scene (gated)
+  const handlePreviousScene = () => {
+    if (isPendingScene) {
+      // From pending page → go to last real scene
+      if (scenes.length > 0) {
+        gatedSceneSwitch(scenes[scenes.length - 1].id);
+      }
+      return;
+    }
+    const currentIndex = scenes.findIndex((s) => s.id === currentSceneId);
+    if (currentIndex > 0) {
+      gatedSceneSwitch(scenes[currentIndex - 1].id);
+    }
+  };
+
+  // next scene (gated)
+  const handleNextScene = () => {
+    if (isPendingScene) return; // Already on pending, nowhere to go
+    const currentIndex = scenes.findIndex((s) => s.id === currentSceneId);
+    if (currentIndex < scenes.length - 1) {
+      gatedSceneSwitch(scenes[currentIndex + 1].id);
+    } else if (hasNextPending) {
+      // On last real scene → advance to pending page
+      setCurrentSceneId(PENDING_SCENE_ID);
+    }
+  };
 
   // get scene information
   const isPendingScene = currentSceneId === PENDING_SCENE_ID;
+  const hasNextPending = generatingOutlines.length > 0;
   const currentSceneIndex = isPendingScene
     ? scenes.length
     : scenes.findIndex((s) => s.id === currentSceneId);
+  const totalScenesCount = scenes.length + (hasNextPending ? 1 : 0);
 
   // get action information
   const totalActions = currentScene?.actions?.length || 0;
@@ -612,7 +675,12 @@ export function Stage({ onRetryOutline }: { onRetryOutline?: (outlineId: string)
   return (
     <div className="flex-1 flex overflow-hidden bg-gray-50 dark:bg-gray-900">
       {/* Scene Sidebar */}
-      <SceneSidebar collapsed={sidebarCollapsed} onCollapseChange={setSidebarCollapsed} onSceneSelect={gatedSceneSwitch} onRetryOutline={onRetryOutline} />
+      <SceneSidebar
+        collapsed={sidebarCollapsed}
+        onCollapseChange={setSidebarCollapsed}
+        onSceneSelect={gatedSceneSwitch}
+        onRetryOutline={onRetryOutline}
+      />
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col overflow-hidden min-w-0 relative">
@@ -630,15 +698,36 @@ export function Stage({ onRetryOutline }: { onRetryOutline?: (outlineId: string)
           <CanvasArea
             currentScene={currentScene}
             currentSceneIndex={currentSceneIndex}
+            scenesCount={totalScenesCount}
             mode={mode}
             engineState={canvasEngineState}
-            isLiveSession={chatIsStreaming || isTopicPending || engineMode === 'live' || !!chatSessionType}
+            isLiveSession={
+              chatIsStreaming || isTopicPending || engineMode === 'live' || !!chatSessionType
+            }
             whiteboardOpen={whiteboardOpen}
+            sidebarCollapsed={sidebarCollapsed}
+            chatCollapsed={chatAreaCollapsed}
+            onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
+            onToggleChat={() => setChatAreaCollapsed(!chatAreaCollapsed)}
+            onPrevSlide={handlePreviousScene}
+            onNextSlide={handleNextScene}
             onPlayPause={handlePlayPause}
             onWhiteboardClose={handleWhiteboardToggle}
+            showStopDiscussion={
+              engineMode === 'live' ||
+              (chatIsStreaming && (chatSessionType === 'qa' || chatSessionType === 'discussion'))
+            }
+            onStopDiscussion={handleStopDiscussion}
+            hideToolbar={mode === 'playback'}
             isPendingScene={isPendingScene}
-            isGenerationFailed={isPendingScene && failedOutlines.some(f => f.id === generatingOutlines[0]?.id)}
-            onRetryGeneration={onRetryOutline && generatingOutlines[0] ? () => onRetryOutline(generatingOutlines[0].id) : undefined}
+            isGenerationFailed={
+              isPendingScene && failedOutlines.some((f) => f.id === generatingOutlines[0]?.id)
+            }
+            onRetryGeneration={
+              onRetryOutline && generatingOutlines[0]
+                ? () => onRetryOutline(generatingOutlines[0].id)
+                : undefined
+            }
           />
         </div>
 
@@ -655,7 +744,13 @@ export function Stage({ onRetryOutline }: { onRetryOutline?: (outlineId: string)
             discussionRequest={discussionRequest}
             engineMode={engineMode}
             isStreaming={chatIsStreaming}
-            sessionType={chatSessionType === 'qa' ? 'qa' : chatSessionType === 'discussion' ? 'discussion' : undefined}
+            sessionType={
+              chatSessionType === 'qa'
+                ? 'qa'
+                : chatSessionType === 'discussion'
+                  ? 'discussion'
+                  : undefined
+            }
             speakingAgentId={speakingAgentId}
             speechProgress={speechProgress}
             showEndFlash={showEndFlash}
@@ -676,7 +771,10 @@ export function Stage({ onRetryOutline }: { onRetryOutline?: (outlineId: string)
               // Include 'paused' because onInputActivate pauses the engine before
               // the user finishes typing — without this the interrupt position
               // would never be saved and resuming after QA skips to the next sentence.
-              if (engineRef.current && (engineMode === 'playing' || engineMode === 'live' || engineMode === 'paused')) {
+              if (
+                engineRef.current &&
+                (engineMode === 'playing' || engineMode === 'live' || engineMode === 'paused')
+              ) {
                 engineRef.current.handleUserInterrupt(msg);
               } else {
                 chatAreaRef.current?.sendMessage(msg);
@@ -700,6 +798,7 @@ export function Stage({ onRetryOutline }: { onRetryOutline?: (outlineId: string)
               // User clicks "Skip" on ProactiveCard
               engineRef.current?.skipDiscussion();
             }}
+            onStopDiscussion={handleStopDiscussion}
             onInputActivate={async () => {
               // Soft-pause QA/Discussion if streaming (opening input = implicit pause)
               if (chatIsStreaming) {
@@ -714,6 +813,17 @@ export function Stage({ onRetryOutline }: { onRetryOutline?: (outlineId: string)
             onResumeTopic={doResumeTopic}
             onPlayPause={handlePlayPause}
             totalActions={totalActions}
+            currentActionIndex={0}
+            currentSceneIndex={currentSceneIndex}
+            scenesCount={totalScenesCount}
+            whiteboardOpen={whiteboardOpen}
+            sidebarCollapsed={sidebarCollapsed}
+            chatCollapsed={chatAreaCollapsed}
+            onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
+            onToggleChat={() => setChatAreaCollapsed(!chatAreaCollapsed)}
+            onPrevSlide={handlePreviousScene}
+            onNextSlide={handleNextScene}
+            onWhiteboardClose={handleWhiteboardToggle}
           />
         )}
       </div>
@@ -771,9 +881,16 @@ export function Stage({ onRetryOutline }: { onRetryOutline?: (outlineId: string)
       />
 
       {/* Scene switch confirmation dialog */}
-      <AlertDialog open={!!pendingSceneId} onOpenChange={(open) => { if (!open) cancelSceneSwitch(); }}>
+      <AlertDialog
+        open={!!pendingSceneId}
+        onOpenChange={(open) => {
+          if (!open) cancelSceneSwitch();
+        }}
+      >
         <AlertDialogContent className="max-w-sm rounded-2xl p-0 overflow-hidden border-0 shadow-[0_25px_60px_-12px_rgba(0,0,0,0.15)] dark:shadow-[0_25px_60px_-12px_rgba(0,0,0,0.5)]">
-          <VisuallyHidden.Root><AlertDialogTitle>{t('stage.confirmSwitchTitle')}</AlertDialogTitle></VisuallyHidden.Root>
+          <VisuallyHidden.Root>
+            <AlertDialogTitle>{t('stage.confirmSwitchTitle')}</AlertDialogTitle>
+          </VisuallyHidden.Root>
           {/* Top accent bar */}
           <div className="h-1 bg-gradient-to-r from-amber-400 via-orange-400 to-red-400" />
 
@@ -793,10 +910,7 @@ export function Stage({ onRetryOutline }: { onRetryOutline?: (outlineId: string)
           </div>
 
           <AlertDialogFooter className="px-6 pb-5 pt-3 flex-row gap-3">
-            <AlertDialogCancel
-              onClick={cancelSceneSwitch}
-              className="flex-1 rounded-xl"
-            >
+            <AlertDialogCancel onClick={cancelSceneSwitch} className="flex-1 rounded-xl">
               {t('common.cancel')}
             </AlertDialogCancel>
             <AlertDialogAction

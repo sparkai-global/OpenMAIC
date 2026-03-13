@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef } from 'react';
 import {
   Check,
   Search,
@@ -13,14 +13,14 @@ import {
   XCircle,
   FileText,
   Send,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
-import { useI18n } from "@/lib/hooks/use-i18n";
-import type { ProviderId } from "@/lib/ai/providers";
-import type { ProvidersConfig } from "@/lib/types/settings";
-import { formatContextWindow } from "./utils";
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
+import { useI18n } from '@/lib/hooks/use-i18n';
+import type { ProviderId } from '@/lib/ai/providers';
+import type { ProvidersConfig } from '@/lib/types/settings';
+import { formatContextWindow } from './utils';
 
 interface ModelSelectorProps {
   providerId: ProviderId;
@@ -37,12 +37,10 @@ export function ModelSelector({
 }: ModelSelectorProps) {
   const { t } = useI18n();
   const [activeProvider, setActiveProvider] = useState<ProviderId>(providerId);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [searchExpanded, setSearchExpanded] = useState(false);
-  const [testStatus, setTestStatus] = useState<
-    "idle" | "testing" | "success" | "error"
-  >("idle");
-  const [testMessage, setTestMessage] = useState("");
+  const [testStatus, setTestStatus] = useState<'idle' | 'testing' | 'success' | 'error'>('idle');
+  const [testMessage, setTestMessage] = useState('');
   const [testingModelId, setTestingModelId] = useState<string | null>(null);
   const selectedModelRef = useRef<HTMLButtonElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -57,12 +55,12 @@ export function ModelSelector({
 
   // Helper function for model count with proper plural form
   const getModelCountText = (count: number) => {
-    const key = count === 1 ? "settings.modelSingular" : "settings.modelCount";
+    const key = count === 1 ? 'settings.modelSingular' : 'settings.modelCount';
     return `${count} ${t(key)}`;
   };
 
   const getFilteredModelCountText = (filtered: number, total: number) => {
-    const key = total === 1 ? "settings.modelSingular" : "settings.modelCount";
+    const key = total === 1 ? 'settings.modelSingular' : 'settings.modelCount';
     return `${filtered}/${total} ${t(key)}`;
   };
 
@@ -75,7 +73,7 @@ export function ModelSelector({
       ([, config]) =>
         (!config.requiresApiKey || config.apiKey || config.isServerConfigured) &&
         config.models.length >= 1 &&
-        (config.baseUrl || config.defaultBaseUrl || config.serverBaseUrl)
+        (config.baseUrl || config.defaultBaseUrl || config.serverBaseUrl),
     )
     .map(([id, config]) => ({
       id: id as ProviderId,
@@ -101,7 +99,7 @@ export function ModelSelector({
     return models.filter(
       (model) =>
         model.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        model.id.toLowerCase().includes(searchQuery.toLowerCase())
+        model.id.toLowerCase().includes(searchQuery.toLowerCase()),
     );
   };
 
@@ -121,8 +119,8 @@ export function ModelSelector({
   useEffect(() => {
     if (selectedModelRef.current) {
       selectedModelRef.current.scrollIntoView({
-        block: "nearest",
-        behavior: "smooth",
+        block: 'nearest',
+        behavior: 'smooth',
       });
     }
   }, [effectiveProvider]);
@@ -145,20 +143,20 @@ export function ModelSelector({
       const baseUrl = providerConfig.baseUrl;
 
       if (providerConfig.requiresApiKey && !apiKey && !providerConfig.isServerConfigured) {
-        setTestStatus("error");
-        setTestMessage(t("settings.apiKeyRequired"));
+        setTestStatus('error');
+        setTestMessage(t('settings.apiKeyRequired'));
         setTestingModelId(mid);
         return;
       }
 
-      setTestStatus("testing");
-      setTestMessage("");
+      setTestStatus('testing');
+      setTestMessage('');
       setTestingModelId(mid);
 
       try {
-        const response = await fetch("/api/verify-model", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+        const response = await fetch('/api/verify-model', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             apiKey,
             baseUrl,
@@ -171,24 +169,24 @@ export function ModelSelector({
         const data = await response.json();
 
         if (data.success) {
-          setTestStatus("success");
-          setTestMessage(t("settings.connectionSuccess"));
+          setTestStatus('success');
+          setTestMessage(t('settings.connectionSuccess'));
         } else {
-          setTestStatus("error");
-          setTestMessage(data.error || t("settings.connectionFailed"));
+          setTestStatus('error');
+          setTestMessage(data.error || t('settings.connectionFailed'));
         }
       } catch {
-        setTestStatus("error");
-        setTestMessage(t("settings.connectionFailed"));
+        setTestStatus('error');
+        setTestMessage(t('settings.connectionFailed'));
       }
     },
-    [providersConfig, t]
+    [providersConfig, t],
   );
 
   if (configuredProviders.length === 0) {
     return (
       <div className="p-4 border-2 border-dashed rounded-lg text-center text-sm text-muted-foreground">
-        {t("settings.configureProvidersFirst")}
+        {t('settings.configureProvidersFirst')}
       </div>
     );
   }
@@ -199,11 +197,8 @@ export function ModelSelector({
         {/* Left: Provider List */}
         <div className="w-48 border-r bg-muted/30 overflow-y-auto shrink-0">
           {configuredProviders.map((provider) => {
-            const filteredCount = getFilteredModelsForProvider(
-              provider.id
-            ).length;
-            const totalCount =
-              providersConfig[provider.id]?.models?.length || 0;
+            const filteredCount = getFilteredModelsForProvider(provider.id).length;
+            const totalCount = providersConfig[provider.id]?.models?.length || 0;
             const isActive = effectiveProvider === provider.id;
 
             return (
@@ -211,10 +206,8 @@ export function ModelSelector({
                 key={provider.id}
                 onClick={() => setActiveProvider(provider.id)}
                 className={cn(
-                  "w-full flex items-center gap-2 px-3 py-2.5 text-left transition-colors border-b",
-                  isActive
-                    ? "bg-primary text-primary-foreground"
-                    : "hover:bg-muted/50"
+                  'w-full flex items-center gap-2 px-3 py-2.5 text-left transition-colors border-b',
+                  isActive ? 'bg-primary text-primary-foreground' : 'hover:bg-muted/50',
                 )}
               >
                 {provider.icon ? (
@@ -223,7 +216,7 @@ export function ModelSelector({
                     alt={getProviderDisplayName(provider.id, provider.name)}
                     className="w-5 h-5 shrink-0"
                     onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = "none";
+                      (e.target as HTMLImageElement).style.display = 'none';
                     }}
                   />
                 ) : (
@@ -233,20 +226,19 @@ export function ModelSelector({
                   <div className="font-medium text-sm truncate flex items-center gap-1">
                     {getProviderDisplayName(provider.id, provider.name)}
                     {provider.isServerConfigured && (
-                      <span className={cn(
-                        "text-[10px] px-1 py-0 h-4 leading-4 rounded shrink-0 inline-block",
-                        isActive ? "bg-white/20 text-primary-foreground" : "bg-muted text-muted-foreground"
-                      )}>
-                        {t("settings.serverConfigured")}
+                      <span
+                        className={cn(
+                          'text-[10px] px-1 py-0 h-4 leading-4 rounded shrink-0 inline-block',
+                          isActive
+                            ? 'bg-white/20 text-primary-foreground'
+                            : 'bg-muted text-muted-foreground',
+                        )}
+                      >
+                        {t('settings.serverConfigured')}
                       </span>
                     )}
                   </div>
-                  <div
-                    className={cn(
-                      "text-xs",
-                      isActive ? "opacity-90" : "text-muted-foreground"
-                    )}
-                  >
+                  <div className={cn('text-xs', isActive ? 'opacity-90' : 'text-muted-foreground')}>
                     {searchQuery && filteredCount !== totalCount
                       ? getFilteredModelCountText(filteredCount, totalCount)
                       : getModelCountText(totalCount)}
@@ -266,7 +258,7 @@ export function ModelSelector({
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   ref={searchInputRef}
-                  placeholder={t("settings.searchModels")}
+                  placeholder={t('settings.searchModels')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onBlur={() => {
@@ -293,14 +285,11 @@ export function ModelSelector({
           <div className="flex-1 overflow-y-auto">
             {filteredModels.length === 0 ? (
               <div className="p-6 text-center text-sm text-muted-foreground">
-                {searchQuery
-                  ? t("settings.noModelsFound")
-                  : t("settings.noModelsAvailable")}
+                {searchQuery ? t('settings.noModelsFound') : t('settings.noModelsAvailable')}
               </div>
             ) : (
               filteredModels.map((model) => {
-                const isSelected =
-                  providerId === effectiveProvider && modelId === model.id;
+                const isSelected = providerId === effectiveProvider && modelId === model.id;
                 const isTesting = testingModelId === model.id;
                 const showTestResult = isTesting && testMessage;
 
@@ -308,8 +297,8 @@ export function ModelSelector({
                   <div
                     key={model.id}
                     className={cn(
-                      "border-b transition-colors",
-                      isSelected ? "bg-primary/5" : "hover:bg-muted/50"
+                      'border-b transition-colors',
+                      isSelected ? 'bg-primary/5' : 'hover:bg-muted/50',
                     )}
                   >
                     <div className="flex items-center gap-2 px-3 py-2.5">
@@ -327,17 +316,17 @@ export function ModelSelector({
                               {/* Capabilities */}
                               <div className="flex items-center gap-1">
                                 {model.capabilities?.vision && (
-                                  <div title={t("settings.capabilities.vision")}>
+                                  <div title={t('settings.capabilities.vision')}>
                                     <Sparkles className="h-3 w-3" />
                                   </div>
                                 )}
                                 {model.capabilities?.tools && (
-                                  <div title={t("settings.capabilities.tools")}>
+                                  <div title={t('settings.capabilities.tools')}>
                                     <Wrench className="h-3 w-3" />
                                   </div>
                                 )}
                                 {model.capabilities?.streaming && (
-                                  <div title={t("settings.capabilities.streaming")}>
+                                  <div title={t('settings.capabilities.streaming')}>
                                     <Zap className="h-3 w-3" />
                                   </div>
                                 )}
@@ -363,9 +352,7 @@ export function ModelSelector({
                             </div>
                           )}
                         </div>
-                        {isSelected && (
-                          <Check className="h-4 w-4 text-primary shrink-0" />
-                        )}
+                        {isSelected && <Check className="h-4 w-4 text-primary shrink-0" />}
                       </button>
 
                       <Button
@@ -375,20 +362,18 @@ export function ModelSelector({
                           e.stopPropagation();
                           handleTestModel(effectiveProvider, model.id);
                         }}
-                        disabled={testStatus === "testing" && isTesting}
+                        disabled={testStatus === 'testing' && isTesting}
                         className={cn(
-                          "h-7 px-2 shrink-0",
-                          isTesting &&
-                            testStatus === "success" &&
-                            "text-green-600",
-                          isTesting && testStatus === "error" && "text-red-600"
+                          'h-7 px-2 shrink-0',
+                          isTesting && testStatus === 'success' && 'text-green-600',
+                          isTesting && testStatus === 'error' && 'text-red-600',
                         )}
                       >
-                        {testStatus === "testing" && isTesting ? (
+                        {testStatus === 'testing' && isTesting ? (
                           <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                        ) : testStatus === "success" && isTesting ? (
+                        ) : testStatus === 'success' && isTesting ? (
                           <CheckCircle className="h-3.5 w-3.5" />
-                        ) : testStatus === "error" && isTesting ? (
+                        ) : testStatus === 'error' && isTesting ? (
                           <XCircle className="h-3.5 w-3.5" />
                         ) : (
                           <Zap className="h-3.5 w-3.5" />
@@ -399,18 +384,17 @@ export function ModelSelector({
                     {showTestResult && (
                       <div
                         className={cn(
-                          "mx-3 mb-2 rounded-lg p-2 text-xs overflow-hidden",
-                          testStatus === "success" &&
-                            "bg-green-50 text-green-700 border border-green-200",
-                          testStatus === "error" &&
-                            "bg-red-50 text-red-700 border border-red-200"
+                          'mx-3 mb-2 rounded-lg p-2 text-xs overflow-hidden',
+                          testStatus === 'success' &&
+                            'bg-green-50 text-green-700 border border-green-200',
+                          testStatus === 'error' && 'bg-red-50 text-red-700 border border-red-200',
                         )}
                       >
                         <div className="flex items-start gap-2 min-w-0">
-                          {testStatus === "success" && (
+                          {testStatus === 'success' && (
                             <CheckCircle className="h-3 w-3 mt-0.5 shrink-0" />
                           )}
-                          {testStatus === "error" && (
+                          {testStatus === 'error' && (
                             <XCircle className="h-3 w-3 mt-0.5 shrink-0" />
                           )}
                           <p className="flex-1 min-w-0 break-all">{testMessage}</p>

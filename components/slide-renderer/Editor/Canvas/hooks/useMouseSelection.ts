@@ -1,12 +1,12 @@
 import { useState, useCallback, type RefObject } from 'react';
 import { useKeyboardStore } from '@/lib/store/keyboard';
-import {useCanvasStore } from '@/lib/store';
+import { useCanvasStore } from '@/lib/store';
 import type { PPTElement } from '@/lib/types/slides';
 import { getElementRange } from '@/lib/utils/element';
 
 export function useMouseSelection(
   elementListRef: React.RefObject<PPTElement[]>,
-  viewportRef: RefObject<HTMLElement | null>
+  viewportRef: RefObject<HTMLElement | null>,
 ) {
   const [mouseSelectionVisible, setMouseSelectionVisible] = useState(false);
   const [mouseSelectionQuadrant, setMouseSelectionQuadrant] = useState(1);
@@ -81,99 +81,114 @@ export function useMouseSelection(
       };
 
       const handleMouseUp = () => {
-        document.onmousemove = null
-        document.onmouseup = null
+        document.onmousemove = null;
+        document.onmouseup = null;
         isMouseDown = false;
 
         // Check which canvas elements are within the mouse selection range and set them as selected
         let inRangeElementList: PPTElement[] = [];
         for (const element of elementListRef.current) {
-          const mouseSelectionLeft = mouseSelection.left
-          const mouseSelectionTop = mouseSelection.top
-          const mouseSelectionWidth = mouseSelection.width
-          const mouseSelectionHeight = mouseSelection.height
-  
-          const { minX, maxX, minY, maxY } = getElementRange(element)
-  
+          const mouseSelectionLeft = mouseSelection.left;
+          const mouseSelectionTop = mouseSelection.top;
+          const mouseSelectionWidth = mouseSelection.width;
+          const mouseSelectionHeight = mouseSelection.height;
+
+          const { minX, maxX, minY, maxY } = getElementRange(element);
+
           // Inclusion check differs for each quadrant direction
-          let isInclude = false
+          let isInclude = false;
           if (ctrlOrShiftKeyActive) {
             if (mouseSelectionQuadrant === 4) {
-              isInclude = maxX > mouseSelectionLeft && 
-                          minX < mouseSelectionLeft + mouseSelectionWidth && 
-                          maxY > mouseSelectionTop && 
-                          minY < mouseSelectionTop + mouseSelectionHeight
+              isInclude =
+                maxX > mouseSelectionLeft &&
+                minX < mouseSelectionLeft + mouseSelectionWidth &&
+                maxY > mouseSelectionTop &&
+                minY < mouseSelectionTop + mouseSelectionHeight;
+            } else if (mouseSelectionQuadrant === 2) {
+              isInclude =
+                maxX > mouseSelectionLeft - mouseSelectionWidth &&
+                minX < mouseSelectionLeft - mouseSelectionWidth + mouseSelectionWidth &&
+                maxY > mouseSelectionTop - mouseSelectionHeight &&
+                minY < mouseSelectionTop - mouseSelectionHeight + mouseSelectionHeight;
+            } else if (mouseSelectionQuadrant === 1) {
+              isInclude =
+                maxX > mouseSelectionLeft &&
+                minX < mouseSelectionLeft + mouseSelectionWidth &&
+                maxY > mouseSelectionTop - mouseSelectionHeight &&
+                minY < mouseSelectionTop - mouseSelectionHeight + mouseSelectionHeight;
+            } else if (mouseSelectionQuadrant === 3) {
+              isInclude =
+                maxX > mouseSelectionLeft - mouseSelectionWidth &&
+                minX < mouseSelectionLeft - mouseSelectionWidth + mouseSelectionWidth &&
+                maxY > mouseSelectionTop &&
+                minY < mouseSelectionTop + mouseSelectionHeight;
             }
-            else if (mouseSelectionQuadrant === 2) {
-              isInclude = maxX > (mouseSelectionLeft - mouseSelectionWidth) && 
-                          minX < (mouseSelectionLeft - mouseSelectionWidth) + mouseSelectionWidth && 
-                          maxY > (mouseSelectionTop - mouseSelectionHeight) && 
-                          minY < (mouseSelectionTop - mouseSelectionHeight) + mouseSelectionHeight
-            }
-            else if (mouseSelectionQuadrant === 1) {
-              isInclude = maxX > mouseSelectionLeft && 
-                          minX < mouseSelectionLeft + mouseSelectionWidth && 
-                          maxY > (mouseSelectionTop - mouseSelectionHeight) && 
-                          minY < (mouseSelectionTop - mouseSelectionHeight) + mouseSelectionHeight
-            }
-            else if (mouseSelectionQuadrant === 3) {
-              isInclude = maxX > (mouseSelectionLeft - mouseSelectionWidth) && 
-                          minX < (mouseSelectionLeft - mouseSelectionWidth) + mouseSelectionWidth && 
-                          maxY > mouseSelectionTop && 
-                          minY < mouseSelectionTop + mouseSelectionHeight
-            }
-          }
-          else {
+          } else {
             if (mouseSelectionQuadrant === 4) {
-              isInclude = minX > mouseSelectionLeft && 
-                          maxX < mouseSelectionLeft + mouseSelectionWidth && 
-                          minY > mouseSelectionTop && 
-                          maxY < mouseSelectionTop + mouseSelectionHeight
-            }
-            else if (mouseSelectionQuadrant === 2) {
-              isInclude = minX > (mouseSelectionLeft - mouseSelectionWidth) && 
-                          maxX < (mouseSelectionLeft - mouseSelectionWidth) + mouseSelectionWidth && 
-                          minY > (mouseSelectionTop - mouseSelectionHeight) && 
-                          maxY < (mouseSelectionTop - mouseSelectionHeight) + mouseSelectionHeight
-            }
-            else if (mouseSelectionQuadrant === 1) {
-              isInclude = minX > mouseSelectionLeft && 
-                          maxX < mouseSelectionLeft + mouseSelectionWidth && 
-                          minY > (mouseSelectionTop - mouseSelectionHeight) && 
-                          maxY < (mouseSelectionTop - mouseSelectionHeight) + mouseSelectionHeight
-            }
-            else if (mouseSelectionQuadrant === 3) {
-              isInclude = minX > (mouseSelectionLeft - mouseSelectionWidth) && 
-                          maxX < (mouseSelectionLeft - mouseSelectionWidth) + mouseSelectionWidth && 
-                          minY > mouseSelectionTop && 
-                          maxY < mouseSelectionTop + mouseSelectionHeight
+              isInclude =
+                minX > mouseSelectionLeft &&
+                maxX < mouseSelectionLeft + mouseSelectionWidth &&
+                minY > mouseSelectionTop &&
+                maxY < mouseSelectionTop + mouseSelectionHeight;
+            } else if (mouseSelectionQuadrant === 2) {
+              isInclude =
+                minX > mouseSelectionLeft - mouseSelectionWidth &&
+                maxX < mouseSelectionLeft - mouseSelectionWidth + mouseSelectionWidth &&
+                minY > mouseSelectionTop - mouseSelectionHeight &&
+                maxY < mouseSelectionTop - mouseSelectionHeight + mouseSelectionHeight;
+            } else if (mouseSelectionQuadrant === 1) {
+              isInclude =
+                minX > mouseSelectionLeft &&
+                maxX < mouseSelectionLeft + mouseSelectionWidth &&
+                minY > mouseSelectionTop - mouseSelectionHeight &&
+                maxY < mouseSelectionTop - mouseSelectionHeight + mouseSelectionHeight;
+            } else if (mouseSelectionQuadrant === 3) {
+              isInclude =
+                minX > mouseSelectionLeft - mouseSelectionWidth &&
+                maxX < mouseSelectionLeft - mouseSelectionWidth + mouseSelectionWidth &&
+                minY > mouseSelectionTop &&
+                maxY < mouseSelectionTop + mouseSelectionHeight;
             }
           }
-  
+
           // Locked or hidden elements should not be selected even if within range
-          if (isInclude && !element.lock && !hiddenElementIdList.includes(element.id)) inRangeElementList.push(element)
+          if (isInclude && !element.lock && !hiddenElementIdList.includes(element.id))
+            inRangeElementList.push(element);
         }
 
         // If grouped elements are in range, all members of the group must be in range to be selected
-        inRangeElementList = inRangeElementList.filter(inRangeElement => {
+        inRangeElementList = inRangeElementList.filter((inRangeElement) => {
           if (inRangeElement.groupId) {
-            const inRangeElementIdList = inRangeElementList.map(inRangeElement => inRangeElement.id)
-            const groupElementList = elementListRef.current.filter(element => element.groupId === inRangeElement.groupId)
-            return groupElementList.every(groupElement => inRangeElementIdList.includes(groupElement.id))
+            const inRangeElementIdList = inRangeElementList.map(
+              (inRangeElement) => inRangeElement.id,
+            );
+            const groupElementList = elementListRef.current.filter(
+              (element) => element.groupId === inRangeElement.groupId,
+            );
+            return groupElementList.every((groupElement) =>
+              inRangeElementIdList.includes(groupElement.id),
+            );
           }
-          return true
-        })
-        const inRangeElementIdList = inRangeElementList.map(inRangeElement => inRangeElement.id)
-        setActiveElementIdList(inRangeElementIdList)
+          return true;
+        });
+        const inRangeElementIdList = inRangeElementList.map((inRangeElement) => inRangeElement.id);
+        setActiveElementIdList(inRangeElementIdList);
 
-        setMouseSelectionVisible(false)
+        setMouseSelectionVisible(false);
       };
 
       document.onmousemove = handleMouseMove;
       document.onmouseup = handleMouseUp;
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps -- Intentionally excludes mouseSelection state to avoid infinite re-creation
-    [viewportRef, canvasScale, ctrlOrShiftKeyActive, hiddenElementIdList, elementListRef, setActiveElementIdList]
+    [
+      viewportRef,
+      canvasScale,
+      ctrlOrShiftKeyActive,
+      hiddenElementIdList,
+      elementListRef,
+      setActiveElementIdList,
+    ],
   );
 
   return {

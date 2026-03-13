@@ -1,6 +1,14 @@
 'use client';
 
-import React, {createContext, useContext, useMemo, useCallback, useSyncExternalStore, useRef, useEffect} from 'react';
+import React, {
+  createContext,
+  useContext,
+  useMemo,
+  useCallback,
+  useSyncExternalStore,
+  useRef,
+  useEffect,
+} from 'react';
 import { useStageStore } from '@/lib/store/stage';
 import type { Scene } from '@/lib/types/stage';
 import { produce } from 'immer';
@@ -31,7 +39,7 @@ export function SceneProvider({ children }: { children: React.ReactNode }) {
   // Subscribe to current scene
   const currentScene = useStageStore((state) => {
     if (!state.currentSceneId) return null;
-    return state.scenes.find(s => s.id === state.currentSceneId) || null;
+    return state.scenes.find((s) => s.id === state.currentSceneId) || null;
   });
 
   const updateScene = useStageStore((state) => state.updateScene);
@@ -58,38 +66,40 @@ export function SceneProvider({ children }: { children: React.ReactNode }) {
 
   // Notify all listeners when sceneData changes
   useEffect(() => {
-    listenersRef.current.forEach(listener => listener());
+    listenersRef.current.forEach((listener) => listener());
   }, [sceneData]);
 
   // Update scene data with Immer
-  const updateSceneData = useCallback((updater: (draft: unknown) => void) => {
-    if (!currentScene) return;
+  const updateSceneData = useCallback(
+    (updater: (draft: unknown) => void) => {
+      if (!currentScene) return;
 
-    const newContent = produce(currentScene.content, updater);
-    updateScene(currentScene.id, {
-      content: newContent,
-    });
-  }, [currentScene, updateScene]);
+      const newContent = produce(currentScene.content, updater);
+      updateScene(currentScene.id, {
+        content: newContent,
+      });
+    },
+    [currentScene, updateScene],
+  );
 
-  const value = useMemo(() => ({
-    sceneId,
-    sceneType,
-    sceneData,
-    updateSceneData,
-    subscribe,
-    getSnapshot,
-  }), [sceneId, sceneType, sceneData, updateSceneData, subscribe, getSnapshot]);
+  const value = useMemo(
+    () => ({
+      sceneId,
+      sceneType,
+      sceneData,
+      updateSceneData,
+      subscribe,
+      getSnapshot,
+    }),
+    [sceneId, sceneType, sceneData, updateSceneData, subscribe, getSnapshot],
+  );
 
   // Don't render anything if there's no scene - let parent component handle this
   if (!currentScene) {
     return null;
   }
 
-  return (
-    <SceneContext.Provider value={value}>
-      {children}
-    </SceneContext.Provider>
-  );
+  return <SceneContext.Provider value={value}>{children}</SceneContext.Provider>;
 }
 
 /**
@@ -129,9 +139,7 @@ export function useSceneData<T = unknown>(): SceneContextValue<T> {
  *   content => content.Canvas.background
  * );
  */
-export function useSceneSelector<T = unknown, R = unknown>(
-  selector: (data: T) => R
-): R {
+export function useSceneSelector<T = unknown, R = unknown>(selector: (data: T) => R): R {
   const context = useContext(SceneContext);
   if (!context) {
     throw new Error('useSceneSelector must be used within SceneProvider');
@@ -167,7 +175,7 @@ export function useSceneSelector<T = unknown, R = unknown>(
       // SSR fallback
       const snapshot = getSnapshot();
       return selectorRef.current(snapshot);
-    }
+    },
   );
 }
 

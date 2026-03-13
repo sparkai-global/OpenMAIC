@@ -5,7 +5,7 @@
  * support for QA, Discussion, and Lecture session types.
  */
 
-import type { UIMessage } from "ai";
+import type { UIMessage } from 'ai';
 
 // Session Types
 export type SessionType = 'qa' | 'discussion' | 'lecture';
@@ -60,8 +60,8 @@ export interface SessionConfig {
   agentIds: string[];
   maxTurns: number;
   currentTurn: number;
-  triggerAgentId?: string;      // For discussion: first agent to speak
-  defaultAgentId?: string;      // For QA: the responding agent
+  triggerAgentId?: string; // For discussion: first agent to speak
+  defaultAgentId?: string; // For QA: the responding agent
 }
 
 /**
@@ -96,13 +96,22 @@ export interface ToolCallRecord {
  */
 export type SessionEvent =
   | { type: 'message'; data: UIMessage<ChatMessageMetadata> }
-  | { type: 'tool_request'; data: { sessionId: string; toolCalls: ToolCallRequest[] } }
+  | {
+      type: 'tool_request';
+      data: { sessionId: string; toolCalls: ToolCallRequest[] };
+    }
   | { type: 'tool_complete'; data: ToolCallRecord }
-  | { type: 'agent_switch'; data: { fromAgentId: string | null; toAgentId: string } }
+  | {
+      type: 'agent_switch';
+      data: { fromAgentId: string | null; toAgentId: string };
+    }
   | { type: 'session_status'; data: { status: SessionStatus; reason?: string } }
   | { type: 'error'; data: { message: string } }
   | { type: 'done'; data: SessionSummary }
-  | { type: 'text_start'; data: { messageId: string; agentId: string; agentName: string } }
+  | {
+      type: 'text_start';
+      data: { messageId: string; agentId: string; agentName: string };
+    }
   | { type: 'text_delta'; data: { messageId: string; delta: string } }
   | { type: 'text_end'; data: { messageId: string; content: string } };
 
@@ -288,11 +297,40 @@ export type ParsedToolCall = ParsedAction;
  * Server-Sent Events for stateless chat API
  */
 export type StatelessEvent =
-  | { type: 'agent_start'; data: { messageId: string; agentId: string; agentName: string; agentAvatar?: string; agentColor?: string } }
+  | {
+      type: 'agent_start';
+      data: {
+        messageId: string;
+        agentId: string;
+        agentName: string;
+        agentAvatar?: string;
+        agentColor?: string;
+      };
+    }
   | { type: 'agent_end'; data: { messageId: string; agentId: string } }
   | { type: 'text_delta'; data: { content: string; messageId?: string } }
-  | { type: 'action'; data: { actionId: string; actionName: string; params: Record<string, unknown>; agentId: string; messageId?: string } }
-  | { type: 'thinking'; data: { stage: 'director' | 'agent_loading'; agentId?: string } }
+  | {
+      type: 'action';
+      data: {
+        actionId: string;
+        actionName: string;
+        params: Record<string, unknown>;
+        agentId: string;
+        messageId?: string;
+      };
+    }
+  | {
+      type: 'thinking';
+      data: { stage: 'director' | 'agent_loading'; agentId?: string };
+    }
   | { type: 'cue_user'; data: { fromAgentId?: string; prompt?: string } }
-  | { type: 'done'; data: { totalActions: number; totalAgents: number; agentHadContent?: boolean; directorState?: DirectorState } }
+  | {
+      type: 'done';
+      data: {
+        totalActions: number;
+        totalAgents: number;
+        agentHadContent?: boolean;
+        directorState?: DirectorState;
+      };
+    }
   | { type: 'error'; data: { message: string } };

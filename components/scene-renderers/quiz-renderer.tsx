@@ -26,9 +26,7 @@ export function QuizRenderer({ content, mode, sceneId: _sceneId }: QuizRendererP
         {content.questions.map((question) => (
           <Card key={question.id}>
             <CardHeader>
-              <CardTitle>
-                {question.question}
-              </CardTitle>
+              <CardTitle>{question.question}</CardTitle>
             </CardHeader>
             <CardContent>
               {question.type === 'single' && question.options && (
@@ -44,8 +42,7 @@ export function QuizRenderer({ content, mode, sceneId: _sceneId }: QuizRendererP
                         key={`${question.id}-opt-${optIndex}`}
                         className={cn(
                           'flex items-center space-x-2 p-2 rounded cursor-pointer hover:bg-muted',
-                          answers[question.id] === (optionValue || letterPrefix) &&
-                            'bg-muted'
+                          answers[question.id] === (optionValue || letterPrefix) && 'bg-muted',
                         )}
                       >
                         <input
@@ -53,12 +50,12 @@ export function QuizRenderer({ content, mode, sceneId: _sceneId }: QuizRendererP
                           name={question.id}
                           value={optionValue || letterPrefix}
                           checked={answers[question.id] === (optionValue || letterPrefix)}
-                          onChange={(e) =>
-                            handleAnswerChange(question.id, e.target.value)
-                          }
+                          onChange={(e) => handleAnswerChange(question.id, e.target.value)}
                           className="size-4"
                         />
-                        <span>{letterPrefix}. {optionLabel}</span>
+                        <span>
+                          {letterPrefix}. {optionLabel}
+                        </span>
                       </label>
                     );
                   })}
@@ -69,9 +66,7 @@ export function QuizRenderer({ content, mode, sceneId: _sceneId }: QuizRendererP
                   className="w-full min-h-24 p-2 border rounded"
                   placeholder="Enter your answer..."
                   value={answers[question.id] || ''}
-                  onChange={(e) =>
-                    handleAnswerChange(question.id, e.target.value)
-                  }
+                  onChange={(e) => handleAnswerChange(question.id, e.target.value)}
                 />
               )}
             </CardContent>

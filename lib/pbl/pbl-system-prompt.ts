@@ -6,18 +6,18 @@
  */
 
 export interface PBLSystemPromptConfig {
-  projectTopic: string
-  projectDescription: string
-  targetSkills: string[]
-  issueCount?: number
-  language: string
+  projectTopic: string;
+  projectDescription: string;
+  targetSkills: string[];
+  issueCount?: number;
+  language: string;
 }
 
 export function buildPBLSystemPrompt(config: PBLSystemPromptConfig): string {
-  const { projectTopic, projectDescription, targetSkills, issueCount = 3, language } = config
+  const { projectTopic, projectDescription, targetSkills, issueCount = 3, language } = config;
 
   if (language === 'zh-CN') {
-    return buildPBLSystemPromptZH(config)
+    return buildPBLSystemPromptZH(config);
   }
 
   return `You are a Teaching Assistant (TA) on a Project-Based Learning platform. You are fully responsible for designing group projects for students based on the course information provided by the teacher.
@@ -81,11 +81,11 @@ When you create issues:
 
 **IMPORTANT**: Once you have configured the project info, defined all necessary agents (roles), and created the issueboard with tasks, you MUST set your mode to **idle** to indicate completion.
 
-Your initial mode is **project_info**.`
+Your initial mode is **project_info**.`;
 }
 
 function buildPBLSystemPromptZH(config: PBLSystemPromptConfig): string {
-  const { projectTopic, projectDescription, targetSkills, issueCount = 3 } = config
+  const { projectTopic, projectDescription, targetSkills, issueCount = 3 } = config;
 
   return `你是项目式学习（PBL）平台的教学助手（TA）。你需要根据老师提供的课程信息，自主设计完整的学生小组项目。
 
@@ -146,5 +146,5 @@ function buildPBLSystemPromptZH(config: PBLSystemPromptConfig): string {
 
 **重要**：完成项目信息、角色和任务看板配置后，你必须切换到 **idle** 模式表示完成。
 
-你的初始模式是 **project_info**。`
+你的初始模式是 **project_info**。`;
 }

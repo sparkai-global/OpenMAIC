@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
-import {useCanvasStore, useSceneSelector} from '@/lib/store';
-import type {SlideContent} from "@/lib/types/stage";
-import type {SlideBackground} from "@/lib/types/slides";
+import { useCanvasStore, useSceneSelector } from '@/lib/store';
+import type { SlideContent } from '@/lib/types/stage';
+import type { SlideBackground } from '@/lib/types/slides';
 
 export function GridLines() {
   const gridLineSize = useCanvasStore.use.gridLineSize();
@@ -9,7 +9,7 @@ export function GridLines() {
   const viewportSize = useCanvasStore.use.viewportSize();
 
   const background = useSceneSelector<SlideContent, SlideBackground | undefined>(
-      content => content.canvas.background
+    (content) => content.canvas.background,
   );
 
   // Calculate grid line color to avoid blending with background
@@ -43,13 +43,7 @@ export function GridLines() {
       height={viewportSize * viewportRatio}
       viewBox={`0 0 ${viewportSize} ${viewportSize * viewportRatio}`}
     >
-      <path
-        d={path}
-        fill="none"
-        stroke={gridColor}
-        strokeWidth="1"
-        strokeDasharray="5 5"
-      />
+      <path d={path} fill="none" stroke={gridColor} strokeWidth="1" strokeDasharray="5 5" />
     </svg>
   );
 }

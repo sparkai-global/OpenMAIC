@@ -33,7 +33,12 @@ import { storePdfBlob } from '@/lib/utils/image-storage';
 import type { UserRequirements } from '@/lib/types/generation';
 import { useSettingsStore } from '@/lib/store/settings';
 import { useUserProfileStore, AVATAR_OPTIONS } from '@/lib/store/user-profile';
-import { StageListItem, listStages, deleteStageData, getFirstSlideByStages } from '@/lib/utils/stage-storage';
+import {
+  StageListItem,
+  listStages,
+  deleteStageData,
+  getFirstSlideByStages,
+} from '@/lib/utils/stage-storage';
 import { ThumbnailSlide } from '@/components/slide-renderer/components/ThumbnailSlide';
 import type { Slide } from '@/lib/types/slides';
 import { useMediaGenerationStore } from '@/lib/store/media-generation';
@@ -68,10 +73,13 @@ function HomePage() {
   const router = useRouter();
   const [form, setForm] = useState<FormState>(initialFormState);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [settingsSection, setSettingsSection] = useState<import('@/lib/types/settings').SettingsSection | undefined>(undefined);
+  const [settingsSection, setSettingsSection] = useState<
+    import('@/lib/types/settings').SettingsSection | undefined
+  >(undefined);
 
   // Draft cache for requirement text
-  const { cachedValue: cachedRequirement, updateCache: updateRequirementCache } = useDraftCache<string>({ key: 'requirementDraft' });
+  const { cachedValue: cachedRequirement, updateCache: updateRequirementCache } =
+    useDraftCache<string>({ key: 'requirementDraft' });
 
   // Model setup state
   const currentModelId = useSettingsStore((s) => s.modelId);
@@ -85,7 +93,9 @@ function HomePage() {
     try {
       const saved = localStorage.getItem(RECENT_OPEN_STORAGE_KEY);
       if (saved !== null) setRecentOpen(saved !== 'false');
-    } catch { /* localStorage unavailable */ }
+    } catch {
+      /* localStorage unavailable */
+    }
     try {
       const savedWebSearch = localStorage.getItem(WEB_SEARCH_STORAGE_KEY);
       const savedLanguage = localStorage.getItem(LANGUAGE_STORAGE_KEY);
@@ -100,7 +110,9 @@ function HomePage() {
       if (Object.keys(updates).length > 0) {
         setForm((prev) => ({ ...prev, ...updates }));
       }
-    } catch { /* localStorage unavailable */ }
+    } catch {
+      /* localStorage unavailable */
+    }
   }, []);
   /* eslint-enable react-hooks/set-state-in-effect */
 
@@ -178,27 +190,39 @@ function HomePage() {
       if (field === 'webSearch') localStorage.setItem(WEB_SEARCH_STORAGE_KEY, String(value));
       if (field === 'language') localStorage.setItem(LANGUAGE_STORAGE_KEY, String(value));
       if (field === 'requirement') updateRequirementCache(value as string);
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   };
 
   const showSetupToast = (icon: React.ReactNode, title: string, desc: string) => {
-    toast.custom((id) => (
-      <div
-        className="w-[356px] rounded-xl border border-amber-200/60 dark:border-amber-800/40 bg-gradient-to-r from-amber-50 via-white to-amber-50 dark:from-amber-950/60 dark:via-slate-900 dark:to-amber-950/60 shadow-lg shadow-amber-500/8 dark:shadow-amber-900/20 p-4 flex items-start gap-3 cursor-pointer"
-        onClick={() => { toast.dismiss(id); setSettingsOpen(true); }}
-      >
-        <div className="shrink-0 mt-0.5 size-9 rounded-lg bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center ring-1 ring-amber-200/50 dark:ring-amber-800/30">
-          {icon}
+    toast.custom(
+      (id) => (
+        <div
+          className="w-[356px] rounded-xl border border-amber-200/60 dark:border-amber-800/40 bg-gradient-to-r from-amber-50 via-white to-amber-50 dark:from-amber-950/60 dark:via-slate-900 dark:to-amber-950/60 shadow-lg shadow-amber-500/8 dark:shadow-amber-900/20 p-4 flex items-start gap-3 cursor-pointer"
+          onClick={() => {
+            toast.dismiss(id);
+            setSettingsOpen(true);
+          }}
+        >
+          <div className="shrink-0 mt-0.5 size-9 rounded-lg bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center ring-1 ring-amber-200/50 dark:ring-amber-800/30">
+            {icon}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-amber-900 dark:text-amber-200 leading-tight">
+              {title}
+            </p>
+            <p className="text-xs text-amber-700/80 dark:text-amber-400/70 mt-0.5 leading-relaxed">
+              {desc}
+            </p>
+          </div>
+          <div className="shrink-0 mt-1 text-[10px] font-medium text-amber-500 dark:text-amber-500/70 tracking-wide">
+            <Settings className="size-3.5 animate-[spin_3s_linear_infinite]" />
+          </div>
         </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-amber-900 dark:text-amber-200 leading-tight">{title}</p>
-          <p className="text-xs text-amber-700/80 dark:text-amber-400/70 mt-0.5 leading-relaxed">{desc}</p>
-        </div>
-        <div className="shrink-0 mt-1 text-[10px] font-medium text-amber-500 dark:text-amber-500/70 tracking-wide">
-          <Settings className="size-3.5 animate-[spin_3s_linear_infinite]" />
-        </div>
-      </div>
-    ), { duration: 4000 });
+      ),
+      { duration: 4000 },
+    );
   };
 
   const handleGenerate = async () => {
@@ -296,11 +320,17 @@ function HomePage() {
   return (
     <div className="min-h-[100dvh] w-full bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 flex flex-col items-center p-4 pt-16 md:p-8 md:pt-16 overflow-x-hidden">
       {/* ═══ Top-right pill (unchanged) ═══ */}
-      <div ref={toolbarRef} className="fixed top-4 right-4 z-50 flex items-center gap-1 bg-white/60 dark:bg-gray-800/60 backdrop-blur-md px-2 py-1.5 rounded-full border border-gray-100/50 dark:border-gray-700/50 shadow-sm">
+      <div
+        ref={toolbarRef}
+        className="fixed top-4 right-4 z-50 flex items-center gap-1 bg-white/60 dark:bg-gray-800/60 backdrop-blur-md px-2 py-1.5 rounded-full border border-gray-100/50 dark:border-gray-700/50 shadow-sm"
+      >
         {/* Language Selector */}
         <div className="relative">
           <button
-            onClick={() => { setLanguageOpen(!languageOpen); setThemeOpen(false); }}
+            onClick={() => {
+              setLanguageOpen(!languageOpen);
+              setThemeOpen(false);
+            }}
             className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold text-gray-500 dark:text-gray-400 hover:bg-white dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-gray-200 hover:shadow-sm transition-all"
           >
             {locale === 'zh-CN' ? 'CN' : 'EN'}
@@ -308,19 +338,27 @@ function HomePage() {
           {languageOpen && (
             <div className="absolute top-full mt-2 right-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden z-50 min-w-[120px]">
               <button
-                onClick={() => { setLocale('zh-CN'); setLanguageOpen(false); }}
+                onClick={() => {
+                  setLocale('zh-CN');
+                  setLanguageOpen(false);
+                }}
                 className={cn(
                   'w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors',
-                  locale === 'zh-CN' && 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400'
+                  locale === 'zh-CN' &&
+                    'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400',
                 )}
               >
                 简体中文
               </button>
               <button
-                onClick={() => { setLocale('en-US'); setLanguageOpen(false); }}
+                onClick={() => {
+                  setLocale('en-US');
+                  setLanguageOpen(false);
+                }}
                 className={cn(
                   'w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors',
-                  locale === 'en-US' && 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400'
+                  locale === 'en-US' &&
+                    'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400',
                 )}
               >
                 English
@@ -334,7 +372,10 @@ function HomePage() {
         {/* Theme Selector */}
         <div className="relative">
           <button
-            onClick={() => { setThemeOpen(!themeOpen); setLanguageOpen(false); }}
+            onClick={() => {
+              setThemeOpen(!themeOpen);
+              setLanguageOpen(false);
+            }}
             className="p-2 rounded-full text-gray-400 dark:text-gray-500 hover:bg-white dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-gray-200 hover:shadow-sm transition-all"
           >
             {theme === 'light' && <Sun className="w-4 h-4" />}
@@ -344,30 +385,42 @@ function HomePage() {
           {themeOpen && (
             <div className="absolute top-full mt-2 right-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden z-50 min-w-[140px]">
               <button
-                onClick={() => { setTheme('light'); setThemeOpen(false); }}
+                onClick={() => {
+                  setTheme('light');
+                  setThemeOpen(false);
+                }}
                 className={cn(
                   'w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center gap-2',
-                  theme === 'light' && 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400'
+                  theme === 'light' &&
+                    'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400',
                 )}
               >
                 <Sun className="w-4 h-4" />
                 {t('settings.themeOptions.light')}
               </button>
               <button
-                onClick={() => { setTheme('dark'); setThemeOpen(false); }}
+                onClick={() => {
+                  setTheme('dark');
+                  setThemeOpen(false);
+                }}
                 className={cn(
                   'w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center gap-2',
-                  theme === 'dark' && 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400'
+                  theme === 'dark' &&
+                    'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400',
                 )}
               >
                 <Moon className="w-4 h-4" />
                 {t('settings.themeOptions.dark')}
               </button>
               <button
-                onClick={() => { setTheme('system'); setThemeOpen(false); }}
+                onClick={() => {
+                  setTheme('system');
+                  setThemeOpen(false);
+                }}
                 className={cn(
                   'w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center gap-2',
-                  theme === 'system' && 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400'
+                  theme === 'system' &&
+                    'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400',
                 )}
               >
                 <Monitor className="w-4 h-4" />
@@ -384,8 +437,8 @@ function HomePage() {
           <button
             onClick={() => setSettingsOpen(true)}
             className={cn(
-              "p-2 rounded-full text-gray-400 dark:text-gray-500 hover:bg-white dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-gray-200 hover:shadow-sm transition-all group",
-              needsSetup && "animate-setup-glow"
+              'p-2 rounded-full text-gray-400 dark:text-gray-500 hover:bg-white dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-gray-200 hover:shadow-sm transition-all group',
+              needsSetup && 'animate-setup-glow',
             )}
           >
             <Settings className="w-4 h-4 group-hover:rotate-90 transition-transform duration-500" />
@@ -405,14 +458,23 @@ function HomePage() {
       </div>
       <SettingsDialog
         open={settingsOpen}
-        onOpenChange={(open) => { setSettingsOpen(open); if (!open) setSettingsSection(undefined); }}
+        onOpenChange={(open) => {
+          setSettingsOpen(open);
+          if (!open) setSettingsSection(undefined);
+        }}
         initialSection={settingsSection}
       />
 
       {/* ═══ Background Decor ═══ */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '4s' }} />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '6s' }} />
+        <div
+          className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse"
+          style={{ animationDuration: '4s' }}
+        />
+        <div
+          className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse"
+          style={{ animationDuration: '6s' }}
+        />
       </div>
 
       {/* ═══ Hero section: title + input (centered, wider) ═══ */}
@@ -422,7 +484,7 @@ function HomePage() {
         transition={{ duration: 0.6, ease: 'easeOut' }}
         className={cn(
           'relative z-20 w-full max-w-[800px] flex flex-col items-center',
-          classrooms.length === 0 ? 'justify-center min-h-[calc(100dvh-8rem)]' : 'mt-[10vh]'
+          classrooms.length === 0 ? 'justify-center min-h-[calc(100dvh-8rem)]' : 'mt-[10vh]',
         )}
       >
         {/* ── Logo ── */}
@@ -431,7 +493,12 @@ function HomePage() {
           alt="OpenMAIC"
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.1, type: 'spring', stiffness: 200, damping: 20 }}
+          transition={{
+            delay: 0.1,
+            type: 'spring',
+            stiffness: 200,
+            damping: 20,
+          }}
           className="h-12 md:h-16 mb-2 -ml-2 md:-ml-3"
         />
 
@@ -480,7 +547,10 @@ function HomePage() {
                   onLanguageChange={(lang) => updateForm('language', lang)}
                   webSearch={form.webSearch}
                   onWebSearchChange={(v) => updateForm('webSearch', v)}
-                  onSettingsOpen={(section) => { setSettingsSection(section); setSettingsOpen(true); }}
+                  onSettingsOpen={(section) => {
+                    setSettingsSection(section);
+                    setSettingsOpen(true);
+                  }}
                   pdfFile={form.pdfFile}
                   onPdfFileChange={(f) => updateForm('pdfFile', f)}
                   onPdfError={setError}
@@ -507,7 +577,7 @@ function HomePage() {
                   'shrink-0 h-8 rounded-lg flex items-center justify-center gap-1.5 transition-all px-3',
                   canGenerate
                     ? 'bg-primary text-primary-foreground hover:opacity-90 shadow-sm cursor-pointer'
-                    : 'bg-muted text-muted-foreground/40 cursor-not-allowed'
+                    : 'bg-muted text-muted-foreground/40 cursor-not-allowed',
                 )}
               >
                 <span className="text-xs font-medium">{t('toolbar.enterClassroom')}</span>
@@ -545,7 +615,11 @@ function HomePage() {
             onClick={() => {
               const next = !recentOpen;
               setRecentOpen(next);
-              try { localStorage.setItem(RECENT_OPEN_STORAGE_KEY, String(next)); } catch { /* ignore */ }
+              try {
+                localStorage.setItem(RECENT_OPEN_STORAGE_KEY, String(next));
+              } catch {
+                /* ignore */
+              }
             }}
             className="group w-full flex items-center gap-4 py-2 cursor-pointer"
           >
@@ -580,7 +654,11 @@ function HomePage() {
                       key={classroom.id}
                       initial={{ opacity: 0, y: 16 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.04, duration: 0.35, ease: 'easeOut' }}
+                      transition={{
+                        delay: i * 0.04,
+                        duration: 0.35,
+                        ease: 'easeOut',
+                      }}
                     >
                       <ClassroomCard
                         classroom={classroom}
@@ -704,31 +782,35 @@ function GreetingBar() {
           className="flex items-center gap-2.5 cursor-pointer transition-all duration-200 group rounded-full px-2.5 py-1.5 border border-border/50 text-muted-foreground/70 hover:text-foreground hover:bg-muted/60 active:scale-[0.97]"
           onClick={() => setOpen(true)}
         >
-            <div className="shrink-0 relative">
-              <div className="size-8 rounded-full overflow-hidden ring-[1.5px] ring-border/30 group-hover:ring-violet-400/60 dark:group-hover:ring-violet-400/40 transition-all duration-300">
-                <img src={avatar} alt="" className="size-full object-cover" />
-              </div>
-              <div className="absolute -bottom-0.5 -right-0.5 size-3.5 rounded-full bg-white dark:bg-slate-800 border border-border/40 flex items-center justify-center opacity-60 group-hover:opacity-100 transition-opacity">
-                <Pencil className="size-[7px] text-muted-foreground/70" />
-              </div>
+          <div className="shrink-0 relative">
+            <div className="size-8 rounded-full overflow-hidden ring-[1.5px] ring-border/30 group-hover:ring-violet-400/60 dark:group-hover:ring-violet-400/40 transition-all duration-300">
+              <img src={avatar} alt="" className="size-full object-cover" />
             </div>
-            <div className="flex-1 min-w-0">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span className="leading-none select-none flex items-center gap-1">
-                    <span>
-                      <span className="text-xs text-muted-foreground/60 group-hover:text-muted-foreground transition-colors">{t('home.greeting')}</span>
-                      <span className="text-[13px] font-semibold text-foreground/85 group-hover:text-foreground transition-colors">{displayName}</span>
-                    </span>
-                    <ChevronDown className="size-3 text-muted-foreground/30 group-hover:text-muted-foreground/60 transition-colors shrink-0" />
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" sideOffset={4}>
-                  {t('profile.editTooltip')}
-                </TooltipContent>
-              </Tooltip>
+            <div className="absolute -bottom-0.5 -right-0.5 size-3.5 rounded-full bg-white dark:bg-slate-800 border border-border/40 flex items-center justify-center opacity-60 group-hover:opacity-100 transition-opacity">
+              <Pencil className="size-[7px] text-muted-foreground/70" />
             </div>
           </div>
+          <div className="flex-1 min-w-0">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="leading-none select-none flex items-center gap-1">
+                  <span>
+                    <span className="text-xs text-muted-foreground/60 group-hover:text-muted-foreground transition-colors">
+                      {t('home.greeting')}
+                    </span>
+                    <span className="text-[13px] font-semibold text-foreground/85 group-hover:text-foreground transition-colors">
+                      {displayName}
+                    </span>
+                  </span>
+                  <ChevronDown className="size-3 text-muted-foreground/30 group-hover:text-muted-foreground/60 transition-colors shrink-0" />
+                </span>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" sideOffset={4}>
+                {t('profile.editTooltip')}
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        </div>
       )}
 
       {/* ── Expanded panel (absolute, floating) ── */}
@@ -754,7 +836,10 @@ function GreetingBar() {
                 {/* Avatar */}
                 <div
                   className="shrink-0 relative cursor-pointer"
-                  onClick={(e) => { e.stopPropagation(); setAvatarPickerOpen(!avatarPickerOpen); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setAvatarPickerOpen(!avatarPickerOpen);
+                  }}
                 >
                   <div className="size-8 rounded-full overflow-hidden ring-[1.5px] ring-violet-300/70 dark:ring-violet-500/40 transition-all duration-300">
                     <img src={avatar} alt="" className="size-full object-cover" />
@@ -767,7 +852,7 @@ function GreetingBar() {
                     <ChevronDown
                       className={cn(
                         'size-2 text-muted-foreground/70 transition-transform duration-200',
-                        avatarPickerOpen && 'rotate-180'
+                        avatarPickerOpen && 'rotate-180',
                       )}
                     />
                   </motion.div>
@@ -783,7 +868,9 @@ function GreetingBar() {
                         onChange={(e) => setNameDraft(e.target.value)}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') commitName();
-                          if (e.key === 'Escape') { setEditingName(false); }
+                          if (e.key === 'Escape') {
+                            setEditingName(false);
+                          }
                         }}
                         onBlur={commitName}
                         maxLength={20}
@@ -799,10 +886,15 @@ function GreetingBar() {
                     </div>
                   ) : (
                     <span
-                      onClick={(e) => { e.stopPropagation(); startEditName(); }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        startEditName();
+                      }}
                       className="group/name inline-flex items-center gap-1 cursor-pointer"
                     >
-                      <span className="text-[13px] font-semibold text-foreground/85 group-hover/name:text-foreground transition-colors">{displayName}</span>
+                      <span className="text-[13px] font-semibold text-foreground/85 group-hover/name:text-foreground transition-colors">
+                        {displayName}
+                      </span>
                       <Pencil className="size-2.5 text-muted-foreground/30 opacity-0 group-hover/name:opacity-100 transition-opacity" />
                     </span>
                   )}
@@ -840,7 +932,7 @@ function GreetingBar() {
                               'hover:scale-110 active:scale-95',
                               avatar === url
                                 ? 'ring-2 ring-violet-400 dark:ring-violet-500 ring-offset-0'
-                                : 'hover:ring-1 hover:ring-muted-foreground/30'
+                                : 'hover:ring-1 hover:ring-muted-foreground/30',
                             )}
                           >
                             <img src={url} alt="" className="size-full" />
@@ -852,7 +944,7 @@ function GreetingBar() {
                             'hover:scale-110 active:scale-95',
                             isCustomAvatar(avatar)
                               ? 'ring-2 ring-violet-400 dark:ring-violet-500 ring-offset-0 border-violet-300 dark:border-violet-600 bg-violet-50 dark:bg-violet-900/30'
-                              : 'border-muted-foreground/30 text-muted-foreground/50 hover:border-muted-foreground/50'
+                              : 'border-muted-foreground/30 text-muted-foreground/50 hover:border-muted-foreground/50',
                           )}
                           onClick={() => avatarInputRef.current?.click()}
                           title={t('profile.uploadAvatar')}
@@ -937,7 +1029,10 @@ function ClassroomCard({
           size="icon"
           variant="ghost"
           className="absolute top-2 right-2 size-7 opacity-0 group-hover:opacity-100 transition-opacity bg-black/30 hover:bg-destructive/80 text-white hover:text-white backdrop-blur-sm rounded-full"
-          onClick={(e) => { e.stopPropagation(); onDelete(classroom.id, e); }}
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(classroom.id, e);
+          }}
         >
           <Trash2 className="size-3.5" />
         </Button>
@@ -950,9 +1045,15 @@ function ClassroomCard({
         </span>
         <Tooltip>
           <TooltipTrigger asChild>
-            <p className="font-medium text-[15px] truncate text-foreground/90 min-w-0">{classroom.name}</p>
+            <p className="font-medium text-[15px] truncate text-foreground/90 min-w-0">
+              {classroom.name}
+            </p>
           </TooltipTrigger>
-          <TooltipContent side="bottom" sideOffset={4} className="!max-w-[min(90vw,32rem)] break-words whitespace-normal">
+          <TooltipContent
+            side="bottom"
+            sideOffset={4}
+            className="!max-w-[min(90vw,32rem)] break-words whitespace-normal"
+          >
             <div className="flex items-center gap-1.5">
               <span className="break-all">{classroom.name}</span>
               <button

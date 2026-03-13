@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import type { PPTImageElement } from '@/lib/types/slides';
-import { CLIPPATHS, ClipPathTypes } from '@/configs/image-clip'
+import { CLIPPATHS, ClipPathTypes } from '@/configs/image-clip';
 
 /**
  * Calculate image clip shape and position
@@ -8,21 +8,21 @@ import { CLIPPATHS, ClipPathTypes } from '@/configs/image-clip'
  */
 export function useClipImage(element: PPTImageElement) {
   const clipShape = useMemo(() => {
-    let _clipShape = CLIPPATHS.rect
+    let _clipShape = CLIPPATHS.rect;
 
     if (element.clip) {
-      const shape = element.clip.shape || ClipPathTypes.RECT
-      _clipShape = CLIPPATHS[shape]
+      const shape = element.clip.shape || ClipPathTypes.RECT;
+      _clipShape = CLIPPATHS[shape];
     }
     if (_clipShape.radius !== undefined && element.radius) {
       _clipShape = {
         ..._clipShape,
         radius: `${element.radius}px`,
         style: `inset(0 round ${element.radius}px)`,
-      }
+      };
     }
 
-    return _clipShape
+    return _clipShape;
   }, [element.clip, element.radius]);
 
   const imgPosition = useMemo(() => {

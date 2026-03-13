@@ -38,22 +38,25 @@ export function ScreenElement({ elementInfo, elementIndex, animate }: ScreenElem
     return elementTypeMap[elementInfo.type] || null;
   }, [elementInfo.type]);
 
-  const theme = useSceneSelector<SceneContent, { fontColor: string, fontName: string }>(content => {
-    if (content.type === 'slide') {
-      return content.canvas.theme;
-    }
-    return {
-      fontColor: '#333333',
-      fontName: 'Microsoft YaHei',
-    };
-  })
+  const theme = useSceneSelector<SceneContent, { fontColor: string; fontName: string }>(
+    (content) => {
+      if (content.type === 'slide') {
+        return content.canvas.theme;
+      }
+      return {
+        fontColor: '#333333',
+        fontName: 'Microsoft YaHei',
+      };
+    },
+  );
 
   if (!CurrentElementComponent) {
     return null;
   }
 
   return (
-    <div className="screen-element"
+    <div
+      className="screen-element"
       id={`screen-element-${elementInfo.id}`}
       style={{
         zIndex: elementIndex,
@@ -63,5 +66,5 @@ export function ScreenElement({ elementInfo, elementIndex, animate }: ScreenElem
     >
       <CurrentElementComponent elementInfo={elementInfo} animate={animate} />
     </div>
-  )
+  );
 }

@@ -48,7 +48,9 @@ interface GeminiResponse {
  * Lightweight connectivity test — validates API key by fetching model info.
  * Uses GET /v1beta/models/{model} which does not trigger generation.
  */
-export async function testNanoBananaConnectivity(config: ImageGenerationConfig): Promise<{ success: boolean; message: string }> {
+export async function testNanoBananaConnectivity(
+  config: ImageGenerationConfig,
+): Promise<{ success: boolean; message: string }> {
   const baseUrl = config.baseUrl || DEFAULT_BASE_URL;
   const model = config.model || DEFAULT_MODEL;
   const url = `${baseUrl}/v1beta/models`;
@@ -67,7 +69,10 @@ export async function testNanoBananaConnectivity(config: ImageGenerationConfig):
         headers: { 'x-goog-api-key': config.apiKey },
       });
     } catch (_err) {
-      return { success: false, message: `Network error: unable to reach ${baseUrl}. Check your Base URL and network connection.` };
+      return {
+        success: false,
+        message: `Network error: unable to reach ${baseUrl}. Check your Base URL and network connection.`,
+      };
     }
   }
 
@@ -78,38 +83,41 @@ export async function testNanoBananaConnectivity(config: ImageGenerationConfig):
   // Parse error body for user-friendly message
   const text = await response.text().catch(() => '');
   if (response.status === 400 || response.status === 401 || response.status === 403) {
-    return { success: false, message: `Invalid API key or unauthorized (${response.status}). Check your API Key and Base URL match the same provider.` };
+    return {
+      success: false,
+      message: `Invalid API key or unauthorized (${response.status}). Check your API Key and Base URL match the same provider.`,
+    };
   }
-  return { success: false, message: `Nano Banana connectivity failed (${response.status}): ${text}` };
+  return {
+    success: false,
+    message: `Nano Banana connectivity failed (${response.status}): ${text}`,
+  };
 }
 
 export async function generateWithNanoBanana(
   config: ImageGenerationConfig,
-  options: ImageGenerationOptions
+  options: ImageGenerationOptions,
 ): Promise<ImageGenerationResult> {
   const baseUrl = config.baseUrl || DEFAULT_BASE_URL;
   const model = config.model || DEFAULT_MODEL;
 
-  const response = await fetch(
-    `${baseUrl}/v1beta/models/${model}:generateContent`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-goog-api-key': config.apiKey,
-      },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [{ text: options.prompt }],
-          },
-        ],
-        generationConfig: {
-          responseModalities: ['IMAGE'],
+  const response = await fetch(`${baseUrl}/v1beta/models/${model}:generateContent`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-goog-api-key': config.apiKey,
+    },
+    body: JSON.stringify({
+      contents: [
+        {
+          parts: [{ text: options.prompt }],
         },
-      }),
-    }
-  );
+      ],
+      generationConfig: {
+        responseModalities: ['IMAGE'],
+      },
+    }),
+  });
 
   if (!response.ok) {
     const text = await response.text();
@@ -132,9 +140,7 @@ export async function generateWithNanoBanana(
   if (!imagePart?.inlineData) {
     // Might have returned text only (e.g. if prompt was rejected)
     const textPart = parts.find((p) => p.text);
-    throw new Error(
-      `Gemini did not return an image. Response text: ${textPart?.text || 'none'}`
-    );
+    throw new Error(`Gemini did not return an image. Response text: ${textPart?.text || 'none'}`);
   }
 
   return {

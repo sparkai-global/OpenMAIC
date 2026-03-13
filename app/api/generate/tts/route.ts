@@ -33,7 +33,11 @@ export async function POST(req: NextRequest) {
 
     // Validate required fields
     if (!text || !audioId || !ttsProviderId || !ttsVoice) {
-      return apiError('MISSING_REQUIRED_FIELD', 400, 'Missing required fields: text, audioId, ttsProviderId, ttsVoice');
+      return apiError(
+        'MISSING_REQUIRED_FIELD',
+        400,
+        'Missing required fields: text, audioId, ttsProviderId, ttsVoice',
+      );
     }
 
     // Reject browser-native TTS — must be handled client-side
@@ -54,7 +58,9 @@ export async function POST(req: NextRequest) {
       baseUrl,
     };
 
-    log.info(`Generating TTS: provider=${ttsProviderId}, voice=${ttsVoice}, audioId=${audioId}, textLen=${text.length}`);
+    log.info(
+      `Generating TTS: provider=${ttsProviderId}, voice=${ttsVoice}, audioId=${audioId}, textLen=${text.length}`,
+    );
 
     // Generate audio
     const { audio, format } = await generateTTS(config, text);
@@ -65,6 +71,10 @@ export async function POST(req: NextRequest) {
     return apiSuccess({ audioId, base64, format });
   } catch (error) {
     log.error('TTS generation error:', error);
-    return apiError('GENERATION_FAILED', 500, error instanceof Error ? error.message : String(error));
+    return apiError(
+      'GENERATION_FAILED',
+      500,
+      error instanceof Error ? error.message : String(error),
+    );
   }
 }

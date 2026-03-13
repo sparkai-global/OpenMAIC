@@ -162,7 +162,7 @@ export interface ASRTranscriptionResult {
  */
 export async function transcribeAudio(
   config: ASRModelConfig,
-  audioBuffer: Buffer | Blob
+  audioBuffer: Buffer | Blob,
 ): Promise<ASRTranscriptionResult> {
   const provider = ASR_PROVIDERS[config.providerId];
   if (!provider) {
@@ -179,9 +179,7 @@ export async function transcribeAudio(
       return await transcribeOpenAIWhisper(config, audioBuffer);
 
     case 'browser-native':
-      throw new Error(
-        'Browser Native ASR must be handled client-side using useBrowserASR hook'
-      );
+      throw new Error('Browser Native ASR must be handled client-side using useBrowserASR hook');
 
     case 'qwen-asr':
       return await transcribeQwenASR(config, audioBuffer);
@@ -196,7 +194,7 @@ export async function transcribeAudio(
  */
 async function transcribeOpenAIWhisper(
   config: ASRModelConfig,
-  audioBuffer: Buffer | Blob
+  audioBuffer: Buffer | Blob,
 ): Promise<ASRTranscriptionResult> {
   const openai = createOpenAI({
     apiKey: config.apiKey!,
@@ -241,7 +239,7 @@ async function transcribeOpenAIWhisper(
  */
 async function transcribeQwenASR(
   config: ASRModelConfig,
-  audioBuffer: Buffer | Blob
+  audioBuffer: Buffer | Blob,
 ): Promise<ASRTranscriptionResult> {
   const baseUrl = config.baseUrl || ASR_PROVIDERS['qwen-asr'].defaultBaseUrl;
 
@@ -283,18 +281,15 @@ async function transcribeQwenASR(
     };
   }
 
-  const response = await fetch(
-    `${baseUrl}/services/aigc/multimodal-generation/generation`,
-    {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${config.apiKey}`,
-        'Content-Type': 'application/json; charset=utf-8',
-        'X-DashScope-Audio-Format': 'wav',
-      },
-      body: JSON.stringify(requestBody),
-    }
-  );
+  const response = await fetch(`${baseUrl}/services/aigc/multimodal-generation/generation`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${config.apiKey}`,
+      'Content-Type': 'application/json; charset=utf-8',
+      'X-DashScope-Audio-Format': 'wav',
+    },
+    body: JSON.stringify(requestBody),
+  });
 
   if (!response.ok) {
     const errorText = await response.text().catch(() => response.statusText);
@@ -315,9 +310,7 @@ async function transcribeQwenASR(
     !Array.isArray(data.output.choices) ||
     data.output.choices.length === 0
   ) {
-    throw new Error(
-      `Qwen ASR error: No choices in response. Response: ${JSON.stringify(data)}`
-    );
+    throw new Error(`Qwen ASR error: No choices in response. Response: ${JSON.stringify(data)}`);
   }
 
   const firstChoice = data.output.choices[0];
@@ -344,8 +337,7 @@ export async function getCurrentASRConfig(): Promise<ASRModelConfig> {
 
   // Lazy import to avoid circular dependency
   const { useSettingsStore } = await import('@/lib/store/settings');
-  const { asrProviderId, asrLanguage, asrProvidersConfig } =
-    useSettingsStore.getState();
+  const { asrProviderId, asrLanguage, asrProvidersConfig } = useSettingsStore.getState();
 
   const providerConfig = asrProvidersConfig?.[asrProviderId];
 

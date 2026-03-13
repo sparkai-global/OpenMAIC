@@ -7,8 +7,20 @@ import { generationZhCN, generationEnUS } from './generation';
 import { settingsZhCN, settingsEnUS } from './settings';
 
 export const translations = {
-  'zh-CN': { ...commonZhCN, ...stageZhCN, ...chatZhCN, ...generationZhCN, ...settingsZhCN },
-  'en-US': { ...commonEnUS, ...stageEnUS, ...chatEnUS, ...generationEnUS, ...settingsEnUS },
+  'zh-CN': {
+    ...commonZhCN,
+    ...stageZhCN,
+    ...chatZhCN,
+    ...generationZhCN,
+    ...settingsZhCN,
+  },
+  'en-US': {
+    ...commonEnUS,
+    ...stageEnUS,
+    ...chatEnUS,
+    ...generationEnUS,
+    ...settingsEnUS,
+  },
 } as const;
 
 export type TranslationKey = keyof (typeof translations)[typeof defaultLocale];

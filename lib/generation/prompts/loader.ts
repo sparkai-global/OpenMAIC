@@ -11,8 +11,8 @@
 import fs from 'fs';
 import path from 'path';
 import type { PromptId, LoadedPrompt, SnippetId } from './types';
-import { createLogger } from '@/lib/logger'
-const log = createLogger('PromptLoader')
+import { createLogger } from '@/lib/logger';
+const log = createLogger('PromptLoader');
 
 // Cache for loaded prompts and snippets
 const promptCache = new Map<string, LoadedPrompt>();
@@ -98,10 +98,7 @@ export function loadPrompt(promptId: PromptId): LoadedPrompt | null {
  * Interpolate variables in a template
  * Replaces {{variable}} with values from the variables object
  */
-export function interpolateVariables(
-  template: string,
-  variables: Record<string, unknown>
-): string {
+export function interpolateVariables(template: string, variables: Record<string, unknown>): string {
   return template.replace(/\{\{(\w+)\}\}/g, (match, key) => {
     const value = variables[key];
     if (value === undefined) return match;
@@ -115,7 +112,7 @@ export function interpolateVariables(
  */
 export function buildPrompt(
   promptId: PromptId,
-  variables: Record<string, unknown>
+  variables: Record<string, unknown>,
 ): { system: string; user: string } | null {
   const prompt = loadPrompt(promptId);
   if (!prompt) return null;

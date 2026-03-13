@@ -55,10 +55,7 @@ export async function saveChatSessions(stageId: string, sessions: ChatSession[])
  * Returns sessions sorted by createdAt.
  */
 export async function loadChatSessions(stageId: string): Promise<ChatSession[]> {
-  const records = await db.chatSessions
-    .where('stageId')
-    .equals(stageId)
-    .sortBy('createdAt');
+  const records = await db.chatSessions.where('stageId').equals(stageId).sortBy('createdAt');
 
   return records.map((record) => ({
     id: record.id,

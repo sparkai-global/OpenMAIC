@@ -7,18 +7,15 @@ import { cn } from '@/lib/utils';
 import { SceneRenderer } from '@/components/stage/scene-renderer';
 import { SceneProvider } from '@/lib/contexts/scene-context';
 import { Whiteboard } from '@/components/whiteboard';
+import { CanvasToolbar } from '@/components/canvas/canvas-toolbar';
+import type { CanvasToolbarProps } from '@/components/canvas/canvas-toolbar';
 import type { Scene, StageMode } from '@/lib/types/stage';
 import { useI18n } from '@/lib/hooks/use-i18n';
 
-interface CanvasAreaProps {
+interface CanvasAreaProps extends CanvasToolbarProps {
   readonly currentScene: Scene | null;
-  readonly currentSceneIndex: number;
   readonly mode: StageMode;
-  readonly engineState: 'idle' | 'playing' | 'paused';
-  readonly isLiveSession?: boolean;
-  readonly whiteboardOpen: boolean;
-  readonly onPlayPause: () => void;
-  readonly onWhiteboardClose: () => void;
+  readonly hideToolbar?: boolean;
   readonly isPendingScene?: boolean;
   readonly isGenerationFailed?: boolean;
   readonly onRetryGeneration?: () => void;
@@ -27,35 +24,58 @@ interface CanvasAreaProps {
 export function CanvasArea({
   currentScene,
   currentSceneIndex,
+  scenesCount,
   mode,
   engineState,
   isLiveSession,
   whiteboardOpen,
+  sidebarCollapsed,
+  chatCollapsed,
+  onToggleSidebar,
+  onToggleChat,
+  onPrevSlide,
+  onNextSlide,
   onPlayPause,
   onWhiteboardClose,
+  showStopDiscussion,
+  onStopDiscussion,
+  hideToolbar,
   isPendingScene,
   isGenerationFailed,
   onRetryGeneration,
 }: CanvasAreaProps) {
   const { t } = useI18n();
   const showControls = mode === 'playback' && !whiteboardOpen;
-  const showPlayHint = showControls && engineState !== 'playing' && currentScene?.type === 'slide' && !isLiveSession && !isPendingScene;
+  const showPlayHint =
+    showControls &&
+    engineState !== 'playing' &&
+    currentScene?.type === 'slide' &&
+    !isLiveSession &&
+    !isPendingScene;
 
-  const handleSlideClick = useCallback((e: React.MouseEvent) => {
-    if (!showControls || isLiveSession || currentScene?.type !== 'slide') return;
-    // Don't trigger page play/pause when clicking inside a video element's visual area.
-    // Video elements may be visually covered by other slide elements (e.g. text),
-    // so we check click coordinates against all video element bounding rects.
-    const container = e.currentTarget as HTMLElement;
-    const videoEls = container.querySelectorAll('[data-video-element]');
-    for (const el of videoEls) {
-      const rect = el.getBoundingClientRect();
-      if (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom) {
-        return;
+  const handleSlideClick = useCallback(
+    (e: React.MouseEvent) => {
+      if (!showControls || isLiveSession || currentScene?.type !== 'slide') return;
+      // Don't trigger page play/pause when clicking inside a video element's visual area.
+      // Video elements may be visually covered by other slide elements (e.g. text),
+      // so we check click coordinates against all video element bounding rects.
+      const container = e.currentTarget as HTMLElement;
+      const videoEls = container.querySelectorAll('[data-video-element]');
+      for (const el of videoEls) {
+        const rect = el.getBoundingClientRect();
+        if (
+          e.clientX >= rect.left &&
+          e.clientX <= rect.right &&
+          e.clientY >= rect.top &&
+          e.clientY <= rect.bottom
+        ) {
+          return;
+        }
       }
-    }
-    onPlayPause();
-  }, [showControls, isLiveSession, onPlayPause, currentScene?.type]);
+      onPlayPause();
+    },
+    [showControls, isLiveSession, onPlayPause, currentScene?.type],
+  );
 
   return (
     <div className="w-full h-full flex flex-col bg-gray-50 dark:bg-gray-900 group/canvas">
@@ -107,11 +127,23 @@ export function CanvasArea({
                 {isGenerationFailed ? (
                   <div className="flex flex-col items-center gap-3">
                     <div className="w-12 h-12 rounded-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center">
-                      <svg className="w-6 h-6 text-red-400 dark:text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                      <svg
+                        className="w-6 h-6 text-red-400 dark:text-red-500"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={1.5}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"
+                        />
                       </svg>
                     </div>
-                    <span className="text-sm text-red-500 dark:text-red-400 font-medium">{t('stage.generationFailed')}</span>
+                    <span className="text-sm text-red-500 dark:text-red-400 font-medium">
+                      {t('stage.generationFailed')}
+                    </span>
                     {onRetryGeneration && (
                       <button
                         onClick={onRetryGeneration}
@@ -163,13 +195,24 @@ export function CanvasArea({
                 <motion.div
                   className="opacity-50 group-hover/canvas:opacity-100 transition-opacity duration-300 pointer-events-auto cursor-pointer"
                   exit={{ pointerEvents: 'none' }}
-                  onClick={(e) => { e.stopPropagation(); onPlayPause(); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onPlayPause();
+                  }}
                 >
                   <motion.div
                     initial={{ scale: 0.85 }}
                     animate={{ scale: [1, 1.06] }}
                     exit={{ scale: 1.15, opacity: 0 }}
-                    transition={{ default: { duration: 0.3, ease: [0.4, 0, 0.2, 1] }, scale: { repeat: Infinity, repeatType: 'mirror', duration: 1, ease: 'easeInOut' } }}
+                    transition={{
+                      default: { duration: 0.3, ease: [0.4, 0, 0.2, 1] },
+                      scale: {
+                        repeat: Infinity,
+                        repeatType: 'mirror',
+                        duration: 1,
+                        ease: 'easeInOut',
+                      },
+                    }}
                     className="w-20 h-20 rounded-full bg-white/95 dark:bg-gray-800/95 flex items-center justify-center shadow-[0_4px_30px_rgba(147,51,234,0.15),inset_0_0_0_1px_rgba(233,213,255,0.5)] dark:shadow-[0_4px_30px_rgba(147,51,234,0.3),inset_0_0_0_1px_rgba(126,34,206,0.3)]"
                     style={{ willChange: 'transform' }}
                   >
@@ -182,6 +225,31 @@ export function CanvasArea({
         </div>
       </div>
 
+      {/* ── Canvas Toolbar — in document flow, only when not merged into roundtable ── */}
+      {!hideToolbar && (
+        <CanvasToolbar
+          className={cn(
+            'shrink-0 h-9 px-2',
+            'bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl',
+            'border-t border-gray-200/40 dark:border-gray-700/40',
+          )}
+          currentSceneIndex={currentSceneIndex}
+          scenesCount={scenesCount}
+          engineState={engineState}
+          isLiveSession={isLiveSession}
+          whiteboardOpen={whiteboardOpen}
+          sidebarCollapsed={sidebarCollapsed}
+          chatCollapsed={chatCollapsed}
+          onToggleSidebar={onToggleSidebar}
+          onToggleChat={onToggleChat}
+          onPrevSlide={onPrevSlide}
+          onNextSlide={onNextSlide}
+          onPlayPause={onPlayPause}
+          onWhiteboardClose={onWhiteboardClose}
+          showStopDiscussion={showStopDiscussion}
+          onStopDiscussion={onStopDiscussion}
+        />
+      )}
     </div>
   );
 }

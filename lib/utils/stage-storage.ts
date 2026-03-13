@@ -61,7 +61,7 @@ export async function saveStageData(stageId: string, data: StageStoreData): Prom
           order: scene.order ?? index,
           createdAt: scene.createdAt || now,
           updatedAt: scene.updatedAt || now,
-        }))
+        })),
       );
     }
 
@@ -90,10 +90,7 @@ export async function loadStageData(stageId: string): Promise<StageStoreData | n
     }
 
     // Load scenes
-    const scenes = await db.scenes
-      .where('stageId')
-      .equals(stageId)
-      .sortBy('order');
+    const scenes = await db.scenes.where('stageId').equals(stageId).sortBy('order');
 
     // Load chat sessions from independent table
     const chats = await loadChatSessions(stageId);
@@ -153,7 +150,7 @@ export async function listStages(): Promise<StageListItem[]> {
           createdAt: stage.createdAt,
           updatedAt: stage.updatedAt,
         };
-      })
+      }),
     );
 
     return stageList;
@@ -168,15 +165,14 @@ export async function listStages(): Promise<StageListItem[]> {
  * Also resolves gen_img_* placeholders from mediaFiles so thumbnails show real images.
  * Returns a map of stageId -> Slide (canvas data with resolved images)
  */
-export async function getFirstSlideByStages(stageIds: string[]): Promise<Record<string, import('../types/slides').Slide>> {
+export async function getFirstSlideByStages(
+  stageIds: string[],
+): Promise<Record<string, import('../types/slides').Slide>> {
   const result: Record<string, import('../types/slides').Slide> = {};
   try {
     await Promise.all(
       stageIds.map(async (stageId) => {
-        const scenes = await db.scenes
-          .where('stageId')
-          .equals(stageId)
-          .sortBy('order');
+        const scenes = await db.scenes.where('stageId').equals(stageId).sortBy('order');
         const firstSlide = scenes.find((s) => s.content?.type === 'slide');
         if (firstSlide && firstSlide.content.type === 'slide') {
           const slide = structuredClone(firstSlide.content.canvas);
@@ -184,19 +180,16 @@ export async function getFirstSlideByStages(stageIds: string[]): Promise<Record<
           // Resolve gen_img_* placeholders from mediaFiles
           const placeholderEls = slide.elements.filter(
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (el: any) => el.type === 'image' && /^gen_(img|vid)_[\w-]+$/i.test(el.src as string)
+            (el: any) => el.type === 'image' && /^gen_(img|vid)_[\w-]+$/i.test(el.src as string),
           );
           if (placeholderEls.length > 0) {
-            const mediaRecords = await db.mediaFiles
-              .where('stageId')
-              .equals(stageId)
-              .toArray();
+            const mediaRecords = await db.mediaFiles.where('stageId').equals(stageId).toArray();
             const mediaMap = new Map(
               mediaRecords.map((r) => {
                 // Key format: stageId:elementId → extract elementId
                 const elementId = r.id.includes(':') ? r.id.split(':').slice(1).join(':') : r.id;
                 return [elementId, r.blob] as const;
-              })
+              }),
             );
             for (const el of placeholderEls as Array<{ src: string }>) {
               const blob = mediaMap.get(el.src);
@@ -212,7 +205,7 @@ export async function getFirstSlideByStages(stageIds: string[]): Promise<Record<
 
           result[stageId] = slide;
         }
-      })
+      }),
     );
   } catch (error) {
     log.error('Failed to load thumbnails:', error);

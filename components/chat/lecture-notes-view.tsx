@@ -7,9 +7,21 @@ import { useI18n } from '@/lib/hooks/use-i18n';
 import type { LectureNoteEntry } from '@/lib/types/chat';
 
 const ACTION_ICON_ONLY: Record<string, { Icon: typeof Flashlight; style: string }> = {
-  spotlight:   { Icon: Flashlight, style: 'bg-yellow-50 dark:bg-yellow-500/15 border-yellow-300/40 dark:border-yellow-500/30 text-yellow-700 dark:text-yellow-300' },
-  laser:       { Icon: MousePointer2, style: 'bg-red-50 dark:bg-red-500/15 border-red-300/40 dark:border-red-500/30 text-red-600 dark:text-red-300' },
-  play_video:  { Icon: Play, style: 'bg-yellow-50 dark:bg-yellow-500/15 border-yellow-300/40 dark:border-yellow-500/30 text-yellow-700 dark:text-yellow-300' },
+  spotlight: {
+    Icon: Flashlight,
+    style:
+      'bg-yellow-50 dark:bg-yellow-500/15 border-yellow-300/40 dark:border-yellow-500/30 text-yellow-700 dark:text-yellow-300',
+  },
+  laser: {
+    Icon: MousePointer2,
+    style:
+      'bg-red-50 dark:bg-red-500/15 border-red-300/40 dark:border-red-500/30 text-red-600 dark:text-red-300',
+  },
+  play_video: {
+    Icon: Play,
+    style:
+      'bg-yellow-50 dark:bg-yellow-500/15 border-yellow-300/40 dark:border-yellow-500/30 text-yellow-700 dark:text-yellow-300',
+  },
 };
 
 interface LectureNotesViewProps {
@@ -48,7 +60,10 @@ export function LectureNotesView({ notes, currentSceneId }: LectureNotesViewProp
   }
 
   return (
-    <div ref={containerRef} className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-2 scrollbar-hide">
+    <div
+      ref={containerRef}
+      className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-2 scrollbar-hide"
+    >
       {notes.map((note, index) => {
         const isCurrent = note.sceneId === currentSceneId;
         const pageNum = index + 1;
@@ -62,7 +77,7 @@ export function LectureNotesView({ notes, currentSceneId }: LectureNotesViewProp
               'relative mb-3 last:mb-0 rounded-lg px-3 py-2.5 transition-colors duration-200',
               isCurrent
                 ? 'bg-purple-50/80 dark:bg-purple-950/25 ring-1 ring-purple-200/60 dark:ring-purple-700/30'
-                : 'bg-gray-50/50 dark:bg-gray-800/30'
+                : 'bg-gray-50/50 dark:bg-gray-800/30',
             )}
           >
             {/* Page label row */}
@@ -73,13 +88,17 @@ export function LectureNotesView({ notes, currentSceneId }: LectureNotesViewProp
                   'w-2 h-2 rounded-full shrink-0',
                   isCurrent
                     ? 'bg-purple-500 dark:bg-purple-400 shadow-sm shadow-purple-400/40'
-                    : 'bg-gray-300 dark:bg-gray-600'
+                    : 'bg-gray-300 dark:bg-gray-600',
                 )}
               />
-              <span className={cn(
-                'text-[10px] font-semibold tracking-wide',
-                isCurrent ? 'text-purple-600 dark:text-purple-400' : 'text-gray-400 dark:text-gray-500'
-              )}>
+              <span
+                className={cn(
+                  'text-[10px] font-semibold tracking-wide',
+                  isCurrent
+                    ? 'text-purple-600 dark:text-purple-400'
+                    : 'text-gray-400 dark:text-gray-500',
+                )}
+              >
                 {pageLabel}
               </span>
               {isCurrent && (
@@ -109,14 +128,21 @@ export function LectureNotesView({ notes, currentSceneId }: LectureNotesViewProp
                   if (item.kind === 'action' && item.type === 'discussion') {
                     // Flush pending inline actions as trailing if any
                     if (pendingInline.length > 0) {
-                      rows.push({ kind: 'trailing', inlineActions: pendingInline });
+                      rows.push({
+                        kind: 'trailing',
+                        inlineActions: pendingInline,
+                      });
                       pendingInline = [];
                     }
                     rows.push({ kind: 'discussion', label: item.label });
                   } else if (item.kind === 'action') {
                     pendingInline.push(item.type);
                   } else {
-                    rows.push({ kind: 'speech', inlineActions: pendingInline, text: item.text });
+                    rows.push({
+                      kind: 'speech',
+                      inlineActions: pendingInline,
+                      text: item.text,
+                    });
                     pendingInline = [];
                   }
                 }

@@ -1,20 +1,22 @@
-'use client'
+'use client';
 
-import type { PBLAgent, PBLProjectInfo } from '@/lib/pbl/types'
-import { useI18n } from '@/lib/hooks/use-i18n'
-import { PBLGuideInline } from './guide'
+import type { PBLAgent, PBLProjectInfo } from '@/lib/pbl/types';
+import { useI18n } from '@/lib/hooks/use-i18n';
+import { PBLGuideInline } from './guide';
 
 interface PBLRoleSelectionProps {
-  readonly projectInfo: PBLProjectInfo
-  readonly agents: PBLAgent[]
-  readonly onSelectRole: (agentName: string) => void
+  readonly projectInfo: PBLProjectInfo;
+  readonly agents: PBLAgent[];
+  readonly onSelectRole: (agentName: string) => void;
 }
 
 export function PBLRoleSelection({ projectInfo, agents, onSelectRole }: PBLRoleSelectionProps) {
-  const { t } = useI18n()
+  const { t } = useI18n();
 
   // Only show non-system development roles
-  const selectableAgents = agents.filter(a => !a.is_system_agent && a.role_division === 'development')
+  const selectableAgents = agents.filter(
+    (a) => !a.is_system_agent && a.role_division === 'development',
+  );
 
   return (
     <div className="flex flex-col items-center h-full overflow-y-auto p-8 bg-gradient-to-b from-background to-muted/30">
@@ -28,7 +30,9 @@ export function PBLRoleSelection({ projectInfo, agents, onSelectRole }: PBLRoleS
         {/* Role Selection */}
         <div className="space-y-4">
           <h2 className="text-xl font-semibold text-center">{t('pbl.roleSelection.title')}</h2>
-          <p className="text-sm text-muted-foreground text-center">{t('pbl.roleSelection.description')}</p>
+          <p className="text-sm text-muted-foreground text-center">
+            {t('pbl.roleSelection.description')}
+          </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {selectableAgents.map((agent) => (
@@ -55,5 +59,5 @@ export function PBLRoleSelection({ projectInfo, agents, onSelectRole }: PBLRoleS
         <PBLGuideInline />
       </div>
     </div>
-  )
+  );
 }

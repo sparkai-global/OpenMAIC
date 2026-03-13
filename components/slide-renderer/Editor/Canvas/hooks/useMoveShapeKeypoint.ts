@@ -22,7 +22,7 @@ interface ShapePathData {
 export function useMoveShapeKeypoint(
   elementListRef: React.RefObject<PPTElement[]>,
   setElementList: React.Dispatch<React.SetStateAction<PPTElement[]>>,
-  canvasScale: number
+  canvasScale: number,
 ) {
   const updateSlide = useCanvasOperations().updateSlide;
 
@@ -108,10 +108,10 @@ export function useMoveShapeKeypoint(
       const handleMouseUp = (e: MouseEvent | TouchEvent) => {
         isMouseDown = false;
 
-        document.ontouchmove = null
-        document.ontouchend = null
-        document.onmousemove = null
-        document.onmouseup = null
+        document.ontouchmove = null;
+        document.ontouchend = null;
+        document.onmousemove = null;
+        document.onmouseup = null;
 
         const currentPageX = e instanceof MouseEvent ? e.pageX : e.changedTouches[0].pageX;
         const currentPageY = e instanceof MouseEvent ? e.pageY : e.changedTouches[0].pageY;
@@ -130,7 +130,7 @@ export function useMoveShapeKeypoint(
         document.onmouseup = handleMouseUp;
       }
     },
-    [elementListRef, setElementList, canvasScale, updateSlide, addHistorySnapshot]
+    [elementListRef, setElementList, canvasScale, updateSlide, addHistorySnapshot],
   );
 
   return {

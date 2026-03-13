@@ -1,6 +1,15 @@
-import type { ProviderId, ModelInfo, ProviderType } from "@/lib/types/provider";
+import type { ProviderId, ModelInfo, ProviderType } from '@/lib/types/provider';
 
-export type SettingsSection = "general" | "providers" | "agents" | "tts" | "asr" | "pdf" | "image" | "video" | "web-search";
+export type SettingsSection =
+  | 'general'
+  | 'providers'
+  | 'agents'
+  | 'tts'
+  | 'asr'
+  | 'pdf'
+  | 'image'
+  | 'video'
+  | 'web-search';
 
 /**
  * Unified provider configuration stored in JSON format
@@ -22,9 +31,9 @@ export interface ProviderSettings {
   isBuiltIn: boolean; // true for built-in providers, false for custom
 
   // Server-side configuration (set by fetchServerProviders)
-  isServerConfigured?: boolean;   // Server has API key for this provider
-  serverModels?: string[];        // Server-restricted model list (if set)
-  serverBaseUrl?: string;         // Server-provided base URL override
+  isServerConfigured?: boolean; // Server has API key for this provider
+  serverModels?: string[]; // Server-restricted model list (if set)
+  serverBaseUrl?: string; // Server-provided base URL override
 }
 
 /**

@@ -2,10 +2,9 @@ import { NextRequest } from 'next/server';
 import { transcribeAudio } from '@/lib/audio/asr-providers';
 import { resolveASRApiKey, resolveASRBaseUrl } from '@/lib/server/provider-config';
 import type { ASRProviderId } from '@/lib/audio/types';
-import { createLogger } from '@/lib/logger'
+import { createLogger } from '@/lib/logger';
 import { apiError, apiSuccess } from '@/lib/server/api-response';
-const log = createLogger('Transcription')
-
+const log = createLogger('Transcription');
 
 export const maxDuration = 60;
 

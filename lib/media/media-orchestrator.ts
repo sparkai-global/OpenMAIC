@@ -161,19 +161,24 @@ async function generateSingleMedia(
 
     // Persist non-retryable failures to IndexedDB so they survive page refresh
     if (errorCode) {
-      await db.mediaFiles.put({
-        id: mediaFileKey(stageId, req.elementId),
-        stageId,
-        type: req.type,
-        blob: new Blob(),  // empty placeholder
-        mimeType: req.type === 'image' ? 'image/png' : 'video/mp4',
-        size: 0,
-        prompt: req.prompt,
-        params: JSON.stringify({ aspectRatio: req.aspectRatio, style: req.style }),
-        error: message,
-        errorCode,
-        createdAt: Date.now(),
-      }).catch(() => {}); // best-effort
+      await db.mediaFiles
+        .put({
+          id: mediaFileKey(stageId, req.elementId),
+          stageId,
+          type: req.type,
+          blob: new Blob(), // empty placeholder
+          mimeType: req.type === 'image' ? 'image/png' : 'video/mp4',
+          size: 0,
+          prompt: req.prompt,
+          params: JSON.stringify({
+            aspectRatio: req.aspectRatio,
+            style: req.style,
+          }),
+          error: message,
+          errorCode,
+          createdAt: Date.now(),
+        })
+        .catch(() => {}); // best-effort
     }
   }
 }
@@ -208,10 +213,12 @@ async function callImageApi(
   }
 
   const data = await response.json();
-  if (!data.success) throw new MediaApiError(data.error || 'Image generation failed', data.errorCode);
+  if (!data.success)
+    throw new MediaApiError(data.error || 'Image generation failed', data.errorCode);
 
   // Result may have url or base64
-  const url = data.result?.url || (data.result?.base64 ? `data:image/png;base64,${data.result.base64}` : '');
+  const url =
+    data.result?.url || (data.result?.base64 ? `data:image/png;base64,${data.result.base64}` : '');
   if (!url) throw new Error('No image URL in response');
   return { url };
 }
@@ -245,7 +252,8 @@ async function callVideoApi(
   }
 
   const data = await response.json();
-  if (!data.success) throw new MediaApiError(data.error || 'Video generation failed', data.errorCode);
+  if (!data.success)
+    throw new MediaApiError(data.error || 'Video generation failed', data.errorCode);
 
   const url = data.result?.url;
   if (!url) throw new Error('No video URL in response');

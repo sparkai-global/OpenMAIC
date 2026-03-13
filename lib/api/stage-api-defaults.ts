@@ -5,7 +5,7 @@
  * and default content creation.
  */
 
-import { nanoid } from "nanoid";
+import { nanoid } from 'nanoid';
 import type {
   Scene,
   SceneType,
@@ -14,7 +14,7 @@ import type {
   QuizContent,
   InteractiveContent,
   PBLContent,
-} from "@/lib/types/stage";
+} from '@/lib/types/stage';
 
 // ==================== Utility Functions ====================
 
@@ -44,26 +44,26 @@ export function getScene(scenes: Scene[], sceneId: string): Scene | null {
  */
 export function createDefaultSlideContent(): SlideContent {
   return {
-    type: "slide",
+    type: 'slide',
     canvas: {
-      id: generateId("slide"),
+      id: generateId('slide'),
       viewportSize: 1000,
       viewportRatio: 0.5625, // 16:9
       theme: {
-        backgroundColor: "#ffffff",
-        themeColors: ["#5b9bd5", "#ed7d31", "#a5a5a5", "#ffc000", "#4472c4"],
-        fontColor: "#333333",
-        fontName: "Microsoft YaHei",
+        backgroundColor: '#ffffff',
+        themeColors: ['#5b9bd5', '#ed7d31', '#a5a5a5', '#ffc000', '#4472c4'],
+        fontColor: '#333333',
+        fontName: 'Microsoft YaHei',
         outline: {
-          color: "#d14424",
+          color: '#d14424',
           width: 2,
-          style: "solid",
+          style: 'solid',
         },
         shadow: {
           h: 0,
           v: 0,
           blur: 10,
-          color: "#000000",
+          color: '#000000',
         },
       },
       elements: [],
@@ -76,7 +76,7 @@ export function createDefaultSlideContent(): SlideContent {
  */
 export function createDefaultQuizContent(): QuizContent {
   return {
-    type: "quiz",
+    type: 'quiz',
     questions: [],
   };
 }
@@ -86,8 +86,8 @@ export function createDefaultQuizContent(): QuizContent {
  */
 export function createDefaultInteractiveContent(): InteractiveContent {
   return {
-    type: "interactive",
-    url: "",
+    type: 'interactive',
+    url: '',
   };
 }
 
@@ -96,7 +96,7 @@ export function createDefaultInteractiveContent(): InteractiveContent {
  */
 export function createDefaultPBLContent(): PBLContent {
   return {
-    type: "pbl",
+    type: 'pbl',
     projectConfig: {
       projectInfo: { title: '', description: '' },
       agents: [],
@@ -111,13 +111,13 @@ export function createDefaultPBLContent(): PBLContent {
  */
 export function createDefaultContent(type: SceneType): SceneContent {
   switch (type) {
-    case "slide":
+    case 'slide':
       return createDefaultSlideContent();
-    case "quiz":
+    case 'quiz':
       return createDefaultQuizContent();
-    case "interactive":
+    case 'interactive':
       return createDefaultInteractiveContent();
-    case "pbl":
+    case 'pbl':
       return createDefaultPBLContent();
     default:
       throw new Error(`Unknown scene type: ${type}`);

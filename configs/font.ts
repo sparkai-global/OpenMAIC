@@ -28,4 +28,4 @@ export const FONTS = [
   { label: 'Montserrat', value: 'Montserrat' },
   { label: 'Source Sans Pro', value: 'SourceSansPro' },
   { label: 'Merriweather', value: 'Merriweather' },
-]
+];

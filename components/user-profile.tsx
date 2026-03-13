@@ -35,8 +35,9 @@ export function UserProfileCard() {
   const [hydrated, setHydrated] = useState(false);
   const nameInputRef = useRef<HTMLInputElement>(null);
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect -- Store hydration on mount
-  useEffect(() => { setHydrated(true); }, []);
+  useEffect(() => {
+    setHydrated(true); // eslint-disable-line react-hooks/set-state-in-effect -- Store hydration on mount
+  }, []);
 
   useEffect(() => {
     if (editingName) nameInputRef.current?.focus();
@@ -122,7 +123,12 @@ export function UserProfileCard() {
             <img src={avatar} alt="" className="size-full object-cover" />
           </div>
           <div className="absolute -bottom-0.5 -right-0.5 size-4 rounded-full bg-white dark:bg-slate-800 border border-muted/60 flex items-center justify-center">
-            <ChevronDown className={cn('size-2.5 text-muted-foreground transition-transform duration-200', avatarPickerOpen && 'rotate-180')} />
+            <ChevronDown
+              className={cn(
+                'size-2.5 text-muted-foreground transition-transform duration-200',
+                avatarPickerOpen && 'rotate-180',
+              )}
+            />
           </div>
         </button>
 
@@ -155,9 +161,7 @@ export function UserProfileCard() {
               onClick={startEditName}
               className="group/name flex items-center gap-1.5 cursor-pointer"
             >
-              <span className="text-sm font-semibold text-foreground truncate">
-                {displayName}
-              </span>
+              <span className="text-sm font-semibold text-foreground truncate">{displayName}</span>
               <Pencil className="size-3 text-muted-foreground/40 opacity-0 group-hover/name:opacity-100 transition-opacity" />
             </button>
           )}
@@ -186,7 +190,7 @@ export function UserProfileCard() {
                     'hover:scale-110 active:scale-95',
                     avatar === url
                       ? 'ring-2 ring-violet-400 dark:ring-violet-500 ring-offset-1 ring-offset-white dark:ring-offset-slate-900'
-                      : 'hover:ring-1 hover:ring-muted-foreground/30'
+                      : 'hover:ring-1 hover:ring-muted-foreground/30',
                   )}
                 >
                   <img src={url} alt="" className="size-full" />
@@ -201,7 +205,7 @@ export function UserProfileCard() {
                   'hover:scale-110 active:scale-95',
                   isCustomAvatar(avatar)
                     ? 'ring-2 ring-violet-400 dark:ring-violet-500 ring-offset-1 ring-offset-white dark:ring-offset-slate-900 border-violet-300 dark:border-violet-600 bg-violet-50 dark:bg-violet-900/30'
-                    : 'border-muted-foreground/30 text-muted-foreground/50 hover:border-muted-foreground/50'
+                    : 'border-muted-foreground/30 text-muted-foreground/50 hover:border-muted-foreground/50',
                 )}
                 title={t('profile.uploadAvatar')}
               >

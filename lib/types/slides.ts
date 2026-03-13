@@ -43,18 +43,18 @@ export const enum ElementTypes {
  *
  * rotate: 渐变角度（线性渐变）
  */
-export type GradientType = 'linear' | 'radial'
+export type GradientType = 'linear' | 'radial';
 export type GradientColor = {
-  pos: number
-  color: string
-}
+  pos: number;
+  color: string;
+};
 export interface Gradient {
-  type: GradientType
-  colors: GradientColor[]
-  rotate: number
+  type: GradientType;
+  colors: GradientColor[];
+  rotate: number;
 }
 
-export type LineStyleType = 'solid' | 'dashed' | 'dotted'
+export type LineStyleType = 'solid' | 'dashed' | 'dotted';
 
 /**
  * 元素阴影
@@ -68,10 +68,10 @@ export type LineStyleType = 'solid' | 'dashed' | 'dotted'
  * color: 阴影颜色
  */
 export interface PPTElementShadow {
-  h: number
-  v: number
-  blur: number
-  color: string
+  h: number;
+  v: number;
+  blur: number;
+  color: string;
 }
 
 /**
@@ -84,12 +84,12 @@ export interface PPTElementShadow {
  * color?: 边框颜色
  */
 export interface PPTElementOutline {
-  style?: LineStyleType
-  width?: number
-  color?: string
+  style?: LineStyleType;
+  width?: number;
+  color?: string;
 }
 
-export type ElementLinkType = 'web' | 'slide'
+export type ElementLinkType = 'web' | 'slide';
 
 /**
  * 元素超链接
@@ -99,10 +99,9 @@ export type ElementLinkType = 'web' | 'slide'
  * target: 目标地址（网页链接、幻灯片页面ID）
  */
 export interface PPTElementLink {
-  type: ElementLinkType
-  target: string
+  type: ElementLinkType;
+  target: string;
 }
-
 
 /**
  * 元素通用属性
@@ -128,20 +127,29 @@ export interface PPTElementLink {
  * name?: 元素名
  */
 interface PPTBaseElement {
-  id: string
-  left: number
-  top: number
-  lock?: boolean
-  groupId?: string
-  width: number
-  height: number
-  rotate: number
-  link?: PPTElementLink
-  name?: string
+  id: string;
+  left: number;
+  top: number;
+  lock?: boolean;
+  groupId?: string;
+  width: number;
+  height: number;
+  rotate: number;
+  link?: PPTElementLink;
+  name?: string;
 }
 
-
-export type TextType = 'title' | 'subtitle' | 'content' | 'item' | 'itemTitle' | 'notes' | 'header' | 'footer' | 'partNumber' | 'itemNumber'
+export type TextType =
+  | 'title'
+  | 'subtitle'
+  | 'content'
+  | 'item'
+  | 'itemTitle'
+  | 'notes'
+  | 'header'
+  | 'footer'
+  | 'partNumber'
+  | 'itemNumber';
 
 /**
  * 文本元素
@@ -173,21 +181,20 @@ export type TextType = 'title' | 'subtitle' | 'content' | 'item' | 'itemTitle' |
  * textType?: 文本类型
  */
 export interface PPTTextElement extends PPTBaseElement {
-  type: 'text'
-  content: string
-  defaultFontName: string
-  defaultColor: string
-  outline?: PPTElementOutline
-  fill?: string
-  lineHeight?: number
-  wordSpace?: number
-  opacity?: number
-  shadow?: PPTElementShadow
-  paragraphSpace?: number
-  vertical?: boolean
-  textType?: TextType
+  type: 'text';
+  content: string;
+  defaultFontName: string;
+  defaultColor: string;
+  outline?: PPTElementOutline;
+  fill?: string;
+  lineHeight?: number;
+  wordSpace?: number;
+  opacity?: number;
+  shadow?: PPTElementShadow;
+  paragraphSpace?: number;
+  vertical?: boolean;
+  textType?: TextType;
 }
-
 
 /**
  * 图片翻转、形状翻转
@@ -197,8 +204,8 @@ export interface PPTTextElement extends PPTBaseElement {
  * flipV?: 垂直翻转
  */
 export interface ImageOrShapeFlip {
-  flipH?: boolean
-  flipV?: boolean
+  flipH?: boolean;
+  flipV?: boolean;
 }
 
 /**
@@ -220,20 +227,29 @@ export interface ImageOrShapeFlip {
  *
  * 'opacity'?: 不透明度，默认100（%）
  */
-export type ImageElementFilterKeys = 'blur' | 'brightness' | 'contrast' | 'grayscale' | 'saturate' | 'hue-rotate' | 'opacity' | 'sepia' | 'invert'
+export type ImageElementFilterKeys =
+  | 'blur'
+  | 'brightness'
+  | 'contrast'
+  | 'grayscale'
+  | 'saturate'
+  | 'hue-rotate'
+  | 'opacity'
+  | 'sepia'
+  | 'invert';
 export interface ImageElementFilters {
-  'blur'?: string
-  'brightness'?: string
-  'contrast'?: string
-  'grayscale'?: string
-  'saturate'?: string
-  'hue-rotate'?: string
-  'sepia'?: string
-  'invert'?: string
-  'opacity'?: string
+  blur?: string;
+  brightness?: string;
+  contrast?: string;
+  grayscale?: string;
+  saturate?: string;
+  'hue-rotate'?: string;
+  sepia?: string;
+  invert?: string;
+  opacity?: string;
 }
 
-export type ImageClipDataRange = [[number, number], [number, number]]
+export type ImageClipDataRange = [[number, number], [number, number]];
 
 /**
  * 图片裁剪
@@ -243,11 +259,11 @@ export type ImageClipDataRange = [[number, number], [number, number]]
  * shape: 裁剪形状，见 configs/image-clip.ts CLIPPATHS
  */
 export interface ImageElementClip {
-  range: ImageClipDataRange
-  shape: string
+  range: ImageClipDataRange;
+  shape: string;
 }
 
-export type ImageType = 'pageFigure' | 'itemFigure' | 'background'
+export type ImageType = 'pageFigure' | 'itemFigure' | 'background';
 
 /**
  * 图片元素
@@ -277,21 +293,21 @@ export type ImageType = 'pageFigure' | 'itemFigure' | 'background'
  * imageType?: 图片类型
  */
 export interface PPTImageElement extends PPTBaseElement {
-  type: 'image'
-  fixedRatio: boolean
-  src: string
-  outline?: PPTElementOutline
-  filters?: ImageElementFilters
-  clip?: ImageElementClip
-  flipH?: boolean
-  flipV?: boolean
-  shadow?: PPTElementShadow
-  radius?: number
-  colorMask?: string
-  imageType?: ImageType
+  type: 'image';
+  fixedRatio: boolean;
+  src: string;
+  outline?: PPTElementOutline;
+  filters?: ImageElementFilters;
+  clip?: ImageElementClip;
+  flipH?: boolean;
+  flipV?: boolean;
+  shadow?: PPTElementShadow;
+  radius?: number;
+  colorMask?: string;
+  imageType?: ImageType;
 }
 
-export type ShapeTextAlign = 'top' | 'middle' | 'bottom'
+export type ShapeTextAlign = 'top' | 'middle' | 'bottom';
 
 /**
  * 形状内文本
@@ -313,14 +329,14 @@ export type ShapeTextAlign = 'top' | 'middle' | 'bottom'
  * type: 文本类型
  */
 export interface ShapeText {
-  content: string
-  defaultFontName: string
-  defaultColor: string
-  align: ShapeTextAlign
-  lineHeight?: number
-  wordSpace?: number
-  paragraphSpace?: number
-  type?: TextType
+  content: string;
+  defaultFontName: string;
+  defaultColor: string;
+  align: ShapeTextAlign;
+  lineHeight?: number;
+  wordSpace?: number;
+  paragraphSpace?: number;
+  type?: TextType;
 }
 
 /**
@@ -361,26 +377,25 @@ export interface ShapeText {
  * keypoints?: 关键点位置百分比
  */
 export interface PPTShapeElement extends PPTBaseElement {
-  type: 'shape'
-  viewBox: [number, number]
-  path: string
-  fixedRatio: boolean
-  fill: string
-  gradient?: Gradient
-  pattern?: string
-  outline?: PPTElementOutline
-  opacity?: number
-  flipH?: boolean
-  flipV?: boolean
-  shadow?: PPTElementShadow
-  special?: boolean
-  text?: ShapeText
-  pathFormula?: ShapePathFormulasKeys
-  keypoints?: number[]
+  type: 'shape';
+  viewBox: [number, number];
+  path: string;
+  fixedRatio: boolean;
+  fill: string;
+  gradient?: Gradient;
+  pattern?: string;
+  outline?: PPTElementOutline;
+  opacity?: number;
+  flipH?: boolean;
+  flipV?: boolean;
+  shadow?: PPTElementShadow;
+  special?: boolean;
+  text?: ShapeText;
+  pathFormula?: ShapePathFormulasKeys;
+  keypoints?: number[];
 }
 
-
-export type LinePoint = '' | 'arrow' | 'dot'
+export type LinePoint = '' | 'arrow' | 'dot';
 
 /**
  * 线条元素
@@ -408,31 +423,30 @@ export type LinePoint = '' | 'arrow' | 'dot'
  * cubic?: 三次曲线控制点位置（[[x1, y1], [x2, y2]]）
  */
 export interface PPTLineElement extends Omit<PPTBaseElement, 'height' | 'rotate'> {
-  type: 'line'
-  start: [number, number]
-  end: [number, number]
-  style: LineStyleType
-  color: string
-  points: [LinePoint, LinePoint]
-  shadow?: PPTElementShadow
-  broken?: [number, number]
-  broken2?: [number, number]
-  curve?: [number, number]
-  cubic?: [[number, number], [number, number]]
+  type: 'line';
+  start: [number, number];
+  end: [number, number];
+  style: LineStyleType;
+  color: string;
+  points: [LinePoint, LinePoint];
+  shadow?: PPTElementShadow;
+  broken?: [number, number];
+  broken2?: [number, number];
+  curve?: [number, number];
+  cubic?: [[number, number], [number, number]];
 }
 
-
-export type ChartType = 'bar' | 'column' | 'line' | 'pie' | 'ring' | 'area' | 'radar' | 'scatter'
+export type ChartType = 'bar' | 'column' | 'line' | 'pie' | 'ring' | 'area' | 'radar' | 'scatter';
 
 export interface ChartOptions {
-  lineSmooth?: boolean
-  stack?: boolean
+  lineSmooth?: boolean;
+  stack?: boolean;
 }
 
 export interface ChartData {
-  labels: string[]
-  legends: string[]
-  series: number[][]
+  labels: string[];
+  legends: string[];
+  series: number[][];
 }
 
 /**
@@ -457,19 +471,18 @@ export interface ChartData {
  * lineColor?: 网格颜色
  */
 export interface PPTChartElement extends PPTBaseElement {
-  type: 'chart'
-  fill?: string
-  chartType: ChartType
-  data: ChartData
-  options?: ChartOptions
-  outline?: PPTElementOutline
-  themeColors: string[]
-  textColor?: string
-  lineColor?: string
+  type: 'chart';
+  fill?: string;
+  chartType: ChartType;
+  data: ChartData;
+  options?: ChartOptions;
+  outline?: PPTElementOutline;
+  themeColors: string[];
+  textColor?: string;
+  lineColor?: string;
 }
 
-
-export type TextAlign = 'left' | 'center' | 'right' | 'justify'
+export type TextAlign = 'left' | 'center' | 'right' | 'justify';
 /**
  * 表格单元格样式
  *
@@ -492,17 +505,16 @@ export type TextAlign = 'left' | 'center' | 'right' | 'justify'
  * align?: 对齐方式
  */
 export interface TableCellStyle {
-  bold?: boolean
-  em?: boolean
-  underline?: boolean
-  strikethrough?: boolean
-  color?: string
-  backcolor?: string
-  fontsize?: string
-  fontname?: string
-  align?: TextAlign
+  bold?: boolean;
+  em?: boolean;
+  underline?: boolean;
+  strikethrough?: boolean;
+  color?: string;
+  backcolor?: string;
+  fontsize?: string;
+  fontname?: string;
+  align?: TextAlign;
 }
-
 
 /**
  * 表格单元格
@@ -518,11 +530,11 @@ export interface TableCellStyle {
  * style?: 单元格样式
  */
 export interface TableCell {
-  id: string
-  colspan: number
-  rowspan: number
-  text: string
-  style?: TableCellStyle
+  id: string;
+  colspan: number;
+  rowspan: number;
+  text: string;
+  style?: TableCellStyle;
 }
 
 /**
@@ -539,11 +551,11 @@ export interface TableCell {
  * colFooter: 最后一列
  */
 export interface TableTheme {
-  color: string
-  rowHeader: boolean
-  rowFooter: boolean
-  colHeader: boolean
-  colFooter: boolean
+  color: string;
+  rowHeader: boolean;
+  rowFooter: boolean;
+  colHeader: boolean;
+  colFooter: boolean;
 }
 
 /**
@@ -562,14 +574,13 @@ export interface TableTheme {
  * data: 表格数据
  */
 export interface PPTTableElement extends PPTBaseElement {
-  type: 'table'
-  outline: PPTElementOutline
-  theme?: TableTheme
-  colWidths: number[]
-  cellMinHeight: number
-  data: TableCell[][]
+  type: 'table';
+  outline: PPTElementOutline;
+  theme?: TableTheme;
+  colWidths: number[];
+  cellMinHeight: number;
+  data: TableCell[][];
 }
-
 
 /**
  * LaTeX元素（公式）
@@ -593,15 +604,15 @@ export interface PPTTableElement extends PPTBaseElement {
  * align: 公式水平对齐方式（left/center/right，默认center）
  */
 export interface PPTLatexElement extends PPTBaseElement {
-  type: 'latex'
-  latex: string
-  html?: string
-  path?: string
-  color?: string
-  strokeWidth?: number
-  viewBox?: [number, number]
-  fixedRatio?: boolean
-  align?: 'left' | 'center' | 'right'
+  type: 'latex';
+  latex: string;
+  html?: string;
+  path?: string;
+  color?: string;
+  strokeWidth?: number;
+  viewBox?: [number, number];
+  fixedRatio?: boolean;
+  align?: 'left' | 'center' | 'right';
 }
 
 /**
@@ -618,11 +629,11 @@ export interface PPTLatexElement extends PPTBaseElement {
  * ext: 视频后缀，当资源链接缺少后缀时用该字段确认资源类型
  */
 export interface PPTVideoElement extends PPTBaseElement {
-  type: 'video'
-  src: string
-  autoplay: boolean
-  poster?: string
-  ext?: string
+  type: 'video';
+  src: string;
+  autoplay: boolean;
+  poster?: string;
+  ext?: string;
 }
 
 /**
@@ -643,20 +654,28 @@ export interface PPTVideoElement extends PPTBaseElement {
  * ext: 音频后缀，当资源链接缺少后缀时用该字段确认资源类型
  */
 export interface PPTAudioElement extends PPTBaseElement {
-  type: 'audio'
-  fixedRatio: boolean
-  color: string
-  loop: boolean
-  autoplay: boolean
-  src: string
-  ext?: string
+  type: 'audio';
+  fixedRatio: boolean;
+  color: string;
+  loop: boolean;
+  autoplay: boolean;
+  src: string;
+  ext?: string;
 }
 
+export type PPTElement =
+  | PPTTextElement
+  | PPTImageElement
+  | PPTShapeElement
+  | PPTLineElement
+  | PPTChartElement
+  | PPTTableElement
+  | PPTLatexElement
+  | PPTVideoElement
+  | PPTAudioElement;
 
-export type PPTElement = PPTTextElement | PPTImageElement | PPTShapeElement | PPTLineElement | PPTChartElement | PPTTableElement | PPTLatexElement | PPTVideoElement | PPTAudioElement
-
-export type AnimationType = 'in' | 'out' | 'attention'
-export type AnimationTrigger = 'click' | 'meantime' | 'auto'
+export type AnimationType = 'in' | 'out' | 'attention';
+export type AnimationTrigger = 'click' | 'meantime' | 'auto';
 
 /**
  * 元素动画
@@ -674,19 +693,19 @@ export type AnimationTrigger = 'click' | 'meantime' | 'auto'
  * trigger: 动画触发方式(click - 单击时、meantime - 与上一动画同时、auto - 上一动画之后)
  */
 export interface PPTAnimation {
-  id: string
-  elId: string
-  effect: string
-  type: AnimationType
-  duration: number
-  trigger: AnimationTrigger
+  id: string;
+  elId: string;
+  effect: string;
+  type: AnimationType;
+  duration: number;
+  trigger: AnimationTrigger;
 }
 
-export type SlideBackgroundType = 'solid' | 'image' | 'gradient'
-export type SlideBackgroundImageSize = 'cover' | 'contain' | 'repeat'
+export type SlideBackgroundType = 'solid' | 'image' | 'gradient';
+export type SlideBackgroundImageSize = 'cover' | 'contain' | 'repeat';
 export interface SlideBackgroundImage {
-  src: string
-  size: SlideBackgroundImageSize,
+  src: string;
+  size: SlideBackgroundImageSize;
 }
 
 /**
@@ -701,21 +720,32 @@ export interface SlideBackgroundImage {
  * gradientType?: 渐变背景
  */
 export interface SlideBackground {
-  type: SlideBackgroundType
-  color?: string
-  image?: SlideBackgroundImage
-  gradient?: Gradient
+  type: SlideBackgroundType;
+  color?: string;
+  image?: SlideBackgroundImage;
+  gradient?: Gradient;
 }
 
-
-export type TurningMode = 'no' | 'fade' | 'slideX' | 'slideY' | 'random' | 'slideX3D' | 'slideY3D' | 'rotate' | 'scaleY' | 'scaleX' | 'scale' | 'scaleReverse'
+export type TurningMode =
+  | 'no'
+  | 'fade'
+  | 'slideX'
+  | 'slideY'
+  | 'random'
+  | 'slideX3D'
+  | 'slideY3D'
+  | 'rotate'
+  | 'scaleY'
+  | 'scaleX'
+  | 'scale'
+  | 'scaleReverse';
 
 export interface SectionTag {
-  id: string
-  title?: string
+  id: string;
+  title?: string;
 }
 
-export type SlideType = 'cover' | 'contents' | 'transition' | 'content' | 'end'
+export type SlideType = 'cover' | 'contents' | 'transition' | 'content' | 'end';
 
 /**
  * 幻灯片页面
@@ -737,20 +767,20 @@ export type SlideType = 'cover' | 'contents' | 'transition' | 'content' | 'end'
  * turningMode?: 翻页方式
  *
  * sectionTag?: 章节标签
- * 
+ *
  * type?: 页面类型
  */
 export interface Slide {
-  id: string
-  viewportSize: number
-  viewportRatio: number
-  theme: SlideTheme
-  elements: PPTElement[]
-  background?: SlideBackground
-  animations?: PPTAnimation[]
-  turningMode?: TurningMode
-  sectionTag?: SectionTag
-  type?: SlideType
+  id: string;
+  viewportSize: number;
+  viewportRatio: number;
+  theme: SlideTheme;
+  elements: PPTElement[];
+  background?: SlideBackground;
+  animations?: PPTAnimation[];
+  turningMode?: TurningMode;
+  sectionTag?: SectionTag;
+  type?: SlideType;
 }
 
 /**
@@ -765,19 +795,19 @@ export interface Slide {
  * fontName: 字体
  */
 export interface SlideTheme {
-  backgroundColor: string
-  themeColors: string[]
-  fontColor: string
-  fontName: string
-  outline?: PPTElementOutline
-  shadow?: PPTElementShadow
+  backgroundColor: string;
+  themeColors: string[];
+  fontColor: string;
+  fontName: string;
+  outline?: PPTElementOutline;
+  shadow?: PPTElementShadow;
 }
 
 export interface SlideTemplate {
-  name: string
-  id: string
-  cover: string
-  origin?: string
+  name: string;
+  id: string;
+  cover: string;
+  origin?: string;
 }
 
 /**

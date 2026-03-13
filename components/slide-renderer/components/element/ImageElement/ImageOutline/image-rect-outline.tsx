@@ -13,22 +13,13 @@ export interface ImageRectOutlineProps {
 /**
  * Rectangle outline for image element
  */
-export function ImageRectOutline({
-  width,
-  height,
-  outline,
-  radius = '0'
-}: ImageRectOutlineProps) {
+export function ImageRectOutline({ width, height, outline, radius = '0' }: ImageRectOutlineProps) {
   const { outlineWidth, outlineColor, strokeDashArray } = useElementOutline(outline);
 
   if (!outline) return null;
 
   return (
-    <svg
-      className="absolute top-0 left-0 z-[2] overflow-visible"
-      width={width}
-      height={height}
-    >
+    <svg className="absolute top-0 left-0 z-[2] overflow-visible" width={width} height={height}>
       <rect
         vectorEffect="non-scaling-stroke"
         strokeLinecap="butt"

@@ -30,8 +30,15 @@ import type { ContextmenuItem } from './EditableElement';
 import type { SlideContent } from '@/lib/types/stage';
 import { useCanvasOperations } from '@/lib/hooks/use-canvas-operations';
 import {
-  ContextMenu, ContextMenuTrigger, ContextMenuContent, ContextMenuSeparator,
-  ContextMenuSub, ContextMenuSubTrigger, ContextMenuSubContent, ContextMenuShortcut, ContextMenuItem
+  ContextMenu,
+  ContextMenuTrigger,
+  ContextMenuContent,
+  ContextMenuSeparator,
+  ContextMenuSub,
+  ContextMenuSubTrigger,
+  ContextMenuSubContent,
+  ContextMenuShortcut,
+  ContextMenuItem,
 } from '@/components/ui/context-menu';
 
 export interface CanvasProps {
@@ -57,7 +64,9 @@ export function Canvas(_props: CanvasProps) {
   const viewportRef = useRef<HTMLDivElement>(null);
 
   // Subscribe to specific parts for performance optimization
-  const elements = useSceneSelector<SlideContent, PPTElement[]>(content => content.canvas.elements);
+  const elements = useSceneSelector<SlideContent, PPTElement[]>(
+    (content) => content.canvas.elements,
+  );
 
   // Canvas UI state
   const canvasScale = useCanvasStore.use.canvasScale();
@@ -108,8 +117,17 @@ export function Canvas(_props: CanvasProps) {
     useMouseSelection(elementListRef, viewportRef);
 
   // Element operations
-  const { scaleElement, scaleMultiElement } = useScaleElement(elementListRef, setElementList, setAlignmentLines);
-  const { rotateElement } = useRotateElement(elementListRef, setElementList, viewportRef, canvasScale);
+  const { scaleElement, scaleMultiElement } = useScaleElement(
+    elementListRef,
+    setElementList,
+    setAlignmentLines,
+  );
+  const { rotateElement } = useRotateElement(
+    elementListRef,
+    setElementList,
+    viewportRef,
+    canvasScale,
+  );
   const { dragLineElement } = useDragLineElement(elementListRef, setElementList);
   const { moveShapeKeypoint } = useMoveShapeKeypoint(elementListRef, setElementList, canvasScale);
 
@@ -202,8 +220,8 @@ export function Canvas(_props: CanvasProps) {
         text: '重置当前页',
         handler: deleteAllElements,
       },
-    ]
-  }
+    ];
+  };
 
   return (
     <ContextMenu>
@@ -215,7 +233,9 @@ export function Canvas(_props: CanvasProps) {
           onDoubleClick={handleDblClick}
         >
           {/* Element creation selection */}
-          {creatingElement && <ElementCreateSelection onCreated={insertElementFromCreateSelection} />}
+          {creatingElement && (
+            <ElementCreateSelection onCreated={insertElementFromCreateSelection} />
+          )}
 
           {/* Custom shape creation canvas */}
           {creatingCustomShape && (
@@ -250,7 +270,12 @@ export function Canvas(_props: CanvasProps) {
               ))}
 
               {/* Multi-select operations */}
-              {activeElementIdList.length > 1 && <MultiSelectOperate elementList={elementList} scaleMultiElement={scaleMultiElement} />}
+              {activeElementIdList.length > 1 && (
+                <MultiSelectOperate
+                  elementList={elementList}
+                  scaleMultiElement={scaleMultiElement}
+                />
+              )}
 
               {/* Single element operations */}
               {elementList.map(
@@ -269,7 +294,7 @@ export function Canvas(_props: CanvasProps) {
                       moveShapeKeypoint={moveShapeKeypoint}
                       openLinkDialog={openLinkDialog}
                     />
-                  )
+                  ),
               )}
 
               <ViewportBackground />
@@ -311,7 +336,7 @@ export function Canvas(_props: CanvasProps) {
                     selectElement={selectElement}
                     openLinkDialog={openLinkDialog}
                   />
-                ) : null
+                ) : null,
               )}
             </div>
           </div>
@@ -341,16 +366,26 @@ export function Canvas(_props: CanvasProps) {
                   {item.subText && <ContextMenuShortcut>{item.subText}</ContextMenuShortcut>}
                 </ContextMenuSubTrigger>
                 <ContextMenuSubContent>
-                  {item.children.map((child, childIndex) => (
+                  {item.children.map((child, childIndex) =>
                     child.divider ? (
                       <ContextMenuSeparator key={childIndex} />
                     ) : (
-                      <ContextMenuItem key={childIndex} onClick={(e) => { e.stopPropagation(); child.handler?.() }} disabled={child.disable} hidden={child.hide}>
+                      <ContextMenuItem
+                        key={childIndex}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          child.handler?.();
+                        }}
+                        disabled={child.disable}
+                        hidden={child.hide}
+                      >
                         {child.text}
-                        {child.subText && <ContextMenuShortcut>{child.subText}</ContextMenuShortcut>}
+                        {child.subText && (
+                          <ContextMenuShortcut>{child.subText}</ContextMenuShortcut>
+                        )}
                       </ContextMenuItem>
-                    )
-                  ))}
+                    ),
+                  )}
                 </ContextMenuSubContent>
               </ContextMenuSub>
             );
@@ -358,7 +393,15 @@ export function Canvas(_props: CanvasProps) {
 
           // Regular menu item
           return (
-            <ContextMenuItem key={index} onClick={(e) => { e.stopPropagation(); item.handler?.() }} disabled={item.disable} hidden={item.hide}>
+            <ContextMenuItem
+              key={index}
+              onClick={(e) => {
+                e.stopPropagation();
+                item.handler?.();
+              }}
+              disabled={item.disable}
+              hidden={item.hide}
+            >
               {item.text}
               {item.subText && <ContextMenuShortcut>{item.subText}</ContextMenuShortcut>}
             </ContextMenuItem>

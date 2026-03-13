@@ -19,7 +19,7 @@ interface AdsorptionPoint {
  */
 export function useDragLineElement(
   elementListRef: React.RefObject<PPTElement[]>,
-  setElementList: React.Dispatch<React.SetStateAction<PPTElement[]>>
+  setElementList: React.Dispatch<React.SetStateAction<PPTElement[]>>,
 ) {
   const updateSlide = useCanvasOperations().updateSlide;
   const canvasScale = useCanvasStore.use.canvasScale();
@@ -71,7 +71,7 @@ export function useDragLineElement(
           leftTopPoint,
           rightTopPoint,
           leftBottomPoint,
-          rightBottomPoint
+          rightBottomPoint,
         );
       }
 
@@ -205,7 +205,8 @@ export function useDragLineElement(
                     [c2X - minX, c2Y - minY],
                   ];
               } else {
-                if (element.broken) newEl.broken = [(start[0] + end[0]) / 2, (start[1] + end[1]) / 2];
+                if (element.broken)
+                  newEl.broken = [(start[0] + end[0]) / 2, (start[1] + end[1]) / 2];
                 if (element.curve) newEl.curve = [(start[0] + end[0]) / 2, (start[1] + end[1]) / 2];
                 if (element.cubic)
                   newEl.cubic = [
@@ -213,7 +214,8 @@ export function useDragLineElement(
                     [(start[0] + end[0]) / 2, (start[1] + end[1]) / 2],
                   ];
               }
-              if (element.broken2) newEl.broken2 = [(start[0] + end[0]) / 2, (start[1] + end[1]) / 2];
+              if (element.broken2)
+                newEl.broken2 = [(start[0] + end[0]) / 2, (start[1] + end[1]) / 2];
             } else if (command === OperateLineHandlers.C) {
               if (element.broken) newEl.broken = [midX - minX, midY - minY];
               if (element.curve) newEl.curve = [midX - minX, midY - minY];
@@ -240,8 +242,8 @@ export function useDragLineElement(
 
       const handleMouseUp = (e: MouseEvent) => {
         isMouseDown = false;
-        document.onmousemove = null
-        document.onmouseup = null
+        document.onmousemove = null;
+        document.onmouseup = null;
 
         const currentPageX = e.pageX;
         const currentPageY = e.pageY;
@@ -255,7 +257,14 @@ export function useDragLineElement(
       document.onmousemove = handleMouseMove;
       document.onmouseup = handleMouseUp;
     },
-    [elementListRef, setElementList, canvasScale, ctrlOrShiftKeyActive, updateSlide, addHistorySnapshot]
+    [
+      elementListRef,
+      setElementList,
+      canvasScale,
+      ctrlOrShiftKeyActive,
+      updateSlide,
+      addHistorySnapshot,
+    ],
   );
 
   return {

@@ -9,7 +9,13 @@ interface ResizeHandlerProps {
   readonly onMouseDown?: (e: React.MouseEvent) => void;
 }
 
-export function ResizeHandler({ type, rotate = 0, style, className, onMouseDown }: ResizeHandlerProps) {
+export function ResizeHandler({
+  type,
+  rotate = 0,
+  style,
+  className,
+  onMouseDown,
+}: ResizeHandlerProps) {
   const rotateClassName = useMemo(() => {
     const prefix = 'rotate-';
     if (rotate > -22.5 && rotate <= 22.5) return prefix + '0';

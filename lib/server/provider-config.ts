@@ -141,7 +141,12 @@ function loadEnvSection(
     const envApiKey = process.env[`${prefix}_API_KEY`] || undefined;
     const envBaseUrl = process.env[`${prefix}_BASE_URL`] || undefined;
     const envModelsStr = process.env[`${prefix}_MODELS`];
-    const envModels = envModelsStr ? envModelsStr.split(',').map((m) => m.trim()).filter(Boolean) : undefined;
+    const envModels = envModelsStr
+      ? envModelsStr
+          .split(',')
+          .map((m) => m.trim())
+          .filter(Boolean)
+      : undefined;
 
     if (result[providerId]) {
       // YAML entry exists — env vars override individual fields
@@ -152,7 +157,11 @@ function loadEnvSection(
     }
 
     if (!envApiKey) continue;
-    result[providerId] = { apiKey: envApiKey, baseUrl: envBaseUrl, models: envModels };
+    result[providerId] = {
+      apiKey: envApiKey,
+      baseUrl: envBaseUrl,
+      models: envModels,
+    };
   }
 
   return result;
@@ -330,7 +339,10 @@ export function resolveImageApiKey(providerId: string, clientKey?: string): stri
   return getConfig().image[providerId]?.apiKey || '';
 }
 
-export function resolveImageBaseUrl(providerId: string, clientBaseUrl?: string): string | undefined {
+export function resolveImageBaseUrl(
+  providerId: string,
+  clientBaseUrl?: string,
+): string | undefined {
   if (clientBaseUrl) return clientBaseUrl;
   return getConfig().image[providerId]?.baseUrl;
 }
@@ -353,7 +365,10 @@ export function resolveVideoApiKey(providerId: string, clientKey?: string): stri
   return getConfig().video[providerId]?.apiKey || '';
 }
 
-export function resolveVideoBaseUrl(providerId: string, clientBaseUrl?: string): string | undefined {
+export function resolveVideoBaseUrl(
+  providerId: string,
+  clientBaseUrl?: string,
+): string | undefined {
   if (clientBaseUrl) return clientBaseUrl;
   return getConfig().video[providerId]?.baseUrl;
 }

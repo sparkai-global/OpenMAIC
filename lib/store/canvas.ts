@@ -165,7 +165,11 @@ interface CanvasState {
   // ----- Teaching features -----
   setSpotlight: (elementId: string, options?: SpotlightOptions) => void;
   clearSpotlight: () => void;
-  setSpotlightPercentage: (elementId: string, geometry: PercentageGeometry, options?: SpotlightOptions) => void;
+  setSpotlightPercentage: (
+    elementId: string,
+    geometry: PercentageGeometry,
+    options?: SpotlightOptions,
+  ) => void;
   setHighlight: (elementIds: string[], options?: HighlightOverlayOptions) => void;
   clearHighlight: () => void;
   setLaser: (elementId: string, options?: LaserOptions) => void;

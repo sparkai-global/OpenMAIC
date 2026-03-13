@@ -45,7 +45,11 @@ export async function POST(req: NextRequest) {
     } = body as {
       outline: SceneOutline;
       allOutlines: SceneOutline[];
-      content: GeneratedSlideContent | GeneratedQuizContent | GeneratedInteractiveContent | GeneratedPBLContent;
+      content:
+        | GeneratedSlideContent
+        | GeneratedQuizContent
+        | GeneratedInteractiveContent
+        | GeneratedPBLContent;
       stageId: string;
       agents?: AgentInfo[];
       previousSpeeches?: string[];
@@ -57,7 +61,11 @@ export async function POST(req: NextRequest) {
       return apiError('MISSING_REQUIRED_FIELD', 400, 'outline is required');
     }
     if (!allOutlines || allOutlines.length === 0) {
-      return apiError('MISSING_REQUIRED_FIELD', 400, 'allOutlines is required and must not be empty');
+      return apiError(
+        'MISSING_REQUIRED_FIELD',
+        400,
+        'allOutlines is required and must not be empty',
+      );
     }
     if (!content) {
       return apiError('MISSING_REQUIRED_FIELD', 400, 'content is required');
@@ -84,7 +92,10 @@ export async function POST(req: NextRequest) {
             model: languageModel,
             system: systemPrompt,
             messages: [
-              { role: 'user' as const, content: buildVisionUserContent(userPrompt, images) },
+              {
+                role: 'user' as const,
+                content: buildVisionUserContent(userPrompt, images),
+              },
             ],
             maxOutputTokens: modelInfo?.outputWindow,
           },
@@ -117,14 +128,7 @@ export async function POST(req: NextRequest) {
     // ── Generate actions ──
     log.info(`Generating actions: "${outline.title}" (${outline.type}) [model=${modelString}]`);
 
-    const actions = await generateSceneActions(
-      outline,
-      content,
-      aiCall,
-      ctx,
-      agents,
-      userProfile,
-    );
+    const actions = await generateSceneActions(outline, content, aiCall, ctx, agents, userProfile);
 
     log.info(`Generated ${actions.length} actions for: "${outline.title}"`);
 

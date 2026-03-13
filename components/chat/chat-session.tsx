@@ -36,9 +36,20 @@ const AVATARS = {
 function AvatarDisplay({ src, alt, className }: { src: string; alt?: string; className?: string }) {
   const isUrl = src.startsWith('http') || src.startsWith('data:') || src.startsWith('/');
   if (isUrl) {
-    return <img src={src} alt={alt || ''} className={cn('w-full h-full object-cover', className)} />;
+    return (
+      <img src={src} alt={alt || ''} className={cn('w-full h-full object-cover', className)} />
+    );
   }
-  return <span className={cn('flex items-center justify-center w-full h-full select-none text-xs', className)}>{src}</span>;
+  return (
+    <span
+      className={cn(
+        'flex items-center justify-center w-full h-full select-none text-xs',
+        className,
+      )}
+    >
+      {src}
+    </span>
+  );
 }
 
 /**
@@ -76,9 +87,32 @@ const MessageBubble = memo(function MessageBubble({
   if (!hasContent && isActive && message.role === 'assistant') {
     return (
       <div className="flex gap-1.5 items-center py-1.5 px-1">
-        <span className={cn('w-1.5 h-1.5 rounded-full animate-pulse', isTeacher ? 'bg-purple-400/70 dark:bg-purple-500/70' : 'bg-indigo-400/70 dark:bg-indigo-500/70')} />
-        <span className={cn('w-1.5 h-1.5 rounded-full animate-pulse', isTeacher ? 'bg-purple-400/70 dark:bg-purple-500/70' : 'bg-indigo-400/70 dark:bg-indigo-500/70')} style={{ animationDelay: '200ms' }} />
-        <span className={cn('w-1.5 h-1.5 rounded-full animate-pulse', isTeacher ? 'bg-purple-400/70 dark:bg-purple-500/70' : 'bg-indigo-400/70 dark:bg-indigo-500/70')} style={{ animationDelay: '400ms' }} />
+        <span
+          className={cn(
+            'w-1.5 h-1.5 rounded-full animate-pulse',
+            isTeacher
+              ? 'bg-purple-400/70 dark:bg-purple-500/70'
+              : 'bg-indigo-400/70 dark:bg-indigo-500/70',
+          )}
+        />
+        <span
+          className={cn(
+            'w-1.5 h-1.5 rounded-full animate-pulse',
+            isTeacher
+              ? 'bg-purple-400/70 dark:bg-purple-500/70'
+              : 'bg-indigo-400/70 dark:bg-indigo-500/70',
+          )}
+          style={{ animationDelay: '200ms' }}
+        />
+        <span
+          className={cn(
+            'w-1.5 h-1.5 rounded-full animate-pulse',
+            isTeacher
+              ? 'bg-purple-400/70 dark:bg-purple-500/70'
+              : 'bg-indigo-400/70 dark:bg-indigo-500/70',
+          )}
+          style={{ animationDelay: '400ms' }}
+        />
       </div>
     );
   }
@@ -86,7 +120,8 @@ const MessageBubble = memo(function MessageBubble({
   if (!hasContent) return null;
 
   const lastTextIdx = parts.reduce(
-    (acc: number, p: MessagePart, i: number) => (p.type === 'text' && p.text ? i : acc), -1,
+    (acc: number, p: MessagePart, i: number) => (p.type === 'text' && p.text ? i : acc),
+    -1,
   );
 
   return (
@@ -96,8 +131,8 @@ const MessageBubble = memo(function MessageBubble({
         isUser
           ? 'bg-gradient-to-br from-purple-600 to-purple-700 dark:from-purple-500 dark:to-purple-600 text-white rounded-tr-sm shadow-sm shadow-purple-300/30 dark:shadow-purple-900/50 ring-1 ring-purple-500/20'
           : isTeacher
-          ? 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-100 dark:border-gray-700 rounded-tl-sm shadow-sm'
-          : 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-900 dark:text-indigo-200 border border-indigo-100/50 dark:border-indigo-800/50 rounded-tl-sm'
+            ? 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-100 dark:border-gray-700 rounded-tl-sm shadow-sm'
+            : 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-900 dark:text-indigo-200 border border-indigo-100/50 dark:border-indigo-800/50 rounded-tl-sm',
       )}
     >
       <span className="break-words">
@@ -138,7 +173,13 @@ const MessageBubble = memo(function MessageBubble({
   );
 });
 
-export function ChatSessionComponent({ session, isActive, isStreaming, activeBubbleId, onEndSession }: ChatSessionProps) {
+export function ChatSessionComponent({
+  session,
+  isActive,
+  isStreaming,
+  activeBubbleId,
+  onEndSession,
+}: ChatSessionProps) {
   const { t } = useI18n();
   const userProfileAvatar = useUserProfileStore((s) => s.avatar);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -181,7 +222,10 @@ export function ChatSessionComponent({ session, isActive, isStreaming, activeBub
   // Scroll to active bubble when it changes
   useEffect(() => {
     if (activeBubbleId && activeBubbleRef.current) {
-      activeBubbleRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      activeBubbleRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+      });
       isAtBottomRef.current = true;
     }
   }, [activeBubbleId]);
@@ -200,11 +244,17 @@ export function ChatSessionComponent({ session, isActive, isStreaming, activeBub
   return (
     <div className="flex flex-col">
       {/* Messages */}
-      <div ref={scrollContainerRef} onScroll={handleScroll} className="space-y-1 overflow-y-auto scrollbar-hide">
+      <div
+        ref={scrollContainerRef}
+        onScroll={handleScroll}
+        className="space-y-1 overflow-y-auto scrollbar-hide"
+      >
         {session.messages.map((message, msgIdx) => {
           const isUser = message.metadata?.originalRole === 'user';
           const isTeacher = message.metadata?.originalRole === 'teacher';
-          const avatar = isUser ? (userProfileAvatar || AVATARS.user) : message.metadata?.senderAvatar || AVATARS.teacher;
+          const avatar = isUser
+            ? userProfileAvatar || AVATARS.user
+            : message.metadata?.senderAvatar || AVATARS.teacher;
           const isActiveBubble = activeBubbleId === message.id;
           const isLastMessage = msgIdx === session.messages.length - 1;
 
@@ -213,27 +263,40 @@ export function ChatSessionComponent({ session, isActive, isStreaming, activeBub
               key={message.id}
               ref={isActiveBubble ? activeBubbleRef : undefined}
               initial={{ opacity: 0, y: 4 }}
-              animate={isActiveBubble ? {
-                opacity: 1,
-                y: 0,
-                boxShadow: [
-                  '0 0 0 0 rgba(124, 58, 237, 0)',
-                  '0 0 20px 0 rgba(124, 58, 237, 0.15)',
-                  '0 0 8px 0 rgba(124, 58, 237, 0.08)',
-                ],
-              } : {
-                opacity: 1,
-                y: 0,
-                boxShadow: '0 0 0 0 rgba(124, 58, 237, 0)',
-              }}
-              transition={isActiveBubble ? {
-                boxShadow: { duration: 2.5, repeat: Infinity, ease: 'easeInOut' },
-                default: { duration: 0.3 },
-              } : { duration: 0.3 }}
+              animate={
+                isActiveBubble
+                  ? {
+                      opacity: 1,
+                      y: 0,
+                      boxShadow: [
+                        '0 0 0 0 rgba(124, 58, 237, 0)',
+                        '0 0 20px 0 rgba(124, 58, 237, 0.15)',
+                        '0 0 8px 0 rgba(124, 58, 237, 0.08)',
+                      ],
+                    }
+                  : {
+                      opacity: 1,
+                      y: 0,
+                      boxShadow: '0 0 0 0 rgba(124, 58, 237, 0)',
+                    }
+              }
+              transition={
+                isActiveBubble
+                  ? {
+                      boxShadow: {
+                        duration: 2.5,
+                        repeat: Infinity,
+                        ease: 'easeInOut',
+                      },
+                      default: { duration: 0.3 },
+                    }
+                  : { duration: 0.3 }
+              }
               className={cn(
                 'flex gap-2 px-1.5 py-1 rounded-lg border-l-[3px] border-l-transparent transition-[background-color,border-color] duration-300',
                 isUser && 'flex-row-reverse',
-                isActiveBubble && 'border-l-violet-500 dark:border-l-violet-400 bg-violet-50/50 dark:bg-violet-900/20'
+                isActiveBubble &&
+                  'border-l-violet-500 dark:border-l-violet-400 bg-violet-50/50 dark:bg-violet-900/20',
               )}
             >
               {/* Mini Avatar */}
@@ -249,8 +312,8 @@ export function ChatSessionComponent({ session, isActive, isStreaming, activeBub
                     isUser
                       ? 'text-purple-500 dark:text-purple-400'
                       : isTeacher
-                      ? 'text-purple-400 dark:text-purple-300'
-                      : 'text-indigo-400 dark:text-indigo-300'
+                        ? 'text-purple-400 dark:text-purple-300'
+                        : 'text-indigo-400 dark:text-indigo-300',
                   )}
                 >
                   {(() => {

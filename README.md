@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square" alt="License: MIT"/></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-AGPL--3.0-blue.svg?style=flat-square" alt="License: AGPL-3.0"/></a>
   <a href="https://open.maic.chat/"><img src="https://img.shields.io/badge/Demo-Live-brightgreen?style=flat-square" alt="Live Demo"/></a>
   <a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FTHU-MAIC%2FOpenMAIC&envDescription=Configure%20at%20least%20one%20LLM%20provider%20API%20key%20(e.g.%20OPENAI_API_KEY%2C%20ANTHROPIC_API_KEY).%20All%20providers%20are%20optional.&envLink=https%3A%2F%2Fgithub.com%2FTHU-MAIC%2FOpenMAIC%2Fblob%2Fmain%2F.env.example&project-name=openmaic&framework=nextjs"><img src="https://vercel.com/button" alt="Deploy with Vercel" height="20"/></a>
   <a href="https://github.com/THU-MAIC/OpenMAIC/stargazers"><img src="https://img.shields.io/github/stars/THU-MAIC/OpenMAIC?style=flat-square" alt="Stars"/></a>
@@ -197,7 +197,6 @@ Choose a role and collaborate with AI agents on structured projects with milesto
 - **Whiteboard** — AI agents draw on a shared whiteboard in real time — solving equations step by step, sketching flowcharts, or illustrating concepts visually.
 
 <img src="assets/discussion.gif" width="100%"/>
-<img src="assets/whiteboard.gif" width="100%"/>
 
 ### Export
 
@@ -259,6 +258,67 @@ Choose a role and collaborate with AI agents on structured projects with milesto
 
 We welcome contributions from the community! Whether it's bug reports, feature ideas, or pull requests — every bit helps.
 
+### Project Structure
+
+```
+OpenMAIC/
+├── app/                        # Next.js App Router
+│   ├── api/                    #   Server API routes (~18 endpoints)
+│   │   ├── generate/           #     Scene generation pipeline (outlines, content, images, TTS …)
+│   │   ├── generate-classroom/ #     Full lesson generation entry point
+│   │   ├── chat/               #     Multi-agent discussion (SSE streaming)
+│   │   ├── pbl/                #     Project-Based Learning endpoints
+│   │   └── ...                 #     quiz-grade, parse-pdf, web-search, transcription, etc.
+│   ├── classroom/[id]/         #   Classroom playback page
+│   └── page.tsx                #   Home page (generation input)
+│
+├── lib/                        # Core business logic
+│   ├── generation/             #   Two-stage lesson generation pipeline
+│   ├── orchestration/          #   LangGraph multi-agent orchestration (director graph)
+│   ├── playback/               #   Playback state machine (idle → playing → live)
+│   ├── action/                 #   Action execution engine (speech, whiteboard, effects)
+│   ├── ai/                     #   LLM provider abstraction
+│   ├── api/                    #   Stage API facade (slide/canvas/scene manipulation)
+│   ├── store/                  #   Zustand state stores
+│   ├── types/                  #   Centralized TypeScript type definitions
+│   ├── audio/                  #   TTS & ASR providers
+│   ├── media/                  #   Image & video generation providers
+│   ├── export/                 #   PPTX & HTML export
+│   ├── hooks/                  #   React custom hooks (55+)
+│   ├── i18n/                   #   Internationalization (zh-CN, en-US)
+│   └── ...                     #   prosemirror, storage, pdf, web-search, utils
+│
+├── components/                 # React UI components
+│   ├── slide-renderer/         #   Canvas-based slide editor & renderer
+│   │   ├── Editor/Canvas/      #     Interactive editing canvas
+│   │   └── components/element/ #     Element renderers (text, image, shape, table, chart …)
+│   ├── scene-renderers/        #   Quiz, Interactive, PBL scene renderers
+│   ├── generation/             #   Lesson generation toolbar & progress
+│   ├── chat/                   #   Chat area & session management
+│   ├── settings/               #   Settings panel (providers, TTS, ASR, media …)
+│   ├── whiteboard/             #   SVG-based whiteboard drawing
+│   ├── agent/                  #   Agent avatar, config, info bar
+│   ├── ui/                     #   Base UI primitives (shadcn/ui + Radix)
+│   └── ...                     #   audio, roundtable, stage, ai-elements
+│
+├── packages/                   # Workspace packages
+│   ├── pptxgenjs/              #   Customized PowerPoint generation
+│   └── mathml2omml/            #   MathML → Office Math conversion
+│
+├── configs/                    # Shared constants (shapes, fonts, hotkeys, themes …)
+└── public/                     # Static assets (logos, avatars)
+```
+
+### Key Architecture
+
+- **Generation Pipeline** (`lib/generation/`) — Two-stage: outline generation → scene content generation
+- **Multi-Agent Orchestration** (`lib/orchestration/`) — LangGraph state machine managing agent turns and discussions
+- **Playback Engine** (`lib/playback/`) — State machine driving classroom playback and live interaction
+- **Action Engine** (`lib/action/`) — Executes 28+ action types (speech, whiteboard draw/text/shape/chart, spotlight, laser …)
+- **Slide Editor** (`components/slide-renderer/`) — Canvas-based editor with drag, rotate, scale, text editing, image clipping
+
+### How to Contribute
+
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/amazing-feature`)
 3. Commit your changes (`git commit -m 'Add amazing feature'`)
@@ -267,12 +327,12 @@ We welcome contributions from the community! Whether it's bug reports, feature i
 
 ---
 
-## 📬 Contact
+## 💼 Commercial Licensing
 
-If you have any questions, feedback, or would like to get in touch, feel free to reach out via [Issues](https://github.com/THU-MAIC/OpenMAIC/issues).
+This project is licensed under AGPL-3.0. For commercial licensing inquiries, please contact: **thu_maic@tsinghua.edu.cn**
 
 ---
 
 ## 📄 License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the [GNU Affero General Public License v3.0](LICENSE).

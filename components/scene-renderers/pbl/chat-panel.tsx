@@ -1,63 +1,73 @@
-'use client'
+'use client';
 
-import { useState, useRef, useEffect } from 'react'
-import { ArrowUp } from 'lucide-react'
-import type { PBLChatMessage, PBLIssue } from '@/lib/pbl/types'
-import { useI18n } from '@/lib/hooks/use-i18n'
-import { MessageResponse } from '@/components/ai-elements/message'
-import { useDraftCache } from '@/lib/hooks/use-draft-cache'
-import { SpeechButton } from '@/components/audio/speech-button'
+import { useState, useRef, useEffect } from 'react';
+import { ArrowUp } from 'lucide-react';
+import type { PBLChatMessage, PBLIssue } from '@/lib/pbl/types';
+import { useI18n } from '@/lib/hooks/use-i18n';
+import { MessageResponse } from '@/components/ai-elements/message';
+import { useDraftCache } from '@/lib/hooks/use-draft-cache';
+import { SpeechButton } from '@/components/audio/speech-button';
 
 interface ChatPanelProps {
-  readonly messages: PBLChatMessage[]
-  readonly currentIssue: PBLIssue | null
-  readonly userRole: string
-  readonly isLoading: boolean
-  readonly onSendMessage: (text: string) => void
+  readonly messages: PBLChatMessage[];
+  readonly currentIssue: PBLIssue | null;
+  readonly userRole: string;
+  readonly isLoading: boolean;
+  readonly onSendMessage: (text: string) => void;
 }
 
-export function ChatPanel({ messages, currentIssue, userRole, isLoading, onSendMessage }: ChatPanelProps) {
-  const { t } = useI18n()
-  const [input, setInput] = useState('')
-  const messagesEndRef = useRef<HTMLDivElement>(null)
-  const inputRef = useRef<HTMLTextAreaElement>(null)
-  const composingRef = useRef(false)
+export function ChatPanel({
+  messages,
+  currentIssue,
+  userRole,
+  isLoading,
+  onSendMessage,
+}: ChatPanelProps) {
+  const { t } = useI18n();
+  const [input, setInput] = useState('');
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const composingRef = useRef(false);
 
   // Draft cache
-  const { cachedValue: cachedDraft, updateCache: updateDraftCache, clearCache: clearDraftCache } = useDraftCache<string>({ key: 'pblChatDraft' })
+  const {
+    cachedValue: cachedDraft,
+    updateCache: updateDraftCache,
+    clearCache: clearDraftCache,
+  } = useDraftCache<string>({ key: 'pblChatDraft' });
 
   // Restore draft: use lazy initializer for first render, then sync via derived state
-  const [prevCachedDraft, setPrevCachedDraft] = useState(cachedDraft)
+  const [prevCachedDraft, setPrevCachedDraft] = useState(cachedDraft);
   if (cachedDraft !== prevCachedDraft) {
-    setPrevCachedDraft(cachedDraft)
+    setPrevCachedDraft(cachedDraft);
     if (cachedDraft) {
-      setInput(cachedDraft)
+      setInput(cachedDraft);
     }
   }
 
   // Auto-scroll on new messages
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages.length])
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages.length]);
 
   const handleInputChange = (value: string) => {
-    setInput(value)
-    updateDraftCache(value)
-  }
+    setInput(value);
+    updateDraftCache(value);
+  };
 
   const handleSubmit = () => {
-    if (!input.trim() || isLoading) return
-    onSendMessage(input.trim())
-    setInput('')
-    clearDraftCache()
-  }
+    if (!input.trim() || isLoading) return;
+    onSendMessage(input.trim());
+    setInput('');
+    clearDraftCache();
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey && !composingRef.current) {
-      e.preventDefault()
-      handleSubmit()
+      e.preventDefault();
+      handleSubmit();
     }
-  }
+  };
 
   return (
     <div className="flex flex-col h-full">
@@ -79,9 +89,15 @@ export function ChatPanel({ messages, currentIssue, userRole, isLoading, onSendM
         {isLoading && (
           <div className="flex items-center gap-2 text-muted-foreground text-sm">
             <div className="flex gap-1">
-              <span className="animate-bounce" style={{ animationDelay: '0ms' }}>.</span>
-              <span className="animate-bounce" style={{ animationDelay: '150ms' }}>.</span>
-              <span className="animate-bounce" style={{ animationDelay: '300ms' }}>.</span>
+              <span className="animate-bounce" style={{ animationDelay: '0ms' }}>
+                .
+              </span>
+              <span className="animate-bounce" style={{ animationDelay: '150ms' }}>
+                .
+              </span>
+              <span className="animate-bounce" style={{ animationDelay: '300ms' }}>
+                .
+              </span>
             </div>
           </div>
         )}
@@ -99,8 +115,12 @@ export function ChatPanel({ messages, currentIssue, userRole, isLoading, onSendM
             value={input}
             onChange={(e) => handleInputChange(e.target.value)}
             onKeyDown={handleKeyDown}
-            onCompositionStart={() => { composingRef.current = true }}
-            onCompositionEnd={() => { composingRef.current = false }}
+            onCompositionStart={() => {
+              composingRef.current = true;
+            }}
+            onCompositionEnd={() => {
+              composingRef.current = false;
+            }}
             placeholder={t('pbl.chat.placeholder')}
             disabled={isLoading}
             rows={1}
@@ -127,11 +147,11 @@ export function ChatPanel({ messages, currentIssue, userRole, isLoading, onSendM
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 function ChatMessage({ message, isUser }: { message: PBLChatMessage; isUser: boolean }) {
-  const isSystem = message.agent_name === 'System'
+  const isSystem = message.agent_name === 'System';
 
   if (isSystem) {
     return (
@@ -140,7 +160,7 @@ function ChatMessage({ message, isUser }: { message: PBLChatMessage; isUser: boo
           {message.message}
         </span>
       </div>
-    )
+    );
   }
 
   return (
@@ -150,16 +170,11 @@ function ChatMessage({ message, isUser }: { message: PBLChatMessage; isUser: boo
       </span>
       <div
         className={`rounded-xl px-3 py-2 text-sm max-w-[85%] ${
-          isUser
-            ? 'bg-primary text-primary-foreground whitespace-pre-wrap'
-            : 'bg-muted'
+          isUser ? 'bg-primary text-primary-foreground whitespace-pre-wrap' : 'bg-muted'
         }`}
       >
-        {isUser
-          ? message.message
-          : <MessageResponse>{message.message}</MessageResponse>
-        }
+        {isUser ? message.message : <MessageResponse>{message.message}</MessageResponse>}
       </div>
     </div>
-  )
+  );
 }

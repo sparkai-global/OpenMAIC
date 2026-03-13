@@ -108,12 +108,23 @@ export function SpeechButton({
           {/* Injected keyframes */}
           <style jsx>{`
             @keyframes speech-bar {
-              0% { height: 3px; }
-              100% { height: ${barH}px; }
+              0% {
+                height: 3px;
+              }
+              100% {
+                height: ${barH}px;
+              }
             }
             @keyframes speech-ring {
-              0%, 100% { opacity: 0.3; transform: scale(1); }
-              50% { opacity: 0.7; transform: scale(1.08); }
+              0%,
+              100% {
+                opacity: 0.3;
+                transform: scale(1);
+              }
+              50% {
+                opacity: 0.7;
+                transform: scale(1.08);
+              }
             }
           `}</style>
         </button>

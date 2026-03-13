@@ -68,18 +68,11 @@ export function ThumbnailSlide({
         }}
       >
         {/* Background */}
-        <div
-          className="background w-full h-full bg-center absolute"
-          style={backgroundStyle}
-        />
+        <div className="background w-full h-full bg-center absolute" style={backgroundStyle} />
 
         {/* Render all elements */}
         {slide.elements.map((element, index) => (
-          <ThumbnailElement
-            key={element.id}
-            elementInfo={element}
-            elementIndex={index + 1}
-          />
+          <ThumbnailElement key={element.id} elementInfo={element} elementIndex={index + 1} />
         ))}
       </div>
     </div>

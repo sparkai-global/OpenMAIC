@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useState, useRef, useCallback, useMemo, Fragment } from "react";
-import type { LucideIcon } from "lucide-react";
+import { useState, useRef, useCallback, useMemo, Fragment } from 'react';
+import type { LucideIcon } from 'lucide-react';
 import {
   Image as ImageIcon,
   Video,
@@ -11,12 +11,8 @@ import {
   ChevronRight,
   Play,
   Loader2,
-} from "lucide-react";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+} from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   Select,
   SelectContent,
@@ -26,19 +22,19 @@ import {
   SelectSeparator,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
-import { Switch } from "@/components/ui/switch";
-import { cn } from "@/lib/utils";
-import { useI18n } from "@/lib/hooks/use-i18n";
-import { useSettingsStore } from "@/lib/store/settings";
-import { IMAGE_PROVIDERS } from "@/lib/media/image-providers";
-import { VIDEO_PROVIDERS } from "@/lib/media/video-providers";
-import { TTS_PROVIDERS, getTTSVoices } from "@/lib/audio/constants";
-import { ASR_PROVIDERS, getASRSupportedLanguages } from "@/lib/audio/constants";
-import type { ImageProviderId, VideoProviderId } from "@/lib/media/types";
-import type { ASRProviderId } from "@/lib/audio/types";
-import type { SettingsSection } from "@/lib/types/settings";
+} from '@/components/ui/select';
+import { Slider } from '@/components/ui/slider';
+import { Switch } from '@/components/ui/switch';
+import { cn } from '@/lib/utils';
+import { useI18n } from '@/lib/hooks/use-i18n';
+import { useSettingsStore } from '@/lib/store/settings';
+import { IMAGE_PROVIDERS } from '@/lib/media/image-providers';
+import { VIDEO_PROVIDERS } from '@/lib/media/video-providers';
+import { TTS_PROVIDERS, getTTSVoices } from '@/lib/audio/constants';
+import { ASR_PROVIDERS, getASRSupportedLanguages } from '@/lib/audio/constants';
+import type { ImageProviderId, VideoProviderId } from '@/lib/media/types';
+import type { ASRProviderId } from '@/lib/audio/types';
+import type { SettingsSection } from '@/lib/types/settings';
 
 interface MediaPopoverProps {
   onSettingsOpen: (section: SettingsSection) => void;
@@ -46,29 +42,29 @@ interface MediaPopoverProps {
 
 // ─── Provider icon maps ───
 const IMAGE_PROVIDER_ICONS: Record<string, string> = {
-  seedream: "/logos/doubao.svg",
-  "qwen-image": "/logos/bailian.svg",
-  "nano-banana": "/logos/gemini.svg",
+  seedream: '/logos/doubao.svg',
+  'qwen-image': '/logos/bailian.svg',
+  'nano-banana': '/logos/gemini.svg',
 };
 const VIDEO_PROVIDER_ICONS: Record<string, string> = {
-  seedance: "/logos/doubao.svg",
-  kling: "/logos/kling.svg",
-  veo: "/logos/gemini.svg",
-  sora: "/logos/openai.svg",
+  seedance: '/logos/doubao.svg',
+  kling: '/logos/kling.svg',
+  veo: '/logos/gemini.svg',
+  sora: '/logos/openai.svg',
 };
 
-type TabId = "image" | "video" | "tts" | "asr";
+type TabId = 'image' | 'video' | 'tts' | 'asr';
 
 const TABS: Array<{ id: TabId; icon: LucideIcon; label: string }> = [
-  { id: "image", icon: ImageIcon, label: "Image" },
-  { id: "video", icon: Video, label: "Video" },
-  { id: "tts", icon: Volume2, label: "TTS" },
-  { id: "asr", icon: Mic, label: "ASR" },
+  { id: 'image', icon: ImageIcon, label: 'Image' },
+  { id: 'video', icon: Video, label: 'Video' },
+  { id: 'tts', icon: Volume2, label: 'TTS' },
+  { id: 'asr', icon: Mic, label: 'ASR' },
 ];
 
 /** Extract the English name from voice name format "ChineseName (English)" */
 function getVoiceDisplayName(name: string, lang: string): string {
-  if (lang === "en-US") {
+  if (lang === 'en-US') {
     const match = name.match(/\(([^)]+)\)/);
     return match ? match[1] : name;
   }
@@ -78,41 +74,29 @@ function getVoiceDisplayName(name: string, lang: string): string {
 export function MediaPopover({ onSettingsOpen }: MediaPopoverProps) {
   const { t, locale } = useI18n();
   const [open, setOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<TabId>("image");
+  const [activeTab, setActiveTab] = useState<TabId>('image');
   const [previewing, setPreviewing] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // ─── Store ───
-  const imageGenerationEnabled = useSettingsStore(
-    (s) => s.imageGenerationEnabled
-  );
-  const videoGenerationEnabled = useSettingsStore(
-    (s) => s.videoGenerationEnabled
-  );
+  const imageGenerationEnabled = useSettingsStore((s) => s.imageGenerationEnabled);
+  const videoGenerationEnabled = useSettingsStore((s) => s.videoGenerationEnabled);
   const ttsEnabled = useSettingsStore((s) => s.ttsEnabled);
   const asrEnabled = useSettingsStore((s) => s.asrEnabled);
-  const setImageGenerationEnabled = useSettingsStore(
-    (s) => s.setImageGenerationEnabled
-  );
-  const setVideoGenerationEnabled = useSettingsStore(
-    (s) => s.setVideoGenerationEnabled
-  );
+  const setImageGenerationEnabled = useSettingsStore((s) => s.setImageGenerationEnabled);
+  const setVideoGenerationEnabled = useSettingsStore((s) => s.setVideoGenerationEnabled);
   const setTTSEnabled = useSettingsStore((s) => s.setTTSEnabled);
   const setASREnabled = useSettingsStore((s) => s.setASREnabled);
 
   const imageProviderId = useSettingsStore((s) => s.imageProviderId);
   const imageModelId = useSettingsStore((s) => s.imageModelId);
-  const imageProvidersConfig = useSettingsStore(
-    (s) => s.imageProvidersConfig
-  );
+  const imageProvidersConfig = useSettingsStore((s) => s.imageProvidersConfig);
   const setImageProvider = useSettingsStore((s) => s.setImageProvider);
   const setImageModelId = useSettingsStore((s) => s.setImageModelId);
 
   const videoProviderId = useSettingsStore((s) => s.videoProviderId);
   const videoModelId = useSettingsStore((s) => s.videoModelId);
-  const videoProvidersConfig = useSettingsStore(
-    (s) => s.videoProvidersConfig
-  );
+  const videoProvidersConfig = useSettingsStore((s) => s.videoProvidersConfig);
   const setVideoProvider = useSettingsStore((s) => s.setVideoProvider);
   const setVideoModelId = useSettingsStore((s) => s.setVideoModelId);
 
@@ -120,7 +104,6 @@ export function MediaPopover({ onSettingsOpen }: MediaPopoverProps) {
   const ttsVoice = useSettingsStore((s) => s.ttsVoice);
   const ttsSpeed = useSettingsStore((s) => s.ttsSpeed);
   const ttsProvidersConfig = useSettingsStore((s) => s.ttsProvidersConfig);
-  const setTTSProvider = useSettingsStore((s) => s.setTTSProvider);
   const setTTSVoice = useSettingsStore((s) => s.setTTSVoice);
   const setTTSSpeed = useSettingsStore((s) => s.setTTSSpeed);
 
@@ -147,7 +130,7 @@ export function MediaPopover({ onSettingsOpen }: MediaPopoverProps) {
   const cfgOk = (
     configs: Record<string, { apiKey?: string; isServerConfigured?: boolean }>,
     id: string,
-    needsKey: boolean
+    needsKey: boolean,
   ) => !needsKey || !!configs[id]?.apiKey || !!configs[id]?.isServerConfigured;
 
   const ttsSpeedRange = TTS_PROVIDERS[ttsProviderId]?.speedRange;
@@ -162,12 +145,12 @@ export function MediaPopover({ onSettingsOpen }: MediaPopoverProps) {
           groupName: p.name,
           groupIcon: IMAGE_PROVIDER_ICONS[p.id],
           available: true,
-          items: [
-            ...p.models,
-            ...(imageProvidersConfig[p.id]?.customModels || []),
-          ].map((m) => ({ id: m.id, name: m.name })),
+          items: [...p.models, ...(imageProvidersConfig[p.id]?.customModels || [])].map((m) => ({
+            id: m.id,
+            name: m.name,
+          })),
         })),
-    [imageProvidersConfig]
+    [imageProvidersConfig],
   );
 
   const videoGroups = useMemo(
@@ -179,12 +162,12 @@ export function MediaPopover({ onSettingsOpen }: MediaPopoverProps) {
           groupName: p.name,
           groupIcon: VIDEO_PROVIDER_ICONS[p.id],
           available: true,
-          items: [
-            ...p.models,
-            ...(videoProvidersConfig[p.id]?.customModels || []),
-          ].map((m) => ({ id: m.id, name: m.name })),
+          items: [...p.models, ...(videoProvidersConfig[p.id]?.customModels || [])].map((m) => ({
+            id: m.id,
+            name: m.name,
+          })),
         })),
-    [videoProvidersConfig]
+    [videoProvidersConfig],
   );
 
   // TTS: flat voice list from current provider, localized
@@ -194,7 +177,7 @@ export function MediaPopover({ onSettingsOpen }: MediaPopoverProps) {
         id: v.id,
         name: getVoiceDisplayName(v.name, locale),
       })),
-    [ttsProviderId, locale]
+    [ttsProviderId, locale],
   );
 
   // TTS preview
@@ -208,24 +191,22 @@ export function MediaPopover({ onSettingsOpen }: MediaPopoverProps) {
     setPreviewing(true);
     try {
       const providerConfig = ttsProvidersConfig[ttsProviderId];
-      const res = await fetch("/api/generate/tts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const res = await fetch('/api/generate/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          text: "你好，欢迎来到AI课堂！让我们一起学习吧。",
-          audioId: "preview",
+          text: '你好，欢迎来到AI课堂！让我们一起学习吧。',
+          audioId: 'preview',
           ttsProviderId,
           ttsVoice,
           ttsApiKey: providerConfig?.apiKey,
           ttsBaseUrl: providerConfig?.baseUrl,
         }),
       });
-      if (!res.ok) throw new Error("TTS failed");
+      if (!res.ok) throw new Error('TTS failed');
       const data = await res.json();
       if (data.base64) {
-        const audio = new Audio(
-          `data:audio/${data.format || "mp3"};base64,${data.base64}`
-        );
+        const audio = new Audio(`data:audio/${data.format || 'mp3'};base64,${data.base64}`);
         audioRef.current = audio;
         audio.onended = () => {
           setPreviewing(false);
@@ -257,17 +238,15 @@ export function MediaPopover({ onSettingsOpen }: MediaPopoverProps) {
             name: l,
           })),
         })),
-    [asrProvidersConfig]
+    [asrProvidersConfig],
   );
 
   // Auto-select first enabled tab on open
   const handleOpenChange = (isOpen: boolean) => {
     setOpen(isOpen);
     if (isOpen) {
-      const first = (["image", "video", "tts", "asr"] as TabId[]).find(
-        (id) => enabledMap[id]
-      );
-      setActiveTab(first || "image");
+      const first = (['image', 'video', 'tts', 'asr'] as TabId[]).find((id) => enabledMap[id]);
+      setActiveTab(first || 'image');
     }
   };
 
@@ -276,10 +255,10 @@ export function MediaPopover({ onSettingsOpen }: MediaPopoverProps) {
       <PopoverTrigger asChild>
         <button
           className={cn(
-            "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium transition-all cursor-pointer select-none whitespace-nowrap border",
+            'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium transition-all cursor-pointer select-none whitespace-nowrap border',
             enabledCount > 0
-              ? "bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 border-violet-200/60 dark:border-violet-700/50"
-              : "text-muted-foreground/70 hover:text-foreground hover:bg-muted/60 border-border/50"
+              ? 'bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 border-violet-200/60 dark:border-violet-700/50'
+              : 'text-muted-foreground/70 hover:text-foreground hover:bg-muted/60 border-border/50',
           )}
         >
           <SlidersHorizontal className="size-3.5" />
@@ -290,12 +269,7 @@ export function MediaPopover({ onSettingsOpen }: MediaPopoverProps) {
         </button>
       </PopoverTrigger>
 
-      <PopoverContent
-        align="start"
-        side="bottom"
-        avoidCollisions={false}
-        className="w-80 p-0"
-      >
+      <PopoverContent align="start" side="bottom" avoidCollisions={false} className="w-80 p-0">
         {/* ── Tab bar (segmented control) ── */}
         <div className="p-2 pb-0">
           <div className="flex gap-0.5 p-0.5 bg-muted/60 rounded-lg">
@@ -308,10 +282,10 @@ export function MediaPopover({ onSettingsOpen }: MediaPopoverProps) {
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   className={cn(
-                    "flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-md text-[11px] font-medium transition-all relative",
+                    'flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-md text-[11px] font-medium transition-all relative',
                     isActive
-                      ? "bg-background text-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground/80"
+                      ? 'bg-background text-foreground shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground/80',
                   )}
                 >
                   <Icon className="size-3.5" />
@@ -327,10 +301,10 @@ export function MediaPopover({ onSettingsOpen }: MediaPopoverProps) {
 
         {/* ── Tab content ── */}
         <div className="p-3 pt-2.5">
-          {activeTab === "image" && (
+          {activeTab === 'image' && (
             <TabPanel
               icon={ImageIcon}
-              label={t("media.imageCapability")}
+              label={t('media.imageCapability')}
               enabled={imageGenerationEnabled}
               onToggle={setImageGenerationEnabled}
             >
@@ -346,10 +320,10 @@ export function MediaPopover({ onSettingsOpen }: MediaPopoverProps) {
             </TabPanel>
           )}
 
-          {activeTab === "video" && (
+          {activeTab === 'video' && (
             <TabPanel
               icon={Video}
-              label={t("media.videoCapability")}
+              label={t('media.videoCapability')}
               enabled={videoGenerationEnabled}
               onToggle={setVideoGenerationEnabled}
             >
@@ -365,10 +339,10 @@ export function MediaPopover({ onSettingsOpen }: MediaPopoverProps) {
             </TabPanel>
           )}
 
-          {activeTab === "tts" && (
+          {activeTab === 'tts' && (
             <TabPanel
               icon={Volume2}
-              label={t("media.ttsCapability")}
+              label={t('media.ttsCapability')}
               enabled={ttsEnabled}
               onToggle={setTTSEnabled}
             >
@@ -400,10 +374,10 @@ export function MediaPopover({ onSettingsOpen }: MediaPopoverProps) {
                 <button
                   onClick={handlePreview}
                   className={cn(
-                    "inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-[11px] font-medium transition-all shrink-0",
+                    'inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-[11px] font-medium transition-all shrink-0',
                     previewing
-                      ? "bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300"
-                      : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
+                      ? 'bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300'
+                      : 'bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground',
                   )}
                 >
                   {previewing ? (
@@ -411,15 +385,13 @@ export function MediaPopover({ onSettingsOpen }: MediaPopoverProps) {
                   ) : (
                     <Play className="size-3" />
                   )}
-                  {previewing
-                    ? t("toolbar.ttsPreviewing")
-                    : t("toolbar.ttsPreview")}
+                  {previewing ? t('toolbar.ttsPreviewing') : t('toolbar.ttsPreview')}
                 </button>
               </div>
               {ttsSpeedRange && (
                 <div className="flex items-center gap-2.5 mt-2.5">
                   <span className="text-[10px] text-muted-foreground/60 shrink-0">
-                    {t("media.speed")}
+                    {t('media.speed')}
                   </span>
                   <Slider
                     value={[ttsSpeed]}
@@ -437,10 +409,10 @@ export function MediaPopover({ onSettingsOpen }: MediaPopoverProps) {
             </TabPanel>
           )}
 
-          {activeTab === "asr" && (
+          {activeTab === 'asr' && (
             <TabPanel
               icon={Mic}
-              label={t("media.asrCapability")}
+              label={t('media.asrCapability')}
               enabled={asrEnabled}
               onToggle={setASREnabled}
             >
@@ -466,7 +438,7 @@ export function MediaPopover({ onSettingsOpen }: MediaPopoverProps) {
             }}
             className="w-full flex items-center justify-between px-3.5 py-2.5 text-[11px] text-muted-foreground/60 hover:text-muted-foreground transition-colors"
           >
-            <span>{t("toolbar.advancedSettings")}</span>
+            <span>{t('toolbar.advancedSettings')}</span>
             <ChevronRight className="size-3" />
           </button>
         </div>
@@ -494,16 +466,14 @@ function TabPanel({
       <div className="flex items-center gap-2.5">
         <Icon
           className={cn(
-            "size-4 shrink-0 transition-colors",
-            enabled
-              ? "text-violet-600 dark:text-violet-400"
-              : "text-muted-foreground/50"
+            'size-4 shrink-0 transition-colors',
+            enabled ? 'text-violet-600 dark:text-violet-400' : 'text-muted-foreground/50',
           )}
         />
         <span
           className={cn(
-            "flex-1 text-sm font-medium transition-colors",
-            !enabled && "text-muted-foreground"
+            'flex-1 text-sm font-medium transition-colors',
+            !enabled && 'text-muted-foreground',
           )}
         >
           {label}
@@ -546,7 +516,7 @@ function GroupedSelect({
     <Select
       value={composite}
       onValueChange={(v) => {
-        const sep = v.indexOf("::");
+        const sep = v.indexOf('::');
         if (sep === -1) return;
         onSelect(v.slice(0, sep), v.slice(sep + 2));
       }}
@@ -554,15 +524,9 @@ function GroupedSelect({
       <SelectTrigger className="h-8 w-full rounded-lg border-border/40 bg-background/80 hover:bg-muted/40 shadow-none text-xs focus:ring-1 focus:ring-ring/30 px-2.5">
         <span className="flex items-center gap-2 min-w-0 flex-1 overflow-hidden">
           {selectedGroup?.groupIcon && (
-            <img
-              src={selectedGroup.groupIcon}
-              alt=""
-              className="size-4 rounded-sm shrink-0"
-            />
+            <img src={selectedGroup.groupIcon} alt="" className="size-4 rounded-sm shrink-0" />
           )}
-          <span className="font-medium truncate">
-            {selectedGroup?.groupName}
-          </span>
+          <span className="font-medium truncate">{selectedGroup?.groupName}</span>
           <span className="text-muted-foreground/40">/</span>
           <span className="text-muted-foreground truncate">
             <SelectValue />
@@ -579,10 +543,7 @@ function GroupedSelect({
                   <img
                     src={group.groupIcon}
                     alt=""
-                    className={cn(
-                      "size-3.5 rounded-sm",
-                      !group.available && "opacity-40"
-                    )}
+                    className={cn('size-3.5 rounded-sm', !group.available && 'opacity-40')}
                   />
                 )}
                 {group.groupName}

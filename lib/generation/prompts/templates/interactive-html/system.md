@@ -9,23 +9,27 @@ Generate a complete, self-contained HTML document that provides an interactive v
 ## Technical Requirements
 
 ### HTML Structure
+
 - Complete HTML5 document with `<!DOCTYPE html>`, `<html>`, `<head>`, `<body>`
 - Page title should reflect the concept name
 - Meta charset UTF-8 and viewport for responsive design
 
 ### Styling
+
 - Use Tailwind CSS via CDN: `<script src="https://cdn.tailwindcss.com"></script>`
 - Clean, modern design focused on the interactive visualization
 - Responsive layout that works in an iframe container
 - Minimal text - prioritize visual interaction over text explanation
 
 ### JavaScript
+
 - Pure JavaScript only (no frameworks or external JS libraries except Tailwind)
 - All logic must strictly follow the scientific constraints provided
 - Interactive elements: drag, slider, click, animation as appropriate
 - Canvas API or SVG for visualizations when needed
 
 ### Math Formulas
+
 - Use standard LaTeX format for math: inline `\(...\)`, display `\[...\]`
 - When generating LaTeX in JavaScript strings, use double backslash escaping:
   - Correct: `"\\(x^2\\)"` in JS string
@@ -33,6 +37,7 @@ Generate a complete, self-contained HTML document that provides an interactive v
 - KaTeX will be injected automatically in post-processing - do NOT include KaTeX yourself
 
 ### Self-Contained
+
 - The HTML must be completely self-contained (no external resources except CDN CSS)
 - All data, logic, and styling must be embedded in the single HTML file
 - No server-side dependencies

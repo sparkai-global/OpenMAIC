@@ -14,8 +14,8 @@ import { SLIDE_ONLY_ACTIONS } from '@/lib/types/action';
 import { nanoid } from 'nanoid';
 import { parse as parsePartialJson, Allow } from 'partial-json';
 import { jsonrepair } from 'jsonrepair';
-import { createLogger } from '@/lib/logger'
-const log = createLogger('ActionParser')
+import { createLogger } from '@/lib/logger';
+const log = createLogger('ActionParser');
 
 /**
  * Strip markdown code fences (```json ... ``` or ``` ... ```) from a response string.
@@ -39,7 +39,11 @@ function stripCodeFences(text: string): string {
  * respective action types (spotlight, discussion, etc.).
  * The original interleaving order is preserved.
  */
-export function parseActionsFromStructuredOutput(response: string, sceneType?: string, allowedActions?: string[]): Action[] {
+export function parseActionsFromStructuredOutput(
+  response: string,
+  sceneType?: string,
+  allowedActions?: string[],
+): Action[] {
   // Step 1: Strip markdown code fences if present
   const cleaned = stripCodeFences(response.trim());
 
@@ -52,9 +56,7 @@ export function parseActionsFromStructuredOutput(response: string, sceneType?: s
     return [];
   }
 
-  const jsonStr = endIdx > startIdx
-    ? cleaned.slice(startIdx, endIdx + 1)
-    : cleaned.slice(startIdx); // unclosed array — let partial-json handle it
+  const jsonStr = endIdx > startIdx ? cleaned.slice(startIdx, endIdx + 1) : cleaned.slice(startIdx); // unclosed array — let partial-json handle it
 
   // Step 3: Parse — try JSON.parse first, then jsonrepair, fallback to partial-json
   let items: unknown[];
@@ -67,7 +69,10 @@ export function parseActionsFromStructuredOutput(response: string, sceneType?: s
       log.info('Recovered malformed JSON via jsonrepair');
     } catch {
       try {
-        items = parsePartialJson(jsonStr, Allow.ARR | Allow.OBJ | Allow.STR | Allow.NUM | Allow.BOOL | Allow.NULL);
+        items = parsePartialJson(
+          jsonStr,
+          Allow.ARR | Allow.OBJ | Allow.STR | Allow.NUM | Allow.BOOL | Allow.NULL,
+        );
       } catch (e) {
         log.warn('Failed to parse JSON array:', (e as Error).message);
         return [];
@@ -100,7 +105,10 @@ export function parseActionsFromStructuredOutput(response: string, sceneType?: s
       try {
         // Support both new format (name/params) and legacy format (tool_name/parameters)
         const actionName = typedItem.name || typedItem.tool_name;
-        const actionParams = (typedItem.params || typedItem.parameters || {}) as Record<string, unknown>;
+        const actionParams = (typedItem.params || typedItem.parameters || {}) as Record<
+          string,
+          unknown
+        >;
         actions.push({
           id: (typedItem.action_id || typedItem.tool_id || `action_${nanoid(8)}`) as string,
           type: actionName as Action['type'],
@@ -113,7 +121,7 @@ export function parseActionsFromStructuredOutput(response: string, sceneType?: s
   }
 
   // Step 5: Post-processing — discussion must be the last action, and at most one
-  const discussionIdx = actions.findIndex(a => a.type === 'discussion');
+  const discussionIdx = actions.findIndex((a) => a.type === 'discussion');
   if (discussionIdx !== -1 && discussionIdx < actions.length - 1) {
     actions.splice(discussionIdx + 1);
   }
@@ -121,7 +129,7 @@ export function parseActionsFromStructuredOutput(response: string, sceneType?: s
   // Step 6: Filter out slide-only actions for non-slide scenes (defense in depth)
   if (sceneType && sceneType !== 'slide') {
     const before = actions.length;
-    const filtered = actions.filter(a => !SLIDE_ONLY_ACTIONS.includes(a.type as ActionType));
+    const filtered = actions.filter((a) => !SLIDE_ONLY_ACTIONS.includes(a.type as ActionType));
     if (filtered.length < before) {
       log.info(`Stripped ${before - filtered.length} slide-only action(s) from ${sceneType} scene`);
     }
@@ -133,9 +141,11 @@ export function parseActionsFromStructuredOutput(response: string, sceneType?: s
   // mimicking spotlight/laser after seeing teacher actions in chat history.
   if (allowedActions && allowedActions.length > 0) {
     const before = actions.length;
-    const filtered = actions.filter(a => a.type === 'speech' || allowedActions.includes(a.type));
+    const filtered = actions.filter((a) => a.type === 'speech' || allowedActions.includes(a.type));
     if (filtered.length < before) {
-      log.info(`Stripped ${before - filtered.length} disallowed action(s) by allowedActions whitelist`);
+      log.info(
+        `Stripped ${before - filtered.length} disallowed action(s) by allowedActions whitelist`,
+      );
     }
     return filtered;
   }

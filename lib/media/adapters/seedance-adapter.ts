@@ -81,15 +81,19 @@ function toSeedanceResolution(resolution?: string): string | undefined {
  */
 function estimateDimensions(
   ratio?: string,
-  resolution?: string
+  resolution?: string,
 ): { width: number; height: number } {
-  const resMap: Record<string, number> = { '480p': 480, '720p': 720, '1080p': 1080 };
+  const resMap: Record<string, number> = {
+    '480p': 480,
+    '720p': 720,
+    '1080p': 1080,
+  };
   const h = resMap[resolution || '720p'] || 720;
 
-  if (!ratio) return { width: Math.round(h * 16 / 9), height: h };
+  if (!ratio) return { width: Math.round((h * 16) / 9), height: h };
   const [w, hRatio] = ratio.split(':').map(Number);
-  if (!w || !hRatio) return { width: Math.round(h * 16 / 9), height: h };
-  return { width: Math.round(h * w / hRatio), height: h };
+  if (!w || !hRatio) return { width: Math.round((h * 16) / 9), height: h };
+  return { width: Math.round((h * w) / hRatio), height: h };
 }
 
 /**
@@ -101,17 +105,25 @@ function estimateDimensions(
  * to poll a non-existent task. If auth fails we get 401/403; if auth succeeds
  * we get 404 (task not found), confirming the key is valid.
  */
-export async function testSeedanceConnectivity(config: VideoGenerationConfig): Promise<{ success: boolean; message: string }> {
+export async function testSeedanceConnectivity(
+  config: VideoGenerationConfig,
+): Promise<{ success: boolean; message: string }> {
   const baseUrl = config.baseUrl || DEFAULT_BASE_URL;
   try {
-    const response = await fetch(`${baseUrl}/api/v3/contents/generations/tasks/connectivity-test-nonexistent`, {
-      method: 'GET',
-      headers: { Authorization: `Bearer ${config.apiKey}` },
-    });
+    const response = await fetch(
+      `${baseUrl}/api/v3/contents/generations/tasks/connectivity-test-nonexistent`,
+      {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${config.apiKey}` },
+      },
+    );
     // 401/403 means key invalid; anything else (404, 400, 200) means key works
     if (response.status === 401 || response.status === 403) {
       const text = await response.text();
-      return { success: false, message: `Seedance auth failed (${response.status}): ${text}` };
+      return {
+        success: false,
+        message: `Seedance auth failed (${response.status}): ${text}`,
+      };
     }
     return { success: true, message: 'Connected to Seedance' };
   } catch (err) {
@@ -121,7 +133,7 @@ export async function testSeedanceConnectivity(config: VideoGenerationConfig): P
 
 export async function submitSeedanceTask(
   config: VideoGenerationConfig,
-  options: VideoGenerationOptions
+  options: VideoGenerationOptions,
 ): Promise<string> {
   const baseUrl = config.baseUrl || DEFAULT_BASE_URL;
 
@@ -158,7 +170,7 @@ export async function submitSeedanceTask(
     throw new Error(`Seedance task submission failed (${response.status}): ${text}`);
   }
 
-  const data = await response.json() as SeedanceSubmitResponse;
+  const data = (await response.json()) as SeedanceSubmitResponse;
   if (!data.id) {
     throw new Error('Seedance returned empty task ID');
   }
@@ -173,26 +185,23 @@ export async function submitSeedanceTask(
  */
 export async function pollSeedanceTask(
   config: VideoGenerationConfig,
-  taskId: string
+  taskId: string,
 ): Promise<VideoGenerationResult | null> {
   const baseUrl = config.baseUrl || DEFAULT_BASE_URL;
 
-  const response = await fetch(
-    `${baseUrl}/api/v3/contents/generations/tasks/${taskId}`,
-    {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${config.apiKey}`,
-      },
-    }
-  );
+  const response = await fetch(`${baseUrl}/api/v3/contents/generations/tasks/${taskId}`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${config.apiKey}`,
+    },
+  });
 
   if (!response.ok) {
     const text = await response.text();
     throw new Error(`Seedance poll failed (${response.status}): ${text}`);
   }
 
-  const data = await response.json() as SeedancePollResponse;
+  const data = (await response.json()) as SeedancePollResponse;
 
   if (data.status === 'succeeded') {
     if (!data.content?.video_url) {
@@ -208,9 +217,7 @@ export async function pollSeedanceTask(
   }
 
   if (data.status === 'failed') {
-    throw new Error(
-      `Seedance video generation failed: ${data.error?.message || 'Unknown error'}`
-    );
+    throw new Error(`Seedance video generation failed: ${data.error?.message || 'Unknown error'}`);
   }
 
   // queued or running
@@ -222,7 +229,7 @@ export async function pollSeedanceTask(
  */
 export async function generateWithSeedance(
   config: VideoGenerationConfig,
-  options: VideoGenerationOptions
+  options: VideoGenerationOptions,
 ): Promise<VideoGenerationResult> {
   const taskId = await submitSeedanceTask(config, options);
 
@@ -233,6 +240,6 @@ export async function generateWithSeedance(
   }
 
   throw new Error(
-    `Seedance video generation timed out after ${(MAX_POLL_ATTEMPTS * POLL_INTERVAL_MS) / 1000}s (task: ${taskId})`
+    `Seedance video generation timed out after ${(MAX_POLL_ATTEMPTS * POLL_INTERVAL_MS) / 1000}s (task: ${taskId})`,
   );
 }

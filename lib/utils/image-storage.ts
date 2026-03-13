@@ -47,7 +47,7 @@ async function blobToBase64(blob: Blob): Promise<string> {
  * Returns array of stored image IDs
  */
 export async function storeImages(
-  images: Array<{ id: string; src: string; pageNumber?: number }>
+  images: Array<{ id: string; src: string; pageNumber?: number }>,
 ): Promise<string[]> {
   const sessionId = nanoid(10);
   const storedIds: string[] = [];
@@ -85,9 +85,7 @@ export async function storeImages(
  * @param imageIds - Array of storage IDs (session_xxx_img_1 format)
  * @returns ImageMapping { img_1: "data:image/png;base64,..." }
  */
-export async function loadImageMapping(
-  imageIds: string[]
-): Promise<Record<string, string>> {
+export async function loadImageMapping(imageIds: string[]): Promise<Record<string, string>> {
   const mapping: Record<string, string> = {};
 
   for (const storageId of imageIds) {
@@ -114,7 +112,7 @@ export async function cleanupSessionImages(sessionId: string): Promise<void> {
   try {
     const prefix = `session_${sessionId}_`;
     const allImages = await db.imageFiles.toArray();
-    const toDelete = allImages.filter(img => img.id.startsWith(prefix));
+    const toDelete = allImages.filter((img) => img.id.startsWith(prefix));
 
     for (const img of toDelete) {
       await db.imageFiles.delete(img.id);
@@ -153,7 +151,9 @@ export async function getImageStorageSize(): Promise<number> {
  */
 export async function storePdfBlob(file: File): Promise<string> {
   const storageKey = `pdf_${nanoid(10)}`;
-  const blob = new Blob([await file.arrayBuffer()], { type: file.type || 'application/pdf' });
+  const blob = new Blob([await file.arrayBuffer()], {
+    type: file.type || 'application/pdf',
+  });
 
   const record: ImageFileRecord = {
     id: storageKey,

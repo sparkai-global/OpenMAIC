@@ -39,6 +39,6 @@ export const useUserProfileStore = create<UserProfileState>()(
     }),
     {
       name: 'user-profile-storage',
-    }
-  )
+    },
+  ),
 );

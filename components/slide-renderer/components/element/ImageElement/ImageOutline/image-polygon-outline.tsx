@@ -24,11 +24,7 @@ export function ImagePolygonOutline({
   if (!outline) return null;
 
   return (
-    <svg
-      className="absolute top-0 left-0 z-[2] overflow-visible"
-      width={width}
-      height={height}
-    >
+    <svg className="absolute top-0 left-0 z-[2] overflow-visible" width={width} height={height}>
       <path
         vectorEffect="non-scaling-stroke"
         strokeLinecap="butt"

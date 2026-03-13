@@ -88,7 +88,9 @@ export function Chart({
   useEffect(() => {
     if (!chartRef.current) return;
 
-    chartInstance.current = echarts.init(chartRef.current, null, { renderer: 'svg' });
+    chartInstance.current = echarts.init(chartRef.current, null, {
+      renderer: 'svg',
+    });
     updateOption();
 
     const resizeObserver = new ResizeObserver(() => {

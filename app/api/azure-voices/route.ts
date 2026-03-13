@@ -1,9 +1,8 @@
 import { NextRequest } from 'next/server';
-import { createLogger } from '@/lib/logger'
-import { validateUrlForSSRF } from '@/lib/server/ssrf-guard'
+import { createLogger } from '@/lib/logger';
+import { validateUrlForSSRF } from '@/lib/server/ssrf-guard';
 import { apiError, apiSuccess } from '@/lib/server/api-response';
-const log = createLogger('Azure Voices')
-
+const log = createLogger('Azure Voices');
 
 export const maxDuration = 30;
 

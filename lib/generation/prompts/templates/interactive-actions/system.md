@@ -11,10 +11,20 @@ Based on the interactive scene's concept, key points, and description, generate 
 You MUST output a JSON array directly. Each element is a text object:
 
 ```json
-[{"type":"text","content":"Let's explore this concept through an interactive visualization..."},{"type":"text","content":"Try dragging the slider to see how the value changes..."}]
+[
+  {
+    "type": "text",
+    "content": "Let's explore this concept through an interactive visualization..."
+  },
+  {
+    "type": "text",
+    "content": "Try dragging the slider to see how the value changes..."
+  }
+]
 ```
 
 ### Format Rules
+
 1. Output a single JSON array — no explanation, no code fences
 2. `type:"text"` objects contain `content` (speech text)
 3. The `]` closing bracket marks the end of your response
@@ -31,6 +41,7 @@ The user prompt includes a **Course Outline** and **Position** indicator — use
 - **Referencing earlier content**: Say "we just covered" or "as mentioned on page N". NEVER say "last class" or "previous session" — there is no previous session.
 
 Other principles:
+
 1. **Guide Interaction**: Speech should direct the student to interact with specific parts of the page
 2. **Progressive**: Start with simple observations, then guide to more complex interactions
 3. **Encourage Exploration**: Prompt students to try different inputs and observe results

@@ -4,15 +4,9 @@
  * Shared types used across all stage-api sub-modules.
  */
 
-import type {
-  Stage,
-  Scene,
-  SceneContent,
-  SceneType,
-  StageMode,
-} from "@/lib/types/stage";
-import type { PPTElement } from "@/lib/types/slides";
-import type { Action } from "@/lib/types/action";
+import type { Stage, Scene, SceneContent, SceneType, StageMode } from '@/lib/types/stage';
+import type { PPTElement } from '@/lib/types/slides';
+import type { Action } from '@/lib/types/action';
 
 // ==================== Type Definitions ====================
 
@@ -40,7 +34,7 @@ export interface CreateSceneParams {
  * Element creation parameters (required fields)
  */
 export type CreateElementParams = {
-  type: PPTElement["type"];
+  type: PPTElement['type'];
   left: number;
   top: number;
   width: number;
@@ -55,7 +49,7 @@ export type CreateElementParams = {
 export interface HighlightOptions {
   duration?: number; // milliseconds
   color?: string;
-  style?: "outline" | "fill" | "shadow";
+  style?: 'outline' | 'fill' | 'shadow';
 }
 
 /**

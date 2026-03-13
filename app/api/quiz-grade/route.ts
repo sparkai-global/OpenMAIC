@@ -7,11 +7,10 @@
 
 import { NextRequest } from 'next/server';
 import { callLLM } from '@/lib/ai/llm';
-import { createLogger } from '@/lib/logger'
+import { createLogger } from '@/lib/logger';
 import { apiError, apiSuccess } from '@/lib/server/api-response';
 import { resolveModelFromHeaders } from '@/lib/server/resolve-model';
-const log = createLogger('Quiz Grade')
-
+const log = createLogger('Quiz Grade');
 
 interface GradeRequest {
   question: string;
@@ -82,7 +81,9 @@ ${commentPrompt ? `Grading guidance: ${commentPrompt}\n` : ''}Student answer: ${
       // Fallback: give partial credit with a generic comment
       gradeResult = {
         score: Math.round(points * 0.5),
-        comment: isZh ? '已作答，请参考标准答案。' : 'Answer received. Please refer to the standard answer.',
+        comment: isZh
+          ? '已作答，请参考标准答案。'
+          : 'Answer received. Please refer to the standard answer.',
       };
     }
 

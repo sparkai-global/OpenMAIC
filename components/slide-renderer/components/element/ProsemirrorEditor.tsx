@@ -15,7 +15,11 @@ import {
   markActive,
   getFontsize,
 } from '@/lib/prosemirror/utils';
-import emitter, { EmitterEvents, type RichTextAction, type RichTextCommand } from '@/lib/utils/emitter';
+import emitter, {
+  EmitterEvents,
+  type RichTextAction,
+  type RichTextCommand,
+} from '@/lib/utils/emitter';
 import { alignmentCommand } from '@/lib/prosemirror/commands/setTextAlign';
 import { indentCommand, textIndentCommand } from '@/lib/prosemirror/commands/setTextIndent';
 import { toggleList } from '@/lib/prosemirror/commands/toggleList';
@@ -60,7 +64,7 @@ export const ProsemirrorEditor = forwardRef<ProsemirrorEditorRef, ProsemirrorEdi
       onBlur,
       onMouseDown,
     },
-    ref
+    ref,
   ) => {
     const editorViewRef = useRef<HTMLDivElement>(null);
     const editorView = useRef<EditorView | null>(null);
@@ -75,21 +79,26 @@ export const ProsemirrorEditor = forwardRef<ProsemirrorEditorRef, ProsemirrorEdi
     const ctrlOrShiftKeyActive = useKeyboardStore((state) => state.ctrlOrShiftKeyActive());
 
     // Handle input with debounce
-     
+
     const handleInput = useMemo(
-      () => debounce(
-        (isHandleHistory = false) => {
-          if (!editorView.current) return;
-          if (value.replace(/ style=""/g, '') === editorView.current.dom.innerHTML.replace(/ style=""/g, '')) return;
-          onUpdate?.({
-            value: editorView.current.dom.innerHTML,
-            ignore: isHandleHistory,
-          });
-        },
-        300,
-        { trailing: true }
-      ),
-      [value, onUpdate]
+      () =>
+        debounce(
+          (isHandleHistory = false) => {
+            if (!editorView.current) return;
+            if (
+              value.replace(/ style=""/g, '') ===
+              editorView.current.dom.innerHTML.replace(/ style=""/g, '')
+            )
+              return;
+            onUpdate?.({
+              value: editorView.current.dom.innerHTML,
+              ignore: isHandleHistory,
+            });
+          },
+          300,
+          { trailing: true },
+        ),
+      [value, onUpdate],
     );
 
     // Handle focus
@@ -120,9 +129,9 @@ export const ProsemirrorEditor = forwardRef<ProsemirrorEditorRef, ProsemirrorEdi
           setRichtextAttrs(attrs);
         },
         30,
-        { trailing: true }
+        { trailing: true },
       ),
-      [defaultColor, defaultFontName, setRichtextAttrs]
+      [defaultColor, defaultFontName, setRichtextAttrs],
     );
 
     // Handle keydown
@@ -137,7 +146,7 @@ export const ProsemirrorEditor = forwardRef<ProsemirrorEditorRef, ProsemirrorEdi
         handleInput(isHandleHistory);
         handleClick();
       },
-      [handleInput, handleClick]
+      [handleInput, handleClick],
     );
 
     // Execute rich text command
@@ -151,7 +160,9 @@ export const ProsemirrorEditor = forwardRef<ProsemirrorEditorRef, ProsemirrorEdi
 
         for (const item of actions) {
           if (item.command === 'fontname' && item.value !== undefined) {
-            const mark = editorView.current.state.schema.marks.fontname.create({ fontname: item.value });
+            const mark = editorView.current.state.schema.marks.fontname.create({
+              fontname: item.value,
+            });
             autoSelectAll(editorView.current);
             addMark(editorView.current, mark);
 
@@ -159,68 +170,103 @@ export const ProsemirrorEditor = forwardRef<ProsemirrorEditorRef, ProsemirrorEdi
               toast.warning('Font is loading, please wait...');
             }
           } else if (item.command === 'fontsize' && item.value) {
-            const mark = editorView.current.state.schema.marks.fontsize.create({ fontsize: item.value });
+            const mark = editorView.current.state.schema.marks.fontsize.create({
+              fontsize: item.value,
+            });
             autoSelectAll(editorView.current);
             addMark(editorView.current, mark);
-            setListStyle(editorView.current, { key: 'fontsize', value: item.value });
+            setListStyle(editorView.current, {
+              key: 'fontsize',
+              value: item.value,
+            });
           } else if (item.command === 'fontsize-add') {
             const step = item.value ? +item.value : 2;
             autoSelectAll(editorView.current);
             const fontsize = getFontsize(editorView.current) + step + 'px';
-            const mark = editorView.current.state.schema.marks.fontsize.create({ fontsize });
+            const mark = editorView.current.state.schema.marks.fontsize.create({
+              fontsize,
+            });
             addMark(editorView.current, mark);
-            setListStyle(editorView.current, { key: 'fontsize', value: fontsize });
+            setListStyle(editorView.current, {
+              key: 'fontsize',
+              value: fontsize,
+            });
           } else if (item.command === 'fontsize-reduce') {
             const step = item.value ? +item.value : 2;
             autoSelectAll(editorView.current);
             let fontsize = getFontsize(editorView.current) - step;
             if (fontsize < 12) fontsize = 12;
-            const mark = editorView.current.state.schema.marks.fontsize.create({ fontsize: fontsize + 'px' });
+            const mark = editorView.current.state.schema.marks.fontsize.create({
+              fontsize: fontsize + 'px',
+            });
             addMark(editorView.current, mark);
-            setListStyle(editorView.current, { key: 'fontsize', value: fontsize + 'px' });
+            setListStyle(editorView.current, {
+              key: 'fontsize',
+              value: fontsize + 'px',
+            });
           } else if (item.command === 'color' && item.value) {
-            const mark = editorView.current.state.schema.marks.forecolor.create({ color: item.value });
+            const mark = editorView.current.state.schema.marks.forecolor.create({
+              color: item.value,
+            });
             autoSelectAll(editorView.current);
             addMark(editorView.current, mark);
-            setListStyle(editorView.current, { key: 'color', value: item.value });
+            setListStyle(editorView.current, {
+              key: 'color',
+              value: item.value,
+            });
           } else if (item.command === 'backcolor' && item.value) {
-            const mark = editorView.current.state.schema.marks.backcolor.create({ backcolor: item.value });
+            const mark = editorView.current.state.schema.marks.backcolor.create({
+              backcolor: item.value,
+            });
             autoSelectAll(editorView.current);
             addMark(editorView.current, mark);
           } else if (item.command === 'bold') {
             autoSelectAll(editorView.current);
-            toggleMark(editorView.current.state.schema.marks.strong)(editorView.current.state, editorView.current.dispatch);
+            toggleMark(editorView.current.state.schema.marks.strong)(
+              editorView.current.state,
+              editorView.current.dispatch,
+            );
           } else if (item.command === 'em') {
             autoSelectAll(editorView.current);
-            toggleMark(editorView.current.state.schema.marks.em)(editorView.current.state, editorView.current.dispatch);
+            toggleMark(editorView.current.state.schema.marks.em)(
+              editorView.current.state,
+              editorView.current.dispatch,
+            );
           } else if (item.command === 'underline') {
             autoSelectAll(editorView.current);
             toggleMark(editorView.current.state.schema.marks.underline)(
               editorView.current.state,
-              editorView.current.dispatch
+              editorView.current.dispatch,
             );
           } else if (item.command === 'strikethrough') {
             autoSelectAll(editorView.current);
             toggleMark(editorView.current.state.schema.marks.strikethrough)(
               editorView.current.state,
-              editorView.current.dispatch
+              editorView.current.dispatch,
             );
           } else if (item.command === 'subscript') {
             toggleMark(editorView.current.state.schema.marks.subscript)(
               editorView.current.state,
-              editorView.current.dispatch
+              editorView.current.dispatch,
             );
           } else if (item.command === 'superscript') {
             toggleMark(editorView.current.state.schema.marks.superscript)(
               editorView.current.state,
-              editorView.current.dispatch
+              editorView.current.dispatch,
             );
           } else if (item.command === 'blockquote') {
             const isBlockquote = isActiveOfParentNodeType('blockquote', editorView.current.state);
             if (isBlockquote) lift(editorView.current.state, editorView.current.dispatch);
-            else wrapIn(editorView.current.state.schema.nodes.blockquote)(editorView.current.state, editorView.current.dispatch);
+            else
+              wrapIn(editorView.current.state.schema.nodes.blockquote)(
+                editorView.current.state,
+                editorView.current.dispatch,
+              );
           } else if (item.command === 'code') {
-            toggleMark(editorView.current.state.schema.marks.code)(editorView.current.state, editorView.current.dispatch);
+            toggleMark(editorView.current.state.schema.marks.code)(
+              editorView.current.state,
+              editorView.current.dispatch,
+            );
           } else if (item.command === 'align' && item.value) {
             alignmentCommand(editorView.current, item.value);
           } else if (item.command === 'indent' && item.value) {
@@ -229,26 +275,32 @@ export const ProsemirrorEditor = forwardRef<ProsemirrorEditorRef, ProsemirrorEdi
             textIndentCommand(editorView.current, +item.value);
           } else if (item.command === 'bulletList') {
             const listStyleType = item.value || '';
-            const { bullet_list: bulletList, list_item: listItem } = editorView.current.state.schema.nodes;
+            const { bullet_list: bulletList, list_item: listItem } =
+              editorView.current.state.schema.nodes;
             const textStyle = {
               color: richTextAttrs.color,
               fontsize: richTextAttrs.fontsize,
             };
-            toggleList(bulletList, listItem, listStyleType, textStyle)(
-              editorView.current.state,
-              editorView.current.dispatch
-            );
+            toggleList(
+              bulletList,
+              listItem,
+              listStyleType,
+              textStyle,
+            )(editorView.current.state, editorView.current.dispatch);
           } else if (item.command === 'orderedList') {
             const listStyleType = item.value || '';
-            const { ordered_list: orderedList, list_item: listItem } = editorView.current.state.schema.nodes;
+            const { ordered_list: orderedList, list_item: listItem } =
+              editorView.current.state.schema.nodes;
             const textStyle = {
               color: richTextAttrs.color,
               fontsize: richTextAttrs.fontsize,
             };
-            toggleList(orderedList, listItem, listStyleType, textStyle)(
-              editorView.current.state,
-              editorView.current.dispatch
-            );
+            toggleList(
+              orderedList,
+              listItem,
+              listStyleType,
+              textStyle,
+            )(editorView.current.state, editorView.current.dispatch);
           } else if (item.command === 'clear') {
             autoSelectAll(editorView.current);
             const { $from, $to } = editorView.current.state.selection;
@@ -263,22 +315,35 @@ export const ProsemirrorEditor = forwardRef<ProsemirrorEditorRef, ProsemirrorEdi
             const result = findNodesWithSameMark(editorView.current.state.doc, from, to, markType);
             if (result) {
               if (item.value) {
-                const mark = editorView.current.state.schema.marks.link.create({ href: item.value, title: item.value });
-                addMark(editorView.current, mark, { from: result.from.pos, to: result.to.pos + 1 });
+                const mark = editorView.current.state.schema.marks.link.create({
+                  href: item.value,
+                  title: item.value,
+                });
+                addMark(editorView.current, mark, {
+                  from: result.from.pos,
+                  to: result.to.pos + 1,
+                });
               } else
                 editorView.current.dispatch(
-                  editorView.current.state.tr.removeMark(result.from.pos, result.to.pos + 1, markType)
+                  editorView.current.state.tr.removeMark(
+                    result.from.pos,
+                    result.to.pos + 1,
+                    markType,
+                  ),
                 );
             } else if (markActive(editorView.current.state, markType)) {
               if (item.value) {
-                const mark = editorView.current.state.schema.marks.link.create({ href: item.value, title: item.value });
+                const mark = editorView.current.state.schema.marks.link.create({
+                  href: item.value,
+                  title: item.value,
+                });
                 addMark(editorView.current, mark);
               } else toggleMark(markType)(editorView.current.state, editorView.current.dispatch);
             } else if (item.value) {
               autoSelectAll(editorView.current);
               toggleMark(markType, { href: item.value, title: item.value })(
                 editorView.current.state,
-                editorView.current.dispatch
+                editorView.current.dispatch,
               );
             }
           } else if (item.command === 'insert' && item.value) {
@@ -292,7 +357,7 @@ export const ProsemirrorEditor = forwardRef<ProsemirrorEditorRef, ProsemirrorEdi
         handleInput();
         handleClick();
       },
-      [handleElementId, elementId, richTextAttrs, handleInput, handleClick]
+      [handleElementId, elementId, richTextAttrs, handleInput, handleClick],
     );
 
     // Handle mouseup for format painter
@@ -386,7 +451,7 @@ export const ProsemirrorEditor = forwardRef<ProsemirrorEditorRef, ProsemirrorEdi
         onMouseDown={(e) => onMouseDown?.(e)}
       />
     );
-  }
+  },
 );
 
 ProsemirrorEditor.displayName = 'ProsemirrorEditor';

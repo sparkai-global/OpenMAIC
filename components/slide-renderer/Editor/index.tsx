@@ -1,8 +1,8 @@
 'use client';
 
-import Canvas from "./Canvas";
-import type { StageMode } from "@/lib/types/stage";
-import { ScreenCanvas } from "./ScreenCanvas";
+import Canvas from './Canvas';
+import type { StageMode } from '@/lib/types/stage';
+import { ScreenCanvas } from './ScreenCanvas';
 
 /**
  * Slide Editor - wraps Canvas with SceneProvider

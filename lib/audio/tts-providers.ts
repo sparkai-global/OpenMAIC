@@ -105,7 +105,7 @@ export interface TTSGenerationResult {
  */
 export async function generateTTS(
   config: TTSModelConfig,
-  text: string
+  text: string,
 ): Promise<TTSGenerationResult> {
   const provider = TTS_PROVIDERS[config.providerId];
   if (!provider) {
@@ -132,7 +132,7 @@ export async function generateTTS(
 
     case 'browser-native-tts':
       throw new Error(
-        'Browser Native TTS must be handled client-side using Web Speech API. This provider cannot be used on the server.'
+        'Browser Native TTS must be handled client-side using Web Speech API. This provider cannot be used on the server.',
       );
 
     default:
@@ -145,7 +145,7 @@ export async function generateTTS(
  */
 async function generateOpenAITTS(
   config: TTSModelConfig,
-  text: string
+  text: string,
 ): Promise<TTSGenerationResult> {
   const baseUrl = config.baseUrl || TTS_PROVIDERS['openai-tts'].defaultBaseUrl;
 
@@ -181,7 +181,7 @@ async function generateOpenAITTS(
  */
 async function generateAzureTTS(
   config: TTSModelConfig,
-  text: string
+  text: string,
 ): Promise<TTSGenerationResult> {
   const baseUrl = config.baseUrl || TTS_PROVIDERS['azure-tts'].defaultBaseUrl;
 
@@ -219,10 +219,7 @@ async function generateAzureTTS(
 /**
  * GLM TTS implementation (GLM API)
  */
-async function generateGLMTTS(
-  config: TTSModelConfig,
-  text: string
-): Promise<TTSGenerationResult> {
+async function generateGLMTTS(config: TTSModelConfig, text: string): Promise<TTSGenerationResult> {
   const baseUrl = config.baseUrl || TTS_PROVIDERS['glm-tts'].defaultBaseUrl;
 
   const response = await fetch(`${baseUrl}/audio/speech`, {
@@ -265,10 +262,7 @@ async function generateGLMTTS(
 /**
  * Qwen TTS implementation (DashScope API - Qwen3 TTS Flash)
  */
-async function generateQwenTTS(
-  config: TTSModelConfig,
-  text: string
-): Promise<TTSGenerationResult> {
+async function generateQwenTTS(config: TTSModelConfig, text: string): Promise<TTSGenerationResult> {
   const baseUrl = config.baseUrl || TTS_PROVIDERS['qwen-tts'].defaultBaseUrl;
 
   // Calculate speed: Qwen3 uses rate parameter from -500 to 500
@@ -303,9 +297,7 @@ async function generateQwenTTS(
 
   // Check for audio URL in response
   if (!data.output?.audio?.url) {
-    throw new Error(
-      `Qwen TTS error: No audio URL in response. Response: ${JSON.stringify(data)}`
-    );
+    throw new Error(`Qwen TTS error: No audio URL in response. Response: ${JSON.stringify(data)}`);
   }
 
   // Download audio from URL
@@ -335,8 +327,7 @@ export async function getCurrentTTSConfig(): Promise<TTSModelConfig> {
 
   // Lazy import to avoid circular dependency
   const { useSettingsStore } = await import('@/lib/store/settings');
-  const { ttsProviderId, ttsVoice, ttsSpeed, ttsProvidersConfig } =
-    useSettingsStore.getState();
+  const { ttsProviderId, ttsVoice, ttsSpeed, ttsProvidersConfig } = useSettingsStore.getState();
 
   const providerConfig = ttsProvidersConfig?.[ttsProviderId];
 

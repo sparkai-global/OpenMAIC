@@ -49,10 +49,7 @@ function getProxyAgent(): ProxyAgent | undefined {
  * Drop-in replacement for fetch() that respects proxy env vars.
  * Falls back to global fetch when no proxy is configured.
  */
-export async function proxyFetch(
-  input: string | URL,
-  init?: RequestInit,
-): Promise<Response> {
+export async function proxyFetch(input: string | URL, init?: RequestInit): Promise<Response> {
   const agent = getProxyAgent();
   const url = typeof input === 'string' ? input : input.toString();
 
@@ -64,7 +61,7 @@ export async function proxyFetch(
   log.info('Using proxy', cachedProxyUrl, 'for:', url.slice(0, 80));
   // Use undici's fetch with the proxy dispatcher
   const res = await undiciFetch(input, {
-    ...init as UndiciRequestInit,
+    ...(init as UndiciRequestInit),
     dispatcher: agent,
   });
 

@@ -1,10 +1,9 @@
 import { NextRequest } from 'next/server';
 import { generateText } from 'ai';
-import { createLogger } from '@/lib/logger'
+import { createLogger } from '@/lib/logger';
 import { apiError, apiSuccess } from '@/lib/server/api-response';
 import { resolveModel } from '@/lib/server/resolve-model';
-const log = createLogger('Verify Model')
-
+const log = createLogger('Verify Model');
 
 export async function POST(req: NextRequest) {
   try {
@@ -26,7 +25,11 @@ export async function POST(req: NextRequest) {
       });
       languageModel = result.model;
     } catch (error) {
-      return apiError('INVALID_REQUEST', 401, error instanceof Error ? error.message : String(error));
+      return apiError(
+        'INVALID_REQUEST',
+        401,
+        error instanceof Error ? error.message : String(error),
+      );
     }
 
     // Send a minimal test message

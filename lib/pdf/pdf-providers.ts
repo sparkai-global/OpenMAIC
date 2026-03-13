@@ -151,7 +151,7 @@ const log = createLogger('PDFProviders');
  */
 export async function parsePDF(
   config: PDFParserConfig,
-  pdfBuffer: Buffer
+  pdfBuffer: Buffer,
 ): Promise<ParsedPdfContent> {
   const provider = PDF_PROVIDERS[config.providerId];
   if (!provider) {
@@ -203,7 +203,13 @@ async function parseWithUnpdf(pdfBuffer: Buffer): Promise<ParsedPdfContent> {
 
   // Extract images using the same document proxy
   const images: string[] = [];
-  const pdfImagesMeta: Array<{ id: string; src: string; pageNumber: number; width: number; height: number }> = [];
+  const pdfImagesMeta: Array<{
+    id: string;
+    src: string;
+    pageNumber: number;
+    width: number;
+    height: number;
+  }> = [];
   let imageCounter = 0;
 
   for (let pageNum = 1; pageNum <= numPages; pageNum++) {
@@ -236,10 +242,7 @@ async function parseWithUnpdf(pdfBuffer: Buffer): Promise<ParsedPdfContent> {
             height: imgData.height,
           });
         } catch (sharpError) {
-          log.error(
-            `Failed to convert image ${i + 1} from page ${pageNum}:`,
-            sharpError
-          );
+          log.error(`Failed to convert image ${i + 1} from page ${pageNum}:`, sharpError);
         }
       }
     } catch (pageError) {
@@ -253,7 +256,7 @@ async function parseWithUnpdf(pdfBuffer: Buffer): Promise<ParsedPdfContent> {
     metadata: {
       pageCount: numPages,
       parser: 'unpdf',
-      imageMapping: Object.fromEntries(pdfImagesMeta.map(m => [m.id, m.src])),
+      imageMapping: Object.fromEntries(pdfImagesMeta.map((m) => [m.id, m.src])),
       pdfImages: pdfImagesMeta,
     },
   };
@@ -272,13 +275,13 @@ async function parseWithUnpdf(pdfBuffer: Buffer): Promise<ParsedPdfContent> {
  */
 async function parseWithMinerU(
   config: PDFParserConfig,
-  pdfBuffer: Buffer
+  pdfBuffer: Buffer,
 ): Promise<ParsedPdfContent> {
   if (!config.baseUrl) {
     throw new Error(
       'MinerU base URL is required. ' +
-      'Please deploy MinerU locally or specify the server URL. ' +
-      'See: https://github.com/opendatalab/MinerU'
+        'Please deploy MinerU locally or specify the server URL. ' +
+        'See: https://github.com/opendatalab/MinerU',
     );
   }
 
@@ -292,9 +295,11 @@ async function parseWithMinerU(
   // Convert Buffer to Blob
   const arrayBuffer = pdfBuffer.buffer.slice(
     pdfBuffer.byteOffset,
-    pdfBuffer.byteOffset + pdfBuffer.byteLength
+    pdfBuffer.byteOffset + pdfBuffer.byteLength,
   );
-  const blob = new Blob([arrayBuffer as ArrayBuffer], { type: 'application/pdf' });
+  const blob = new Blob([arrayBuffer as ArrayBuffer], {
+    type: 'application/pdf',
+  });
   formData.append('files', blob, fileName);
 
   // MinerU API form fields
@@ -333,9 +338,7 @@ async function parseWithMinerU(
     // Try first available key in case filename doesn't match exactly
     const fallback = keys.length > 0 ? json.results[keys[0]] : null;
     if (!fallback) {
-      throw new Error(
-        `MinerU returned no results. Response keys: ${JSON.stringify(keys)}`
-      );
+      throw new Error(`MinerU returned no results. Response keys: ${JSON.stringify(keys)}`);
     }
     log.warn(`[MinerU] Filename mismatch, using key "${keys[0]}" instead of "${fileName}"`);
     return extractMinerUResult(fallback);
@@ -345,34 +348,29 @@ async function parseWithMinerU(
 }
 
 /** Extract ParsedPdfContent from a single MinerU file result */
-function extractMinerUResult(
-  fileResult: Record<string, unknown>
-): ParsedPdfContent {
+function extractMinerUResult(fileResult: Record<string, unknown>): ParsedPdfContent {
   const markdown: string = (fileResult.md_content as string) || '';
   const imageData: Record<string, string> = {};
   let pageCount = 0;
 
   // Extract images from the images object (key → base64 string)
   if (fileResult.images && typeof fileResult.images === 'object') {
-    Object.entries(fileResult.images as Record<string, string>).forEach(
-      ([key, value]) => {
-        imageData[key] = value.startsWith('data:')
-          ? value
-          : `data:image/png;base64,${value}`;
-      }
-    );
+    Object.entries(fileResult.images as Record<string, string>).forEach(([key, value]) => {
+      imageData[key] = value.startsWith('data:') ? value : `data:image/png;base64,${value}`;
+    });
   }
 
   // Parse content_list to build image metadata lookup (img_path → metadata)
   const imageMetaLookup = new Map<string, { pageIdx: number; bbox: number[]; caption?: string }>();
-  const contentList = typeof fileResult.content_list === 'string'
-    ? JSON.parse(fileResult.content_list as string)
-    : fileResult.content_list;
+  const contentList =
+    typeof fileResult.content_list === 'string'
+      ? JSON.parse(fileResult.content_list as string)
+      : fileResult.content_list;
   if (Array.isArray(contentList)) {
     const pages = new Set(
       contentList
         .map((item: Record<string, unknown>) => item.page_idx)
-        .filter((v: unknown) => v != null)
+        .filter((v: unknown) => v != null),
     );
     pageCount = pages.size;
 
@@ -424,7 +422,7 @@ function extractMinerUResult(
 
   log.info(
     `[MinerU] Parsed successfully: ${images.length} images, ` +
-    `${markdown.length} chars of markdown`
+      `${markdown.length} chars of markdown`,
   );
 
   return {

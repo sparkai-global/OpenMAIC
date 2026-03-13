@@ -5,12 +5,14 @@
 ## 支持的提供商
 
 ### 1. unpdf (内置)
+
 - **成本**: 免费，内置
 - **特性**: 基础文本提取、图片提取
 - **要求**: 无
 - **使用**: 直接上传 PDF 文件
 
 ### 2. MinerU (本地部署)
+
 - **成本**: 免费（需要自己部署）
 - **特性**:
   - 高级文本提取（保留 Markdown 布局）
@@ -75,8 +77,8 @@ const result = await response.json();
 
 ```typescript
 interface ParsedPdfContent {
-  text: string;              // 提取的文本（MinerU 为 Markdown）
-  images: string[];          // Base64 图片数组
+  text: string; // 提取的文本（MinerU 为 Markdown）
+  images: string[]; // Base64 图片数组
 
   // 扩展特性（MinerU）
   tables?: Array<{
@@ -106,12 +108,12 @@ interface ParsedPdfContent {
     processingTime?: number;
 
     // 用于内容生成流程（MinerU）
-    imageMapping?: Record<string, string>;  // img_1 -> base64 URL
+    imageMapping?: Record<string, string>; // img_1 -> base64 URL
     pdfImages?: Array<{
-      id: string;             // img_1, img_2, etc.
-      src: string;            // base64 data URL
-      pageNumber: number;     // PDF 页码
-      description?: string;   // 图片描述
+      id: string; // img_1, img_2, etc.
+      src: string; // base64 data URL
+      pageNumber: number; // PDF 页码
+      description?: string; // 图片描述
     }>;
   };
 }
@@ -123,22 +125,25 @@ MinerU 解析器与内容生成流程无缝集成：
 
 ```typescript
 // 1. 解析 PDF
-const parseResult = await parsePDF({
-  providerId: 'mineru',
-  baseUrl: 'http://localhost:8080'
-}, buffer);
+const parseResult = await parsePDF(
+  {
+    providerId: 'mineru',
+    baseUrl: 'http://localhost:8080',
+  },
+  buffer,
+);
 
 // 2. 提取数据
-const pdfText = parseResult.text;              // Markdown（含 img_1 引用）
-const pdfImages = parseResult.metadata.pdfImages;  // 图片数组
+const pdfText = parseResult.text; // Markdown（含 img_1 引用）
+const pdfImages = parseResult.metadata.pdfImages; // 图片数组
 const imageMapping = parseResult.metadata.imageMapping; // 图片映射
 
 // 3. 生成场景大纲
 await generateSceneOutlinesFromRequirements(
   requirements,
-  pdfText,      // Markdown 内容
-  pdfImages,    // 带页码的图片
-  aiCall
+  pdfText, // Markdown 内容
+  pdfImages, // 带页码的图片
+  aiCall,
 );
 
 // 4. 生成场景（含图片）
@@ -146,8 +151,8 @@ await buildSceneFromOutline(
   outline,
   aiCall,
   stageId,
-  assignedImages,  // 从 pdfImages 筛选
-  imageMapping     // 用于解析 img_1 到实际 URL
+  assignedImages, // 从 pdfImages 筛选
+  imageMapping, // 用于解析 img_1 到实际 URL
 );
 ```
 
@@ -194,6 +199,7 @@ formData.append('apiKey', 'optional');
 ### 1. 定义提供商
 
 `lib/pdf/constants.ts`:
+
 ```typescript
 export const PDF_PROVIDERS = {
   myProvider: {
@@ -208,6 +214,7 @@ export const PDF_PROVIDERS = {
 ### 2. 实现解析器
 
 `lib/pdf/pdf-providers.ts`:
+
 ```typescript
 async function parseWithMyProvider(
   config: PDFParserConfig,
@@ -256,6 +263,7 @@ switch (config.providerId) {
 ### Q: MinerU 服务无法连接？
 
 **A**: 检查：
+
 ```bash
 # 服务状态
 docker ps | grep mineru
@@ -270,6 +278,7 @@ docker logs mineru
 ### Q: 图片不显示？
 
 **A**: 确保：
+
 1. `imageMapping` 正确传递到 scene-stream API
 2. 图片 ID 格式正确（img_1, img_2）
 3. Base64 编码完整
@@ -277,6 +286,7 @@ docker logs mineru
 ### Q: 解析速度慢？
 
 **A**: 优化：
+
 ```bash
 # 增加 Docker 资源
 docker run -d \
@@ -291,14 +301,14 @@ docker run -d \
 
 **A**: 选择建议：
 
-| 场景 | 推荐 |
-|------|------|
-| 简单 PDF（纯文本） | unpdf |
-| 包含表格、公式 | MinerU |
-| 需要保留布局 | MinerU |
-| 快速测试 | unpdf |
-| 生产环境 | MinerU |
-| 无法部署服务 | unpdf |
+| 场景               | 推荐   |
+| ------------------ | ------ |
+| 简单 PDF（纯文本） | unpdf  |
+| 包含表格、公式     | MinerU |
+| 需要保留布局       | MinerU |
+| 快速测试           | unpdf  |
+| 生产环境           | MinerU |
+| 无法部署服务       | unpdf  |
 
 ## 性能建议
 
@@ -308,15 +318,15 @@ docker run -d \
 const files = [file1, file2, file3];
 
 const results = await Promise.all(
-  files.map(file => {
+  files.map((file) => {
     const formData = new FormData();
     formData.append('pdf', file);
     formData.append('providerId', 'mineru');
     return fetch('/api/parse-pdf', {
       method: 'POST',
       body: formData,
-    }).then(r => r.json());
-  })
+    }).then((r) => r.json());
+  }),
 );
 ```
 

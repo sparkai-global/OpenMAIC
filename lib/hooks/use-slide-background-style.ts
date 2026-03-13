@@ -40,7 +40,9 @@ export function useSlideBackgroundStyle(background: SlideBackground | undefined)
       if (type === 'radial') {
         return { backgroundImage: `radial-gradient(${list.join(',')})` };
       }
-      return { backgroundImage: `linear-gradient(${rotate}deg, ${list.join(',')})` };
+      return {
+        backgroundImage: `linear-gradient(${rotate}deg, ${list.join(',')})`,
+      };
     }
 
     return { backgroundColor: '#fff' };

@@ -1,8 +1,17 @@
 import { useCallback } from 'react';
 import { useCanvasStore } from '@/lib/store';
 import { useKeyboardStore } from '@/lib/store/keyboard';
-import type { PPTElement, PPTLineElement, PPTImageElement, PPTShapeElement } from '@/lib/types/slides';
-import { OperateResizeHandlers, type AlignmentLineProps, type MultiSelectRange } from '@/lib/types/edit';
+import type {
+  PPTElement,
+  PPTLineElement,
+  PPTImageElement,
+  PPTShapeElement,
+} from '@/lib/types/slides';
+import {
+  OperateResizeHandlers,
+  type AlignmentLineProps,
+  type MultiSelectRange,
+} from '@/lib/types/edit';
 import { MIN_SIZE } from '@/configs/element';
 import { SHAPE_PATH_FORMULAS } from '@/configs/shapes';
 import { type AlignLine, uniqAlignLines } from '@/lib/utils/element';
@@ -71,7 +80,16 @@ const getRotateElementPoints = (element: RotateElementData, angle: number) => {
     top: middleTop - halfWidth * Math.sin(raRadian),
   };
 
-  return { leftTopPoint, topPoint, rightTopPoint, rightPoint, rightBottomPoint, bottomPoint, leftBottomPoint, leftPoint };
+  return {
+    leftTopPoint,
+    topPoint,
+    rightTopPoint,
+    rightPoint,
+    rightBottomPoint,
+    bottomPoint,
+    leftBottomPoint,
+    leftPoint,
+  };
 };
 
 /**
@@ -81,7 +99,7 @@ const getRotateElementPoints = (element: RotateElementData, angle: number) => {
  */
 const getOppositePoint = (
   direction: OperateResizeHandlers,
-  points: ReturnType<typeof getRotateElementPoints>
+  points: ReturnType<typeof getRotateElementPoints>,
 ): { left: number; top: number } => {
   const oppositeMap = {
     [OperateResizeHandlers.RIGHT_BOTTOM]: points.leftTopPoint,
@@ -106,7 +124,7 @@ const getOppositePoint = (
 export function useScaleElement(
   elementListRef: React.RefObject<PPTElement[]>,
   setElementList: React.Dispatch<React.SetStateAction<PPTElement[]>>,
-  setAlignmentLines: React.Dispatch<React.SetStateAction<AlignmentLineProps[]>>
+  setAlignmentLines: React.Dispatch<React.SetStateAction<AlignmentLineProps[]>>,
 ) {
   const setScalingState = useCanvasStore.use.setScalingState();
   const activeElementIdList = useCanvasStore.use.activeElementIdList();
@@ -124,7 +142,11 @@ export function useScaleElement(
 
   // Scale element
   const scaleElement = useCallback(
-    (e: React.MouseEvent | React.TouchEvent, element: Exclude<PPTElement, PPTLineElement>, command: OperateResizeHandlers) => {
+    (
+      e: React.MouseEvent | React.TouchEvent,
+      element: Exclude<PPTElement, PPTLineElement>,
+      command: OperateResizeHandlers,
+    ) => {
       const native = e.nativeEvent;
       const isTouchEvent = native instanceof TouchEvent;
       if (isTouchEvent && !native.changedTouches?.length) return;
@@ -210,15 +232,27 @@ export function useScaleElement(
         }
 
         // Four edges of the visible canvas area, horizontal center, and vertical center
-        const edgeTopLine: AlignLine = { value: 0, range: [0, edgeWidth] }
-        const edgeBottomLine: AlignLine = { value: edgeHeight, range: [0, edgeWidth] }
-        const edgeHorizontalCenterLine: AlignLine = { value: edgeHeight / 2, range: [0, edgeWidth] }
-        const edgeLeftLine: AlignLine = { value: 0, range: [0, edgeHeight] }
-        const edgeRightLine: AlignLine = { value: edgeWidth, range: [0, edgeHeight] }
-        const edgeVerticalCenterLine: AlignLine = { value: edgeWidth / 2, range: [0, edgeHeight] }
+        const edgeTopLine: AlignLine = { value: 0, range: [0, edgeWidth] };
+        const edgeBottomLine: AlignLine = {
+          value: edgeHeight,
+          range: [0, edgeWidth],
+        };
+        const edgeHorizontalCenterLine: AlignLine = {
+          value: edgeHeight / 2,
+          range: [0, edgeWidth],
+        };
+        const edgeLeftLine: AlignLine = { value: 0, range: [0, edgeHeight] };
+        const edgeRightLine: AlignLine = {
+          value: edgeWidth,
+          range: [0, edgeHeight],
+        };
+        const edgeVerticalCenterLine: AlignLine = {
+          value: edgeWidth / 2,
+          range: [0, edgeHeight],
+        };
 
-        horizontalLines.push(edgeTopLine, edgeBottomLine, edgeHorizontalCenterLine)
-        verticalLines.push(edgeLeftLine, edgeRightLine, edgeVerticalCenterLine)
+        horizontalLines.push(edgeTopLine, edgeBottomLine, edgeHorizontalCenterLine);
+        verticalLines.push(edgeLeftLine, edgeRightLine, edgeVerticalCenterLine);
 
         horizontalLines = uniqAlignLines(horizontalLines);
         verticalLines = uniqAlignLines(verticalLines);
@@ -244,7 +278,11 @@ export function useScaleElement(
             if (Math.abs(currentY - value) < sorptionRange && !isHorizontalAdsorbed) {
               correctionVal.offsetY = currentY - value;
               isHorizontalAdsorbed = true;
-              _alignmentLines.push({ type: 'horizontal', axis: { x: min - 50, y: value }, length: max - min + 100 });
+              _alignmentLines.push({
+                type: 'horizontal',
+                axis: { x: min - 50, y: value },
+                length: max - min + 100,
+              });
             }
           }
         }
@@ -257,7 +295,11 @@ export function useScaleElement(
             if (Math.abs(currentX - value) < sorptionRange && !isVerticalAdsorbed) {
               correctionVal.offsetX = currentX - value;
               isVerticalAdsorbed = true;
-              _alignmentLines.push({ type: 'vertical', axis: { x: value, y: min - 50 }, length: max - min + 100 });
+              _alignmentLines.push({
+                type: 'vertical',
+                axis: { x: value, y: min - 50 },
+                length: max - min + 100,
+              });
             }
           }
         }
@@ -287,9 +329,15 @@ export function useScaleElement(
           // Lock aspect ratio (only triggered by four corners, not edges)
           // Use horizontal scaling distance as the basis to calculate vertical scaling distance, maintaining the same ratio
           if (fixedRatio) {
-            if (command === OperateResizeHandlers.RIGHT_BOTTOM || command === OperateResizeHandlers.LEFT_TOP)
+            if (
+              command === OperateResizeHandlers.RIGHT_BOTTOM ||
+              command === OperateResizeHandlers.LEFT_TOP
+            )
               revisedY = revisedX / aspectRatio;
-            if (command === OperateResizeHandlers.LEFT_BOTTOM || command === OperateResizeHandlers.RIGHT_TOP)
+            if (
+              command === OperateResizeHandlers.LEFT_BOTTOM ||
+              command === OperateResizeHandlers.RIGHT_TOP
+            )
               revisedY = -revisedX / aspectRatio;
           }
 
@@ -345,14 +393,23 @@ export function useScaleElement(
           let moveY = y / canvasScale;
 
           if (fixedRatio) {
-            if (command === OperateResizeHandlers.RIGHT_BOTTOM || command === OperateResizeHandlers.LEFT_TOP)
+            if (
+              command === OperateResizeHandlers.RIGHT_BOTTOM ||
+              command === OperateResizeHandlers.LEFT_TOP
+            )
               moveY = moveX / aspectRatio;
-            if (command === OperateResizeHandlers.LEFT_BOTTOM || command === OperateResizeHandlers.RIGHT_TOP)
+            if (
+              command === OperateResizeHandlers.LEFT_BOTTOM ||
+              command === OperateResizeHandlers.RIGHT_TOP
+            )
               moveY = -moveX / aspectRatio;
           }
 
           if (command === OperateResizeHandlers.RIGHT_BOTTOM) {
-            const { offsetX, offsetY } = alignedAdsorption(elOriginLeft + elOriginWidth + moveX, elOriginTop + elOriginHeight + moveY);
+            const { offsetX, offsetY } = alignedAdsorption(
+              elOriginLeft + elOriginWidth + moveX,
+              elOriginTop + elOriginHeight + moveY,
+            );
             moveX = moveX - offsetX;
             moveY = moveY - offsetY;
             if (fixedRatio) {
@@ -362,7 +419,10 @@ export function useScaleElement(
             width = getSizeWithinRange(elOriginWidth + moveX, 'width');
             height = getSizeWithinRange(elOriginHeight + moveY, 'height');
           } else if (command === OperateResizeHandlers.LEFT_BOTTOM) {
-            const { offsetX, offsetY } = alignedAdsorption(elOriginLeft + moveX, elOriginTop + elOriginHeight + moveY);
+            const { offsetX, offsetY } = alignedAdsorption(
+              elOriginLeft + moveX,
+              elOriginTop + elOriginHeight + moveY,
+            );
             moveX = moveX - offsetX;
             moveY = moveY - offsetY;
             if (fixedRatio) {
@@ -373,7 +433,10 @@ export function useScaleElement(
             height = getSizeWithinRange(elOriginHeight + moveY, 'height');
             left = elOriginLeft - (width - elOriginWidth);
           } else if (command === OperateResizeHandlers.LEFT_TOP) {
-            const { offsetX, offsetY } = alignedAdsorption(elOriginLeft + moveX, elOriginTop + moveY);
+            const { offsetX, offsetY } = alignedAdsorption(
+              elOriginLeft + moveX,
+              elOriginTop + moveY,
+            );
             moveX = moveX - offsetX;
             moveY = moveY - offsetY;
             if (fixedRatio) {
@@ -385,7 +448,10 @@ export function useScaleElement(
             left = elOriginLeft - (width - elOriginWidth);
             top = elOriginTop - (height - elOriginHeight);
           } else if (command === OperateResizeHandlers.RIGHT_TOP) {
-            const { offsetX, offsetY } = alignedAdsorption(elOriginLeft + elOriginWidth + moveX, elOriginTop + moveY);
+            const { offsetX, offsetY } = alignedAdsorption(
+              elOriginLeft + elOriginWidth + moveX,
+              elOriginTop + moveY,
+            );
             moveX = moveX - offsetX;
             moveY = moveY - offsetY;
             if (fixedRatio) {
@@ -437,7 +503,8 @@ export function useScaleElement(
             };
           }
           if (el.type === 'table') {
-            let cellMinHeight = originTableCellMinHeight + (height - elOriginHeight) / el.data.length;
+            let cellMinHeight =
+              originTableCellMinHeight + (height - elOriginHeight) / el.data.length;
             cellMinHeight = cellMinHeight < 36 ? 36 : cellMinHeight;
 
             if (cellMinHeight === originTableCellMinHeight) return { ...el, left, width };
@@ -461,10 +528,10 @@ export function useScaleElement(
       const handleMouseUp = (e: MouseEvent | TouchEvent) => {
         isMouseDown = false;
 
-        document.ontouchmove = null
-        document.ontouchend = null
-        document.onmousemove = null
-        document.onmouseup = null
+        document.ontouchmove = null;
+        document.ontouchend = null;
+        document.onmousemove = null;
+        document.onmouseup = null;
 
         setAlignmentLines([]);
 
@@ -500,7 +567,7 @@ export function useScaleElement(
       setAlignmentLines,
       updateSlide,
       addHistorySnapshot,
-    ]
+    ],
   );
 
   // Scale multiple selected elements
@@ -529,72 +596,73 @@ export function useScaleElement(
 
         // Lock aspect ratio, same logic as above
         if (ctrlOrShiftKeyActive) {
-          if (command === OperateResizeHandlers.RIGHT_BOTTOM || command === OperateResizeHandlers.LEFT_TOP)
+          if (
+            command === OperateResizeHandlers.RIGHT_BOTTOM ||
+            command === OperateResizeHandlers.LEFT_TOP
+          )
             y = x / aspectRatio;
-          if (command === OperateResizeHandlers.LEFT_BOTTOM || command === OperateResizeHandlers.RIGHT_TOP)
+          if (
+            command === OperateResizeHandlers.LEFT_BOTTOM ||
+            command === OperateResizeHandlers.RIGHT_TOP
+          )
             y = -x / aspectRatio;
         }
 
         // Overall range of all selected elements
-        let currentMinX = minX
-        let currentMaxX = maxX
-        let currentMinY = minY
-        let currentMaxY = maxY
+        let currentMinX = minX;
+        let currentMaxX = maxX;
+        let currentMinY = minY;
+        let currentMaxY = maxY;
 
         if (command === OperateResizeHandlers.RIGHT_BOTTOM) {
-          currentMaxX = maxX + x
-          currentMaxY = maxY + y
-        }
-        else if (command === OperateResizeHandlers.LEFT_BOTTOM) {
-          currentMinX = minX + x
-          currentMaxY = maxY + y
-        }
-        else if (command === OperateResizeHandlers.LEFT_TOP) {
-          currentMinX = minX + x
-          currentMinY = minY + y
-        }
-        else if (command === OperateResizeHandlers.RIGHT_TOP) {
-          currentMaxX = maxX + x
-          currentMinY = minY + y
-        }
-        else if (command === OperateResizeHandlers.TOP) {
-          currentMinY = minY + y
-        }
-        else if (command === OperateResizeHandlers.BOTTOM) {
-          currentMaxY = maxY + y
-        }
-        else if (command === OperateResizeHandlers.LEFT) {
-          currentMinX = minX + x
-        }
-        else if (command === OperateResizeHandlers.RIGHT) {
-          currentMaxX = maxX + x
+          currentMaxX = maxX + x;
+          currentMaxY = maxY + y;
+        } else if (command === OperateResizeHandlers.LEFT_BOTTOM) {
+          currentMinX = minX + x;
+          currentMaxY = maxY + y;
+        } else if (command === OperateResizeHandlers.LEFT_TOP) {
+          currentMinX = minX + x;
+          currentMinY = minY + y;
+        } else if (command === OperateResizeHandlers.RIGHT_TOP) {
+          currentMaxX = maxX + x;
+          currentMinY = minY + y;
+        } else if (command === OperateResizeHandlers.TOP) {
+          currentMinY = minY + y;
+        } else if (command === OperateResizeHandlers.BOTTOM) {
+          currentMaxY = maxY + y;
+        } else if (command === OperateResizeHandlers.LEFT) {
+          currentMinX = minX + x;
+        } else if (command === OperateResizeHandlers.RIGHT) {
+          currentMaxX = maxX + x;
         }
 
         // Overall width and height of all selected elements
-        const currentOppositeWidth = currentMaxX - currentMinX
-        const currentOppositeHeight = currentMaxY - currentMinY
+        const currentOppositeWidth = currentMaxX - currentMinX;
+        const currentOppositeHeight = currentMaxY - currentMinY;
 
         // Ratio of the currently operated element's width/height to the overall width/height of all selected elements
-        let widthScale = currentOppositeWidth / operateWidth
-        let heightScale = currentOppositeHeight / operateHeight
+        let widthScale = currentOppositeWidth / operateWidth;
+        let heightScale = currentOppositeHeight / operateHeight;
 
-        if (widthScale <= 0) widthScale = 0
-        if (heightScale <= 0) heightScale = 0
-        
+        if (widthScale <= 0) widthScale = 0;
+        if (heightScale <= 0) heightScale = 0;
+
         // Calculate and update the position and size of all selected elements based on the computed ratio
-        const newElements = elementListRef.current.map(el => {
+        const newElements = elementListRef.current.map((el) => {
           if ((el.type === 'image' || el.type === 'shape') && activeElementIdList.includes(el.id)) {
-            const originElement = originElementList.find(originEl => originEl.id === el.id) as PPTImageElement | PPTShapeElement
+            const originElement = originElementList.find((originEl) => originEl.id === el.id) as
+              | PPTImageElement
+              | PPTShapeElement;
             return {
               ...el,
               width: originElement.width * widthScale,
               height: originElement.height * heightScale,
               left: currentMinX + (originElement.left - minX) * widthScale,
               top: currentMinY + (originElement.top - minY) * heightScale,
-            }
+            };
           }
-          return el
-        })
+          return el;
+        });
 
         elementListRef.current = newElements;
         setElementList(newElements);
@@ -602,10 +670,10 @@ export function useScaleElement(
 
       const handleMouseUp = (e: MouseEvent) => {
         isMouseDown = false;
-        document.onmousemove = null
-        document.onmouseup = null
+        document.onmousemove = null;
+        document.onmouseup = null;
 
-        if (startPageX === e.pageX && startPageY === e.pageY) return
+        if (startPageX === e.pageX && startPageY === e.pageY) return;
 
         updateSlide({ elements: elementListRef.current });
         addHistorySnapshot();
@@ -614,7 +682,15 @@ export function useScaleElement(
       document.onmousemove = handleMouseMove;
       document.onmouseup = handleMouseUp;
     },
-    [elementListRef, setElementList, canvasScale, activeElementIdList, ctrlOrShiftKeyActive, updateSlide, addHistorySnapshot]
+    [
+      elementListRef,
+      setElementList,
+      canvasScale,
+      activeElementIdList,
+      ctrlOrShiftKeyActive,
+      updateSlide,
+      addHistorySnapshot,
+    ],
   );
 
   return {

@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { useKeyboardStore } from '@/lib/store/keyboard';
-import { useCanvasStore, useSceneSelector} from '@/lib/store';
+import { useCanvasStore, useSceneSelector } from '@/lib/store';
 import type { CreateCustomShapeData } from '@/lib/types/edit';
-import type {SlideContent} from "@/lib/types/stage";
-import type {SlideTheme} from "@/lib/types/slides";
+import type { SlideContent } from '@/lib/types/stage';
+import type { SlideTheme } from '@/lib/types/slides';
 import { toast } from 'sonner';
 
 interface ShapeCreateCanvasProps {
@@ -13,9 +13,7 @@ interface ShapeCreateCanvasProps {
 export function ShapeCreateCanvas({ onCreated }: ShapeCreateCanvasProps) {
   const ctrlOrShiftKeyActive = useKeyboardStore((state) => state.ctrlOrShiftKeyActive());
   const setCreatingCustomShapeState = useCanvasStore.use.setCreatingCustomShapeState();
-  const theme = useSceneSelector<SlideContent, SlideTheme>(
-      content => content.canvas.theme
-  );
+  const theme = useSceneSelector<SlideContent, SlideTheme>((content) => content.canvas.theme);
 
   const shapeCanvasRef = useRef<HTMLDivElement>(null);
   const [isMouseDown, setIsMouseDown] = useState(false);
@@ -28,37 +26,40 @@ export function ShapeCreateCanvas({ onCreated }: ShapeCreateCanvasProps) {
     setCreatingCustomShapeState(false);
   }, [setCreatingCustomShapeState]);
 
-  const getCreateData = useCallback((closeShape = true) => {
-    const xList = points.map((item) => item[0]);
-    const yList = points.map((item) => item[1]);
-    const minX = Math.min(...xList);
-    const minY = Math.min(...yList);
-    const maxX = Math.max(...xList);
-    const maxY = Math.max(...yList);
+  const getCreateData = useCallback(
+    (closeShape = true) => {
+      const xList = points.map((item) => item[0]);
+      const yList = points.map((item) => item[1]);
+      const minX = Math.min(...xList);
+      const minY = Math.min(...yList);
+      const maxX = Math.max(...xList);
+      const maxY = Math.max(...yList);
 
-    const formatedPoints = points.map((point) => {
-      return [point[0] - minX, point[1] - minY];
-    });
+      const formatedPoints = points.map((point) => {
+        return [point[0] - minX, point[1] - minY];
+      });
 
-    let pathStr = '';
-    for (let i = 0; i < formatedPoints.length; i++) {
-      const point = formatedPoints[i];
-      if (i === 0) pathStr += `M ${point[0]} ${point[1]} `;
-      else pathStr += `L ${point[0]} ${point[1]} `;
-    }
-    if (closeShape) pathStr += 'Z';
+      let pathStr = '';
+      for (let i = 0; i < formatedPoints.length; i++) {
+        const point = formatedPoints[i];
+        if (i === 0) pathStr += `M ${point[0]} ${point[1]} `;
+        else pathStr += `L ${point[0]} ${point[1]} `;
+      }
+      if (closeShape) pathStr += 'Z';
 
-    const start: [number, number] = [minX + offset.x, minY + offset.y];
-    const end: [number, number] = [maxX + offset.x, maxY + offset.y];
-    const viewBox: [number, number] = [maxX - minX, maxY - minY];
+      const start: [number, number] = [minX + offset.x, minY + offset.y];
+      const end: [number, number] = [maxX + offset.x, maxY + offset.y];
+      const viewBox: [number, number] = [maxX - minX, maxY - minY];
 
-    return {
-      start,
-      end,
-      path: pathStr,
-      viewBox,
-    };
-  }, [points, offset]);
+      return {
+        start,
+        end,
+        path: pathStr,
+        viewBox,
+      };
+    },
+    [points, offset],
+  );
 
   const create = useCallback(() => {
     onCreated({
@@ -79,7 +80,9 @@ export function ShapeCreateCanvas({ onCreated }: ShapeCreateCanvasProps) {
     setOffset({ x, y });
 
     // Show instruction toast
-    toast.info("Click to draw any shape, close the path to finish, press ESC or right-click to cancel, press ENTER to finish early");
+    toast.info(
+      'Click to draw any shape, close the path to finish, press ESC or right-click to cancel, press ENTER to finish early',
+    );
 
     const handleKeyDown = (e: KeyboardEvent) => {
       const key = e.key.toUpperCase();
@@ -175,7 +178,12 @@ export function ShapeCreateCanvas({ onCreated }: ShapeCreateCanvasProps) {
       }}
     >
       <svg className="w-full h-full overflow-visible">
-        <path d={path} stroke="#d14424" fill={closed ? 'rgba(226, 83, 77, 0.15)' : 'none'} strokeWidth="2" />
+        <path
+          d={path}
+          stroke="#d14424"
+          fill={closed ? 'rgba(226, 83, 77, 0.15)' : 'none'}
+          strokeWidth="2"
+        />
       </svg>
     </div>
   );

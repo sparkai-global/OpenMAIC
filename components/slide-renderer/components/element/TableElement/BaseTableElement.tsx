@@ -1,11 +1,11 @@
-'use client'
+'use client';
 
-import type { PPTTableElement } from '@/lib/types/slides'
-import { StaticTable } from './StaticTable'
+import type { PPTTableElement } from '@/lib/types/slides';
+import { StaticTable } from './StaticTable';
 
 export interface BaseTableElementProps {
-  elementInfo: PPTTableElement
-  target?: string
+  elementInfo: PPTTableElement;
+  target?: string;
 }
 
 /**
@@ -31,5 +31,5 @@ export function BaseTableElement({ elementInfo, target }: BaseTableElementProps)
         </div>
       </div>
     </div>
-  )
+  );
 }

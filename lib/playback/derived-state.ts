@@ -198,7 +198,8 @@ export function computePlaybackView(raw: PlaybackRawState): PlaybackView {
   }
 
   // ---- isTopicActive ----
-  const isTopicActive = chatIsStreaming || isTopicPending || isCueUser || engineMode === 'live' || !!discussionTrigger;
+  const isTopicActive =
+    chatIsStreaming || isTopicPending || isCueUser || engineMode === 'live' || !!discussionTrigger;
 
   return {
     phase,

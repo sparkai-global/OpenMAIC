@@ -32,11 +32,11 @@ export const enum KEYS {
 }
 
 interface HotkeyItem {
-  type: string
+  type: string;
   children: {
-    label: string
-    value?: string
-  }[] 
+    label: string;
+    value?: string;
+  }[];
 }
 
 export const HOTKEY_DOC: HotkeyItem[] = [
@@ -118,9 +118,7 @@ export const HOTKEY_DOC: HotkeyItem[] = [
   },
   {
     type: '图表数据编辑',
-    children: [
-      { label: '聚焦到下一行', value: 'Enter' },
-    ],
+    children: [{ label: '聚焦到下一行', value: 'Enter' }],
   },
   {
     type: '文本编辑',
@@ -146,4 +144,4 @@ export const HOTKEY_DOC: HotkeyItem[] = [
       { label: '文本编辑 - 支持 markdown 语法创建列表和引用' },
     ],
   },
-]
+];

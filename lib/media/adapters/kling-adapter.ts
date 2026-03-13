@@ -28,7 +28,7 @@ const DEFAULT_MODEL = 'kling-v2-6';
 const DEFAULT_BASE_URL = 'https://api-beijing.klingai.com';
 const POLL_INTERVAL_MS = 5_000;
 const MAX_POLL_ATTEMPTS = 120; // 10 minutes max
-const JWT_EXPIRY_SECS = 1800;  // 30 minutes
+const JWT_EXPIRY_SECS = 1800; // 30 minutes
 
 // ---------------------------------------------------------------------------
 // JWT helper (HS256, no external deps)
@@ -43,15 +43,17 @@ function generateJWT(accessKey: string, secretKey: string): string {
   const now = Math.floor(Date.now() / 1000);
 
   const header = base64url(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
-  const payload = base64url(JSON.stringify({
-    iss: accessKey,
-    exp: now + JWT_EXPIRY_SECS,
-    nbf: now - 5,
-    iat: now,
-  }));
+  const payload = base64url(
+    JSON.stringify({
+      iss: accessKey,
+      exp: now + JWT_EXPIRY_SECS,
+      nbf: now - 5,
+      iat: now,
+    }),
+  );
 
   const signature = base64url(
-    crypto.createHmac('sha256', secretKey).update(`${header}.${payload}`).digest()
+    crypto.createHmac('sha256', secretKey).update(`${header}.${payload}`).digest(),
   );
 
   return `${header}.${payload}.${signature}`;
@@ -86,13 +88,13 @@ interface KlingPollResponse {
   message: string;
   data: {
     task_id: string;
-    task_status: string;       // submitted | processing | succeed | failed
+    task_status: string; // submitted | processing | succeed | failed
     task_status_msg?: string;
     task_result?: {
       videos?: Array<{
         id: string;
         url: string;
-        duration: string;      // seconds as string
+        duration: string; // seconds as string
       }>;
     };
   };
@@ -102,12 +104,19 @@ interface KlingPollResponse {
 // Dimension helpers
 // ---------------------------------------------------------------------------
 
-function getDimensions(aspectRatio?: string): { width: number; height: number } {
+function getDimensions(aspectRatio?: string): {
+  width: number;
+  height: number;
+} {
   switch (aspectRatio) {
-    case '9:16': return { width: 720, height: 1280 };
-    case '1:1':  return { width: 1080, height: 1080 };
-    case '4:3':  return { width: 1024, height: 768 };
-    default:     return { width: 1280, height: 720 }; // 16:9
+    case '9:16':
+      return { width: 720, height: 1280 };
+    case '1:1':
+      return { width: 1080, height: 1080 };
+    case '4:3':
+      return { width: 1024, height: 768 };
+    default:
+      return { width: 1280, height: 720 }; // 16:9
   }
 }
 
@@ -115,7 +124,9 @@ function getDimensions(aspectRatio?: string): { width: number; height: number } 
  * Lightweight connectivity test — validates API key by generating a JWT
  * and making a GET request. 401/403 means key invalid.
  */
-export async function testKlingConnectivity(config: VideoGenerationConfig): Promise<{ success: boolean; message: string }> {
+export async function testKlingConnectivity(
+  config: VideoGenerationConfig,
+): Promise<{ success: boolean; message: string }> {
   const baseUrl = config.baseUrl || DEFAULT_BASE_URL;
   try {
     const { accessKey, secretKey } = parseApiKey(config.apiKey);
@@ -127,7 +138,10 @@ export async function testKlingConnectivity(config: VideoGenerationConfig): Prom
     });
     if (response.status === 401 || response.status === 403) {
       const text = await response.text();
-      return { success: false, message: `Kling auth failed (${response.status}): ${text}` };
+      return {
+        success: false,
+        message: `Kling auth failed (${response.status}): ${text}`,
+      };
     }
     return { success: true, message: 'Connected to Kling' };
   } catch (err) {
@@ -244,12 +258,12 @@ export async function generateWithKling(
 
     if (result.task_status === 'failed') {
       throw new Error(
-        `Kling video generation failed: ${result.task_status_msg || 'Unknown error'}`
+        `Kling video generation failed: ${result.task_status_msg || 'Unknown error'}`,
       );
     }
   }
 
   throw new Error(
-    `Kling video generation timed out after ${(MAX_POLL_ATTEMPTS * POLL_INTERVAL_MS) / 1000}s (task: ${taskId})`
+    `Kling video generation timed out after ${(MAX_POLL_ATTEMPTS * POLL_INTERVAL_MS) / 1000}s (task: ${taskId})`,
   );
 }

@@ -64,9 +64,7 @@ function buildPeerContextSection(
   const peers = agentResponses.filter((r) => r.agentName !== currentAgentName);
   if (peers.length === 0) return '';
 
-  const peerLines = peers
-    .map((r) => `- ${r.agentName}: "${r.contentPreview}"`)
-    .join('\n');
+  const peerLines = peers.map((r) => `- ${r.agentName}: "${r.contentPreview}"`).join('\n');
 
   return `
 # This Round's Context (CRITICAL — READ BEFORE RESPONDING)
@@ -102,7 +100,7 @@ export function buildStructuredPrompt(
 ): string {
   // Determine current scene type for action filtering
   const currentScene = storeState.currentSceneId
-    ? storeState.scenes.find(s => s.id === storeState.currentSceneId)
+    ? storeState.scenes.find((s) => s.id === storeState.currentSceneId)
     : undefined;
   const sceneType = currentScene?.type;
 
@@ -117,17 +115,19 @@ export function buildStructuredPrompt(
   const virtualWbContext = buildVirtualWhiteboardContext(storeState, whiteboardLedger);
 
   // Build student profile section (only when nickname or bio is present)
-  const studentProfileSection = (userProfile?.nickname || userProfile?.bio)
-    ? `\n# Student Profile
+  const studentProfileSection =
+    userProfile?.nickname || userProfile?.bio
+      ? `\n# Student Profile
 You are teaching ${userProfile.nickname || 'a student'}.${userProfile.bio ? `\nTheir background: ${userProfile.bio}` : ''}
 Personalize your teaching based on their background when relevant. Address them by name naturally.\n`
-    : '';
+      : '';
 
   // Build peer context section (what agents already said this round)
   const peerContext = buildPeerContextSection(agentResponses, agentConfig.name);
 
   // Whether spotlight/laser are available (only on slide scenes)
-  const hasSlideActions = effectiveActions.includes('spotlight') || effectiveActions.includes('laser');
+  const hasSlideActions =
+    effectiveActions.includes('spotlight') || effectiveActions.includes('laser');
 
   // Build format example based on available actions
   const formatExample = hasSlideActions
@@ -410,9 +410,12 @@ function stripHtml(html: string): string {
 function summarizeElement(el: any): string {
   const id = el.id ? `[id:${el.id}]` : '';
   const pos = `at (${Math.round(el.left)},${Math.round(el.top)})`;
-  const size = el.width != null && el.height != null
-    ? ` size ${Math.round(el.width)}×${Math.round(el.height)}`
-    : el.width != null ? ` w=${Math.round(el.width)}` : '';
+  const size =
+    el.width != null && el.height != null
+      ? ` size ${Math.round(el.width)}×${Math.round(el.height)}`
+      : el.width != null
+        ? ` w=${Math.round(el.width)}`
+        : '';
 
   switch (el.type) {
     case 'text': {
@@ -421,7 +424,7 @@ function summarizeElement(el: any): string {
       return `${id} text${el.textType ? `[${el.textType}]` : ''}: "${text}${suffix}" ${pos}${size}`;
     }
     case 'image': {
-      const src = el.src?.startsWith('data:') ? '[embedded]' : (el.src?.slice(0, 50) || 'unknown');
+      const src = el.src?.startsWith('data:') ? '[embedded]' : el.src?.slice(0, 50) || 'unknown';
       return `${id} image: ${src} ${pos}${size}`;
     }
     case 'shape': {
@@ -568,7 +571,7 @@ function buildVirtualWhiteboardContext(
         const x = record.params.x ?? '?';
         const y = record.params.y ?? '?';
         const w = record.params.width ?? 400;
-        const h = record.params.height ?? (rows * 40 + 20);
+        const h = record.params.height ?? rows * 40 + 20;
         elements.push({
           agentName: record.agentName,
           summary: `table(${rows}×${cols}) at (${x},${y}), size ${w}x${h}`,
@@ -622,20 +625,26 @@ function buildStateContext(storeState: StatelessChatRequest['storeState']): stri
   lines.push(`Mode: ${mode}`);
 
   // Whiteboard status
-  lines.push(`Whiteboard: ${whiteboardOpen ? 'OPEN (slide canvas is hidden)' : 'closed (slide canvas is visible)'}`);
+  lines.push(
+    `Whiteboard: ${whiteboardOpen ? 'OPEN (slide canvas is hidden)' : 'closed (slide canvas is visible)'}`,
+  );
 
   // Stage info
   if (stage) {
-    lines.push(`Course: ${stage.name || 'Untitled'}${stage.description ? ` - ${stage.description}` : ''}`);
+    lines.push(
+      `Course: ${stage.name || 'Untitled'}${stage.description ? ` - ${stage.description}` : ''}`,
+    );
   }
 
   // Scenes summary
   lines.push(`Total scenes: ${scenes.length}`);
 
   if (currentSceneId) {
-    const currentScene = scenes.find(s => s.id === currentSceneId);
+    const currentScene = scenes.find((s) => s.id === currentSceneId);
     if (currentScene) {
-      lines.push(`Current scene: "${currentScene.title}" (${currentScene.type}, id: ${currentSceneId})`);
+      lines.push(
+        `Current scene: "${currentScene.title}" (${currentScene.type}, id: ${currentSceneId})`,
+      );
 
       // Slide scene: include element details
       if (currentScene.content.type === 'slide') {
@@ -650,7 +659,9 @@ function buildStateContext(storeState: StatelessChatRequest['storeState']): stri
           .slice(0, 5)
           .map((q, i) => `  ${i + 1}. [${q.type}] ${q.question.slice(0, 80)}`)
           .join('\n');
-        lines.push(`Quiz questions (${questions.length}):\n${qSummary}${questions.length > 5 ? `\n  ... and ${questions.length - 5} more` : ''}`);
+        lines.push(
+          `Quiz questions (${questions.length}):\n${qSummary}${questions.length > 5 ? `\n  ... and ${questions.length - 5} more` : ''}`,
+        );
       }
     }
   } else if (scenes.length > 0) {
@@ -663,14 +674,18 @@ function buildStateContext(storeState: StatelessChatRequest['storeState']): stri
       .slice(0, 5)
       .map((s, i) => `  ${i + 1}. ${s.title} (${s.type}, id: ${s.id})`)
       .join('\n');
-    lines.push(`Scenes:\n${sceneSummary}${scenes.length > 5 ? `\n  ... and ${scenes.length - 5} more` : ''}`);
+    lines.push(
+      `Scenes:\n${sceneSummary}${scenes.length > 5 ? `\n  ... and ${scenes.length - 5} more` : ''}`,
+    );
   }
 
   // Whiteboard content (last whiteboard in the stage)
   if (stage?.whiteboard && stage.whiteboard.length > 0) {
     const lastWb = stage.whiteboard[stage.whiteboard.length - 1];
     const wbElements = lastWb.elements || [];
-    lines.push(`Whiteboard (last of ${stage.whiteboard.length}, ${wbElements.length} elements):\n${summarizeElements(wbElements)}`);
+    lines.push(
+      `Whiteboard (last of ${stage.whiteboard.length}, ${wbElements.length} elements):\n${summarizeElements(wbElements)}`,
+    );
   }
 
   return lines.join('\n');
@@ -699,7 +714,7 @@ interface OpenAIMessage {
 export function summarizeConversation(
   messages: OpenAIMessage[],
   maxMessages = 10,
-  maxContentLength = 200
+  maxContentLength = 200,
 ): string {
   if (messages.length === 0) {
     return 'No conversation history yet.';
@@ -707,10 +722,12 @@ export function summarizeConversation(
 
   const recent = messages.slice(-maxMessages);
   const lines = recent.map((msg) => {
-    const roleLabel = msg.role === 'user' ? 'User' : msg.role === 'assistant' ? 'Assistant' : 'System';
-    const content = msg.content.length > maxContentLength
-      ? msg.content.slice(0, maxContentLength) + '...'
-      : msg.content;
+    const roleLabel =
+      msg.role === 'user' ? 'User' : msg.role === 'assistant' ? 'Assistant' : 'System';
+    const content =
+      msg.content.length > maxContentLength
+        ? msg.content.slice(0, maxContentLength) + '...'
+        : msg.content;
     return `[${roleLabel}] ${content}`;
   });
 
@@ -728,8 +745,8 @@ export function convertMessagesToOpenAI(
   currentAgentId?: string,
 ): Array<{ role: 'system' | 'user' | 'assistant'; content: string }> {
   return messages
-    .filter(msg => msg.role === 'user' || msg.role === 'assistant')
-    .map(msg => {
+    .filter((msg) => msg.role === 'user' || msg.role === 'assistant')
+    .map((msg) => {
       if (msg.role === 'assistant') {
         // Assistant messages use JSON array format to serve as few-shot examples
         // that match the expected output format from the system prompt
@@ -742,13 +759,20 @@ export function convertMessagesToOpenAI(
             if (p.type === 'text' && p.text) {
               items.push({ type: 'text', content: p.text as string });
             } else if ((p.type as string)?.startsWith('action-') && p.state === 'result') {
-              const actionName = (p.actionName || (p.type as string).replace('action-', '')) as string;
+              const actionName = (p.actionName ||
+                (p.type as string).replace('action-', '')) as string;
               const output = p.output as Record<string, unknown> | undefined;
               const isSuccess = output?.success === true;
               const resultSummary = isSuccess
-                ? (output?.data ? `result: ${JSON.stringify(output.data).slice(0, 100)}` : 'success')
-                : ((output?.error as string) || 'failed');
-              items.push({ type: 'action', name: actionName, result: resultSummary });
+                ? output?.data
+                  ? `result: ${JSON.stringify(output.data).slice(0, 100)}`
+                  : 'success'
+                : (output?.error as string) || 'failed';
+              items.push({
+                type: 'action',
+                name: actionName,
+                result: resultSummary,
+              });
             }
           }
         }
@@ -782,12 +806,15 @@ export function convertMessagesToOpenAI(
           if (p.type === 'text' && p.text) {
             contentParts.push(p.text as string);
           } else if ((p.type as string)?.startsWith('action-') && p.state === 'result') {
-            const actionName = (p.actionName || (p.type as string).replace('action-', '')) as string;
+            const actionName = (p.actionName ||
+              (p.type as string).replace('action-', '')) as string;
             const output = p.output as Record<string, unknown> | undefined;
             const isSuccess = output?.success === true;
             const resultSummary = isSuccess
-              ? (output?.data ? `result: ${JSON.stringify(output.data).slice(0, 100)}` : 'success')
-              : ((output?.error as string) || 'failed');
+              ? output?.data
+                ? `result: ${JSON.stringify(output.data).slice(0, 100)}`
+                : 'success'
+              : (output?.error as string) || 'failed';
             contentParts.push(`[Action ${actionName}: ${resultSummary}]`);
           }
         }
@@ -801,13 +828,18 @@ export function convertMessagesToOpenAI(
       }
 
       // Annotate interrupted messages so the LLM knows context was cut short
-      const isInterrupted = (msg as unknown as Record<string, unknown>).metadata && ((msg as unknown as Record<string, unknown>).metadata as Record<string, unknown>)?.interrupted;
+      const isInterrupted =
+        (msg as unknown as Record<string, unknown>).metadata &&
+        ((msg as unknown as Record<string, unknown>).metadata as Record<string, unknown>)
+          ?.interrupted;
       return {
         role: 'user' as const,
-        content: isInterrupted ? `${content}\n[This response was interrupted — do NOT continue it. Start a new JSON array response.]` : content,
+        content: isInterrupted
+          ? `${content}\n[This response was interrupted — do NOT continue it. Start a new JSON array response.]`
+          : content,
       };
     })
-    .filter(msg => {
+    .filter((msg) => {
       // Drop empty messages and messages with only dots/ellipsis/whitespace
       // (produced by failed agent streams)
       const stripped = msg.content.replace(/[.\s…]+/g, '');

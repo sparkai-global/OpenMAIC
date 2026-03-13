@@ -4,10 +4,7 @@
  */
 
 import { nanoid } from 'nanoid';
-import type {
-  UserRequirements,
-  GenerationSession,
-} from '@/lib/types/generation';
+import type { UserRequirements, GenerationSession } from '@/lib/types/generation';
 import type { StageStore } from '@/lib/api/stage-api';
 import { generateSceneOutlinesFromRequirements } from './outline-generator';
 import { generateFullScenes } from './scene-generator';
@@ -34,7 +31,7 @@ export async function runGenerationPipeline(
   session: GenerationSession,
   store: StageStore,
   aiCall: AICallFn,
-  callbacks?: GenerationCallbacks
+  callbacks?: GenerationCallbacks,
 ): Promise<GenerationResult<GenerationSession>> {
   try {
     // Stage 1: Generate Scene Outlines from Requirements
@@ -50,7 +47,7 @@ export async function runGenerationPipeline(
       undefined, // No PDF text in this flow
       undefined, // No PDF images in this flow
       aiCall,
-      callbacks
+      callbacks,
     );
     if (!outlinesResult.success || !outlinesResult.data) {
       throw new Error(outlinesResult.error || 'Failed to generate scene outlines');

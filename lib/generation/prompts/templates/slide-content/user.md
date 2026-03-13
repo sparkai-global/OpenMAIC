@@ -5,7 +5,7 @@
 - **Title**: {{title}}
 - **Description**: {{description}}
 - **Key Points**:
-{{keyPoints}}
+  {{keyPoints}}
 
 {{teacherContext}}
 
@@ -21,6 +21,7 @@ Based on the scene information above, generate a complete Canvas/PPT component f
 **Language Requirement**: All generated text content must be in the same language as the title and description above.
 
 **Must Follow**:
+
 1. Output pure JSON directly, without any explanation or description
 2. Do not wrap with ```json code blocks
 3. Do not add any text before or after the JSON

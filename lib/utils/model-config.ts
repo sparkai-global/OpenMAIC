@@ -1,4 +1,4 @@
-import { useSettingsStore } from "@/lib/store/settings";
+import { useSettingsStore } from '@/lib/store/settings';
 
 /**
  * Get current model configuration from settings store

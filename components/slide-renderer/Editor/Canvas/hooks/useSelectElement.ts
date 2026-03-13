@@ -1,8 +1,8 @@
 import { useCallback } from 'react';
 import { uniq } from 'lodash';
-import {useCanvasStore} from '@/lib/store';
+import { useCanvasStore } from '@/lib/store';
 import { useKeyboardStore } from '@/lib/store/keyboard';
-import type {PPTElement} from '@/lib/types/slides';
+import type { PPTElement } from '@/lib/types/slides';
 
 /**
  * Hook for handling element selection in Canvas
@@ -10,7 +10,7 @@ import type {PPTElement} from '@/lib/types/slides';
  */
 export function useSelectElement(
   elementListRef: React.RefObject<PPTElement[]>,
-  moveElement: (e: React.MouseEvent | React.TouchEvent, element: PPTElement) => void
+  moveElement: (e: React.MouseEvent | React.TouchEvent, element: PPTElement) => void,
 ) {
   const activeElementIdList = useCanvasStore.use.activeElementIdList();
   const activeGroupElementId = useCanvasStore.use.activeGroupElementId();
@@ -81,8 +81,18 @@ export function useSelectElement(
 
       // If the target is already the handle element, clicking again sets it as the active group element
       else if (activeGroupElementId !== element.id) {
-        const startPageX = e.nativeEvent instanceof MouseEvent ? e.nativeEvent.pageX : ('changedTouches' in e ? e.changedTouches[0].pageX : 0);
-        const startPageY = e.nativeEvent instanceof MouseEvent ? e.nativeEvent.pageY : ('changedTouches' in e ? e.changedTouches[0].pageY : 0);
+        const startPageX =
+          e.nativeEvent instanceof MouseEvent
+            ? e.nativeEvent.pageX
+            : 'changedTouches' in e
+              ? e.changedTouches[0].pageX
+              : 0;
+        const startPageY =
+          e.nativeEvent instanceof MouseEvent
+            ? e.nativeEvent.pageY
+            : 'changedTouches' in e
+              ? e.changedTouches[0].pageY
+              : 0;
 
         const target = e.target as HTMLElement;
         const handleMouseUp = (e: MouseEvent) => {
@@ -112,7 +122,7 @@ export function useSelectElement(
       setHandleElementId,
       setActiveGroupElementId,
       moveElement,
-    ]
+    ],
   );
 
   return {

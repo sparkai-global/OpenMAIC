@@ -12,15 +12,35 @@ interface ShapeElementOperateProps {
   readonly elementInfo: PPTShapeElement;
   readonly handlerVisible: boolean;
   readonly rotateElement: (e: React.MouseEvent, element: PPTShapeElement) => void;
-  readonly scaleElement: (e: React.MouseEvent, element: PPTShapeElement, command: OperateResizeHandlers) => void;
-  readonly moveShapeKeypoint: (e: React.MouseEvent, element: PPTShapeElement, index: number) => void;
+  readonly scaleElement: (
+    e: React.MouseEvent,
+    element: PPTShapeElement,
+    command: OperateResizeHandlers,
+  ) => void;
+  readonly moveShapeKeypoint: (
+    e: React.MouseEvent,
+    element: PPTShapeElement,
+    index: number,
+  ) => void;
 }
 
-export function ShapeElementOperate({ elementInfo, handlerVisible, rotateElement, scaleElement, moveShapeKeypoint }: ShapeElementOperateProps) {
+export function ShapeElementOperate({
+  elementInfo,
+  handlerVisible,
+  rotateElement,
+  scaleElement,
+  moveShapeKeypoint,
+}: ShapeElementOperateProps) {
   const canvasScale = useCanvasStore.use.canvasScale();
 
-  const scaleWidth = useMemo(() => elementInfo.width * canvasScale, [elementInfo.width, canvasScale]);
-  const scaleHeight = useMemo(() => elementInfo.height * canvasScale, [elementInfo.height, canvasScale]);
+  const scaleWidth = useMemo(
+    () => elementInfo.width * canvasScale,
+    [elementInfo.width, canvasScale],
+  );
+  const scaleHeight = useMemo(
+    () => elementInfo.height * canvasScale,
+    [elementInfo.height, canvasScale],
+  );
   const { resizeHandlers, borderLines } = useCommonOperate(scaleWidth, scaleHeight);
 
   const keypoints = useMemo(() => {
@@ -34,16 +54,39 @@ export function ShapeElementOperate({ elementInfo, handlerVisible, rotateElement
 
       let styles: React.CSSProperties = {};
       if (relative === 'left') styles = { left: keypointPos * canvasScale + 'px' };
-      else if (relative === 'right') styles = { left: (elementInfo.width - keypointPos) * canvasScale + 'px' };
-      else if (relative === 'center') styles = { left: ((elementInfo.width - keypointPos) / 2) * canvasScale + 'px' };
+      else if (relative === 'right')
+        styles = {
+          left: (elementInfo.width - keypointPos) * canvasScale + 'px',
+        };
+      else if (relative === 'center')
+        styles = {
+          left: ((elementInfo.width - keypointPos) / 2) * canvasScale + 'px',
+        };
       else if (relative === 'top') styles = { top: keypointPos * canvasScale + 'px' };
-      else if (relative === 'bottom') styles = { top: (elementInfo.height - keypointPos) * canvasScale + 'px' };
-      else if (relative === 'left_bottom') styles = { left: keypointPos * canvasScale + 'px', top: elementInfo.height * canvasScale + 'px' };
+      else if (relative === 'bottom')
+        styles = {
+          top: (elementInfo.height - keypointPos) * canvasScale + 'px',
+        };
+      else if (relative === 'left_bottom')
+        styles = {
+          left: keypointPos * canvasScale + 'px',
+          top: elementInfo.height * canvasScale + 'px',
+        };
       else if (relative === 'right_bottom')
-        styles = { left: (elementInfo.width - keypointPos) * canvasScale + 'px', top: elementInfo.height * canvasScale + 'px' };
-      else if (relative === 'top_right') styles = { left: elementInfo.width * canvasScale + 'px', top: keypointPos * canvasScale + 'px' };
+        styles = {
+          left: (elementInfo.width - keypointPos) * canvasScale + 'px',
+          top: elementInfo.height * canvasScale + 'px',
+        };
+      else if (relative === 'top_right')
+        styles = {
+          left: elementInfo.width * canvasScale + 'px',
+          top: keypointPos * canvasScale + 'px',
+        };
       else if (relative === 'bottom_right')
-        styles = { left: elementInfo.width * canvasScale + 'px', top: (elementInfo.height - keypointPos) * canvasScale + 'px' };
+        styles = {
+          left: elementInfo.width * canvasScale + 'px',
+          top: (elementInfo.height - keypointPos) * canvasScale + 'px',
+        };
 
       return {
         keypoint,
@@ -55,7 +98,12 @@ export function ShapeElementOperate({ elementInfo, handlerVisible, rotateElement
   return (
     <div className="shape-element-operate">
       {borderLines.map((line) => (
-        <BorderLine key={line.type} type={line.type} style={line.style} className="operate-border-line" />
+        <BorderLine
+          key={line.type}
+          type={line.type}
+          style={line.style}
+          className="operate-border-line"
+        />
       ))}
       {handlerVisible && (
         <>

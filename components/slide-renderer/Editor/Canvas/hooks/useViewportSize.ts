@@ -72,7 +72,7 @@ export function useViewportSize(canvasRef: RefObject<HTMLElement | null>) {
         setViewportTop((prev) => prev - (newViewportActualHeight - oldViewportActualHeight) / 2);
       }
     },
-    [canvasRef, viewportRatio, viewportSize, setCanvasScale]
+    [canvasRef, viewportRatio, viewportSize, setCanvasScale],
   );
 
   // Track previous Canvas percentage for detecting changes
@@ -144,7 +144,7 @@ export function useViewportSize(canvasRef: RefObject<HTMLElement | null>) {
       document.onmousemove = handleMouseMove;
       document.onmouseup = handleMouseUp;
     },
-    [viewportLeft, viewportTop, setCanvasDragged]
+    [viewportLeft, viewportTop, setCanvasDragged],
   );
 
   // Viewport position and size styles
@@ -155,7 +155,7 @@ export function useViewportSize(canvasRef: RefObject<HTMLElement | null>) {
       left: viewportLeft,
       top: viewportTop,
     }),
-    [viewportSize, viewportRatio, viewportLeft, viewportTop]
+    [viewportSize, viewportRatio, viewportLeft, viewportTop],
   );
 
   return {

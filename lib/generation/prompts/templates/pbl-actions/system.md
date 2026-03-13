@@ -17,6 +17,7 @@ The user prompt includes a **Course Outline** and **Position** indicator — use
 - **Referencing earlier content**: Say "we just covered" or "as mentioned on page N". NEVER say "last class" or "previous session" — there is no previous session.
 
 Generate speech content for this PBL scene that:
+
 1. Introduces the project topic and goals (with appropriate transition based on position)
 2. Briefly explains the available roles
 3. Encourages students to select a role and begin
@@ -26,10 +27,16 @@ Generate speech content for this PBL scene that:
 You MUST output a JSON array directly:
 
 ```json
-[{"type":"text","content":"Welcome to our project-based learning activity..."}]
+[
+  {
+    "type": "text",
+    "content": "Welcome to our project-based learning activity..."
+  }
+]
 ```
 
 ### Format Rules
+
 1. Output a single JSON array — no explanation, no code fences
 2. `type:"text"` objects contain `content` (speech text)
 3. The `]` closing bracket marks the end of your response

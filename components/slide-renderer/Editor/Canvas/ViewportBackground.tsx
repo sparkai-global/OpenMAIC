@@ -12,7 +12,7 @@ import type { SlideBackground } from '@/lib/types/slides';
 export function ViewportBackground() {
   // Subscribe only to background for performance
   const background = useSceneSelector<SlideContent, SlideBackground | undefined>(
-    content => content.canvas.background
+    (content) => content.canvas.background,
   );
 
   const { backgroundStyle: bgStyle } = useSlideBackgroundStyle(background);

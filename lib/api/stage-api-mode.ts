@@ -4,11 +4,8 @@
  * Factory functions that create the mode and stage namespaces of the Stage API.
  */
 
-import type {
-  Stage,
-  StageMode,
-} from "@/lib/types/stage";
-import type { StageStore, APIResult } from "./stage-api-types";
+import type { Stage, StageMode } from '@/lib/types/stage';
+import type { StageStore, APIResult } from './stage-api-types';
 
 /**
  * Create the mode management API
@@ -66,7 +63,7 @@ export function createStageMetaAPI(store: StageStore) {
         const state = store.getState();
 
         if (!state.stage) {
-          return { success: false, error: "No stage" };
+          return { success: false, error: 'No stage' };
         }
 
         return { success: true, data: state.stage };
@@ -86,7 +83,7 @@ export function createStageMetaAPI(store: StageStore) {
         const state = store.getState();
 
         if (!state.stage) {
-          return { success: false, error: "No stage" };
+          return { success: false, error: 'No stage' };
         }
 
         const newStage = {

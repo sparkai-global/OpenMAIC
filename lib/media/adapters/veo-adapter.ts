@@ -31,19 +31,26 @@ import type {
 const DEFAULT_MODEL = 'veo-3.0-generate-001';
 const DEFAULT_BASE_URL = 'https://generativelanguage.googleapis.com';
 const POLL_INTERVAL_MS = 10_000; // 10 seconds
-const MAX_POLL_ATTEMPTS = 60;    // 10 minutes max
+const MAX_POLL_ATTEMPTS = 60; // 10 minutes max
 
 function delay(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 /** Dimension defaults per aspect ratio */
-function getDimensions(aspectRatio?: string): { width: number; height: number } {
+function getDimensions(aspectRatio?: string): {
+  width: number;
+  height: number;
+} {
   switch (aspectRatio) {
-    case '9:16': return { width: 720, height: 1280 };
-    case '1:1':  return { width: 1080, height: 1080 };
-    case '4:3':  return { width: 1024, height: 768 };
-    default:     return { width: 1280, height: 720 }; // 16:9
+    case '9:16':
+      return { width: 720, height: 1280 };
+    case '1:1':
+      return { width: 1080, height: 1080 };
+    case '4:3':
+      return { width: 1024, height: 768 };
+    default:
+      return { width: 1280, height: 720 }; // 16:9
   }
 }
 
@@ -65,8 +72,8 @@ interface VeoOperation {
   response?: {
     /** fetchPredictOperation returns inline base64 video data */
     videos?: Array<{
-      bytesBase64Encoded?: string;  // base64-encoded video bytes
-      mimeType?: string;            // e.g. "video/mp4"
+      bytesBase64Encoded?: string; // base64-encoded video bytes
+      mimeType?: string; // e.g. "video/mp4"
     }>;
   };
   error?: { code: number; message: string; status: string };
@@ -144,7 +151,9 @@ async function pollOperation(
  * Lightweight connectivity test — validates API key by fetching model info.
  * Uses GET /v1beta/models/{model} which does not trigger generation.
  */
-export async function testVeoConnectivity(config: VideoGenerationConfig): Promise<{ success: boolean; message: string }> {
+export async function testVeoConnectivity(
+  config: VideoGenerationConfig,
+): Promise<{ success: boolean; message: string }> {
   const model = config.model || DEFAULT_MODEL;
   const baseUrl = config.baseUrl || DEFAULT_BASE_URL;
   const url = `${baseUrl}/v1beta/models`;
@@ -163,7 +172,10 @@ export async function testVeoConnectivity(config: VideoGenerationConfig): Promis
         headers: { 'x-goog-api-key': config.apiKey },
       });
     } catch (_err) {
-      return { success: false, message: `Network error: unable to reach ${baseUrl}. Check your Base URL and network connection.` };
+      return {
+        success: false,
+        message: `Network error: unable to reach ${baseUrl}. Check your Base URL and network connection.`,
+      };
     }
   }
 
@@ -174,9 +186,15 @@ export async function testVeoConnectivity(config: VideoGenerationConfig): Promis
   // Parse error body for user-friendly message
   const text = await response.text().catch(() => '');
   if (response.status === 400 || response.status === 401 || response.status === 403) {
-    return { success: false, message: `Invalid API key or unauthorized (${response.status}). Check your API Key and Base URL match the same provider.` };
+    return {
+      success: false,
+      message: `Invalid API key or unauthorized (${response.status}). Check your API Key and Base URL match the same provider.`,
+    };
   }
-  return { success: false, message: `Veo connectivity failed (${response.status}): ${text}` };
+  return {
+    success: false,
+    message: `Veo connectivity failed (${response.status}): ${text}`,
+  };
 }
 
 export async function generateWithVeo(

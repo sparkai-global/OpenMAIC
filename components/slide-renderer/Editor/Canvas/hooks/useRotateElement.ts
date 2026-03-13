@@ -1,5 +1,11 @@
 import { useCallback, type RefObject } from 'react';
-import type { PPTElement, PPTLineElement, PPTVideoElement, PPTAudioElement, PPTChartElement } from '@/lib/types/slides';
+import type {
+  PPTElement,
+  PPTLineElement,
+  PPTVideoElement,
+  PPTAudioElement,
+  PPTChartElement,
+} from '@/lib/types/slides';
 import { useHistorySnapshot } from '@/lib/hooks/use-history-snapshot';
 import { useCanvasOperations } from '@/lib/hooks/use-canvas-operations';
 
@@ -26,7 +32,7 @@ export function useRotateElement(
   elementListRef: React.RefObject<PPTElement[]>,
   setElementList: React.Dispatch<React.SetStateAction<PPTElement[]>>,
   viewportRef: RefObject<HTMLElement | null>,
-  canvasScale: number
+  canvasScale: number,
 ) {
   const updateSlide = useCanvasOperations().updateSlide;
 
@@ -36,7 +42,10 @@ export function useRotateElement(
   const rotateElement = useCallback(
     (
       e: React.MouseEvent | React.TouchEvent,
-      element: Exclude<PPTElement, PPTChartElement | PPTLineElement | PPTVideoElement | PPTAudioElement>
+      element: Exclude<
+        PPTElement,
+        PPTChartElement | PPTLineElement | PPTVideoElement | PPTAudioElement
+      >,
     ) => {
       const native = e.nativeEvent;
       const isTouchEvent = native instanceof TouchEvent;
@@ -98,10 +107,10 @@ export function useRotateElement(
 
       const handleMouseUp = () => {
         isMouseDown = false;
-        document.onmousemove = null
-        document.onmouseup = null
-        document.ontouchmove = null
-        document.ontouchend = null
+        document.onmousemove = null;
+        document.onmouseup = null;
+        document.ontouchmove = null;
+        document.ontouchend = null;
 
         if (elOriginRotate === angle) return;
 
@@ -117,7 +126,7 @@ export function useRotateElement(
         document.onmouseup = handleMouseUp;
       }
     },
-    [elementListRef, setElementList, viewportRef, canvasScale, updateSlide, addHistorySnapshot]
+    [elementListRef, setElementList, viewportRef, canvasScale, updateSlide, addHistorySnapshot],
   );
 
   return {

@@ -67,14 +67,14 @@ export class PlaybackEngine {
   private triggerDelayTimer: ReturnType<typeof setTimeout> | null = null;
   // Reading-time timer for speech actions without pre-generated audio (TTS disabled)
   private speechTimer: ReturnType<typeof setTimeout> | null = null;
-  private speechTimerStart: number = 0;       // Date.now() when timer was scheduled
-  private speechTimerRemaining: number = 0;    // remaining ms (set on pause)
+  private speechTimerStart: number = 0; // Date.now() when timer was scheduled
+  private speechTimerRemaining: number = 0; // remaining ms (set on pause)
 
   constructor(
     scenes: Scene[],
     actionEngine: ActionEngine,
     audioPlayer: AudioPlayer,
-    callbacks: PlaybackEngineCallbacks = {}
+    callbacks: PlaybackEngineCallbacks = {},
   ) {
     this.scenes = scenes;
     this.sceneId = scenes[0]?.id;
@@ -140,8 +140,10 @@ export class PlaybackEngine {
       }
       if (this.speechTimer) {
         // Save remaining time so resume() can reschedule
-        this.speechTimerRemaining = Math.max(0,
-          this.speechTimerRemaining - (Date.now() - this.speechTimerStart));
+        this.speechTimerRemaining = Math.max(
+          0,
+          this.speechTimerRemaining - (Date.now() - this.speechTimerStart),
+        );
         clearTimeout(this.speechTimer);
         this.speechTimer = null;
       }
@@ -412,7 +414,9 @@ export class PlaybackEngine {
         // Min 2s. Cancelled on pause; resume() calls processNext directly.
         const scheduleReadingTimer = () => {
           const text = speechAction.text;
-          const cjkCount = (text.match(/[\u4e00-\u9fff\u3400-\u4dbf\u3040-\u309f\u30a0-\u30ff\uac00-\ud7af]/g) || []).length;
+          const cjkCount = (
+            text.match(/[\u4e00-\u9fff\u3400-\u4dbf\u3040-\u309f\u30a0-\u30ff\uac00-\ud7af]/g) || []
+          ).length;
           const isCJK = cjkCount > text.length * 0.3;
           const speed = this.callbacks.getPlaybackSpeed?.() ?? 1;
           const rawMs = isCJK
@@ -429,12 +433,15 @@ export class PlaybackEngine {
           }, readingMs);
         };
 
-        this.audioPlayer.play(speechAction.audioId || '').then((audioStarted) => {
-          if (!audioStarted) scheduleReadingTimer();
-        }).catch((err) => {
-          log.error('TTS error:', err);
-          scheduleReadingTimer();
-        });
+        this.audioPlayer
+          .play(speechAction.audioId || '')
+          .then((audioStarted) => {
+            if (!audioStarted) scheduleReadingTimer();
+          })
+          .catch((err) => {
+            log.error('TTS error:', err);
+            scheduleReadingTimer();
+          });
         break;
       }
 
@@ -445,7 +452,9 @@ export class PlaybackEngine {
         this.callbacks.onEffectFire?.({
           kind: action.type,
           targetId: action.elementId,
-          ...(action.type === 'spotlight' ? { dimOpacity: action.dimOpacity } : { color: action.color }),
+          ...(action.type === 'spotlight'
+            ? { dimOpacity: action.dimOpacity }
+            : { color: action.color }),
         } as Effect);
         // Don't block — continue immediately
         this.processNext();
@@ -460,8 +469,11 @@ export class PlaybackEngine {
           return;
         }
         // Skip if the discussion's agent isn't in the user's selected list
-        if (discussionAction.agentId && this.callbacks.isAgentSelected
-            && !this.callbacks.isAgentSelected(discussionAction.agentId)) {
+        if (
+          discussionAction.agentId &&
+          this.callbacks.isAgentSelected &&
+          !this.callbacks.isAgentSelected(discussionAction.agentId)
+        ) {
           this.consumedDiscussions.add(discussionAction.id);
           this.processNext();
           return;

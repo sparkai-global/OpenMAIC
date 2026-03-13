@@ -9,7 +9,11 @@ import { BorderLine } from './BorderLine';
 
 interface MultiSelectOperateProps {
   readonly elementList: PPTElement[];
-  readonly scaleMultiElement: (e: React.MouseEvent, range: MultiSelectRange, command: OperateResizeHandlers) => void;
+  readonly scaleMultiElement: (
+    e: React.MouseEvent,
+    range: MultiSelectRange,
+    command: OperateResizeHandlers,
+  ) => void;
 }
 
 export function MultiSelectOperate({ elementList, scaleMultiElement }: MultiSelectOperateProps) {
@@ -18,7 +22,7 @@ export function MultiSelectOperate({ elementList, scaleMultiElement }: MultiSele
 
   const localActiveElementList = useMemo(
     () => elementList.filter((el) => activeElementIdList.includes(el.id)),
-    [elementList, activeElementIdList]
+    [elementList, activeElementIdList],
   );
 
   const [range, setRange] = useState<MultiSelectRange>({

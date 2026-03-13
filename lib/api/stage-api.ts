@@ -42,7 +42,7 @@ export type {
   HighlightOptions,
   SpotlightOptions,
   StageStore,
-} from "./stage-api-types";
+} from './stage-api-types';
 
 // Re-export utility functions that were previously accessible
 export {
@@ -54,16 +54,16 @@ export {
   createDefaultQuizContent,
   createDefaultInteractiveContent,
   createDefaultPBLContent,
-} from "./stage-api-defaults";
+} from './stage-api-defaults';
 
 // Import sub-API factories
-import { createSceneAPI } from "./stage-api-scene";
-import { createElementAPI } from "./stage-api-element";
-import { createCanvasAPI } from "./stage-api-canvas";
-import { createNavigationAPI } from "./stage-api-navigation";
-import { createWhiteboardAPI } from "./stage-api-whiteboard";
-import { createModeAPI, createStageMetaAPI } from "./stage-api-mode";
-import type { StageStore } from "./stage-api-types";
+import { createSceneAPI } from './stage-api-scene';
+import { createElementAPI } from './stage-api-element';
+import { createCanvasAPI } from './stage-api-canvas';
+import { createNavigationAPI } from './stage-api-navigation';
+import { createWhiteboardAPI } from './stage-api-whiteboard';
+import { createModeAPI, createStageMetaAPI } from './stage-api-mode';
+import type { StageStore } from './stage-api-types';
 
 // ==================== Stage API Implementation ====================
 

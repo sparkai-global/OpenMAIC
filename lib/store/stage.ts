@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { Stage, Scene, StageMode } from '@/lib/types/stage';
-import { createSelectors } from "@/lib/utils/create-selectors";
+import { createSelectors } from '@/lib/utils/create-selectors';
 import type { ChatSession } from '@/lib/types/chat';
 import type { SceneOutline } from '@/lib/types/generation';
 import { createLogger } from '@/lib/logger';
@@ -19,7 +19,7 @@ export const PENDING_SCENE_ID = '__pending__';
  */
 function debounce<T extends (...args: Parameters<T>) => ReturnType<T>>(
   func: T,
-  delay: number
+  delay: number,
 ): (...args: Parameters<T>) => void {
   let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
@@ -112,7 +112,13 @@ const useStageStoreBase = create<StageState>()((set, get) => ({
 
   // Actions
   setStage: (stage) => {
-    set((s) => ({ stage, scenes: [], currentSceneId: null, chats: [], generationEpoch: s.generationEpoch + 1 }));
+    set((s) => ({
+      stage,
+      scenes: [],
+      currentSceneId: null,
+      chats: [],
+      generationEpoch: s.generationEpoch + 1,
+    }));
     debouncedSave();
   },
 
@@ -129,14 +135,14 @@ const useStageStoreBase = create<StageState>()((set, get) => ({
     const currentStage = get().stage;
     // Ignore scenes from different stages (prevents race condition during generation)
     if (!currentStage || scene.stageId !== currentStage.id) {
-      log.warn(`Ignoring scene "${scene.title}" - stageId mismatch (scene: ${scene.stageId}, current: ${currentStage?.id})`);
+      log.warn(
+        `Ignoring scene "${scene.title}" - stageId mismatch (scene: ${scene.stageId}, current: ${currentStage?.id})`,
+      );
       return;
     }
     const scenes = [...get().scenes, scene];
     // Remove the matching outline from generatingOutlines (match by order)
-    const generatingOutlines = get().generatingOutlines.filter(
-      (o) => o.order !== scene.order
-    );
+    const generatingOutlines = get().generatingOutlines.filter((o) => o.order !== scene.order);
     // Auto-switch from pending page to the newly generated scene
     const shouldSwitch = get().currentSceneId === PENDING_SCENE_ID;
     set({
@@ -149,7 +155,7 @@ const useStageStoreBase = create<StageState>()((set, get) => ({
 
   updateScene: (sceneId, updates) => {
     const scenes = get().scenes.map((scene) =>
-      scene.id === sceneId ? { ...scene, ...updates } : scene
+      scene.id === sceneId ? { ...scene, ...updates } : scene,
     );
     set({ scenes });
     debouncedSave();
@@ -220,7 +226,9 @@ const useStageStoreBase = create<StageState>()((set, get) => ({
   clearFailedOutlines: () => set({ failedOutlines: [] }),
 
   retryFailedOutline: (outlineId) => {
-    set({ failedOutlines: get().failedOutlines.filter(o => o.id !== outlineId) });
+    set({
+      failedOutlines: get().failedOutlines.filter((o) => o.id !== outlineId),
+    });
   },
 
   // Getters
@@ -285,9 +293,7 @@ const useStageStoreBase = create<StageState>()((set, get) => ({
           chats: data.chats,
           outlines,
           // Compute generatingOutlines from persisted outlines minus completed scenes
-          generatingOutlines: outlines.filter(
-            o => !data.scenes.some(s => s.order === o.order)
-          ),
+          generatingOutlines: outlines.filter((o) => !data.scenes.some((s) => s.order === o.order)),
         });
         log.info('Loaded from storage:', stageId);
       } else {

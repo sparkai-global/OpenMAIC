@@ -17,9 +17,18 @@ const log = createLogger('Agent Profiles API');
 export const maxDuration = 120;
 
 const COLOR_PALETTE = [
-  '#3b82f6', '#10b981', '#f59e0b', '#ec4899', '#06b6d4',
-  '#8b5cf6', '#f97316', '#14b8a6', '#e11d48', '#6366f1',
-  '#84cc16', '#a855f7',
+  '#3b82f6',
+  '#10b981',
+  '#f59e0b',
+  '#ec4899',
+  '#06b6d4',
+  '#8b5cf6',
+  '#f97316',
+  '#14b8a6',
+  '#e11d48',
+  '#6366f1',
+  '#84cc16',
+  '#a855f7',
 ];
 
 interface RequestBody {
@@ -51,7 +60,11 @@ export async function POST(req: NextRequest) {
       return apiError('MISSING_REQUIRED_FIELD', 400, 'language is required');
     }
     if (!availableAvatars || availableAvatars.length === 0) {
-      return apiError('MISSING_REQUIRED_FIELD', 400, 'availableAvatars is required and must not be empty');
+      return apiError(
+        'MISSING_REQUIRED_FIELD',
+        400,
+        'availableAvatars is required and must not be empty',
+      );
     }
 
     // ── Model resolution from request headers ──
@@ -109,14 +122,16 @@ Return a JSON object with this exact structure:
 
     // ── Parse LLM response ──
     const rawText = stripCodeFences(result.text);
-    let parsed: { agents: Array<{
-      name: string;
-      role: string;
-      persona: string;
-      avatar: string;
-      color: string;
-      priority: number;
-    }> };
+    let parsed: {
+      agents: Array<{
+        name: string;
+        role: string;
+        persona: string;
+        avatar: string;
+        color: string;
+        priority: number;
+      }>;
+    };
 
     try {
       parsed = JSON.parse(rawText);
@@ -128,13 +143,21 @@ Return a JSON object with this exact structure:
     // ── Validate parsed structure ──
     if (!parsed.agents || !Array.isArray(parsed.agents) || parsed.agents.length < 2) {
       log.error(`Expected at least 2 agents, got ${parsed.agents?.length ?? 0}`);
-      return apiError('GENERATION_FAILED', 500, `Expected at least 2 agents but LLM returned ${parsed.agents?.length ?? 0}`);
+      return apiError(
+        'GENERATION_FAILED',
+        500,
+        `Expected at least 2 agents but LLM returned ${parsed.agents?.length ?? 0}`,
+      );
     }
 
     const teacherCount = parsed.agents.filter((a) => a.role === 'teacher').length;
     if (teacherCount !== 1) {
       log.error(`Expected exactly 1 teacher, got ${teacherCount}`);
-      return apiError('GENERATION_FAILED', 500, `Expected exactly 1 teacher but LLM returned ${teacherCount}`);
+      return apiError(
+        'GENERATION_FAILED',
+        500,
+        `Expected exactly 1 teacher but LLM returned ${teacherCount}`,
+      );
     }
 
     // ── Build output with IDs ──
@@ -145,7 +168,8 @@ Return a JSON object with this exact structure:
       persona: agent.persona,
       avatar: agent.avatar || availableAvatars[index % availableAvatars.length],
       color: agent.color || COLOR_PALETTE[index % COLOR_PALETTE.length],
-      priority: agent.priority ?? (agent.role === 'teacher' ? 10 : agent.role === 'assistant' ? 7 : 5),
+      priority:
+        agent.priority ?? (agent.role === 'teacher' ? 10 : agent.role === 'assistant' ? 7 : 5),
     }));
 
     log.info(`Successfully generated ${agents.length} agent profiles for "${stageInfo.name}"`);

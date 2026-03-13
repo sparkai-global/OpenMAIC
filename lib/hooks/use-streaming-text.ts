@@ -65,8 +65,8 @@ export function useStreamingText(options: StreamingTextOptions): StreamingTextRe
     /* eslint-disable react-hooks/set-state-in-effect -- Animation driver: synchronous state transitions are intentional for streaming text display */
     // If streaming is disabled or text is empty, display all text immediately
     if (!enabled || !text) {
-      setDisplayedText((prev) => prev !== text ? text : prev);
-      setIsStreaming((prev) => prev ? false : prev);
+      setDisplayedText((prev) => (prev !== text ? text : prev));
+      setIsStreaming((prev) => (prev ? false : prev));
       return;
     }
 
@@ -90,10 +90,7 @@ export function useStreamingText(options: StreamingTextOptions): StreamingTextRe
       }
 
       const elapsed = timestamp - startTimeRef.current;
-      const targetIndex = Math.min(
-        Math.floor((elapsed / 1000) * speed),
-        text.length
-      );
+      const targetIndex = Math.min(Math.floor((elapsed / 1000) * speed), text.length);
 
       if (targetIndex > lastIndexRef.current) {
         lastIndexRef.current = targetIndex;

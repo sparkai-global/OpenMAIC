@@ -1,5 +1,4 @@
 export const MIME_MAP: Record<string, string> = {
-
   // Audio types
   'audio/aac': 'aac',
   'audio/mpeg': 'mp3',
@@ -22,5 +21,5 @@ export const MIME_MAP: Record<string, string> = {
   'video/x-ms-wmv': 'wmv',
   'video/x-flv': 'flv',
   'video/3gpp': '3gp',
-  'video/3gpp2': '3g2'
-}
+  'video/3gpp2': '3g2',
+};

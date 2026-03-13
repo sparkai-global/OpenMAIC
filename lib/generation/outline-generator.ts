@@ -29,63 +29,83 @@ export async function generateSceneOutlinesFromRequirements(
   pdfImages: PdfImage[] | undefined,
   aiCall: AICallFn,
   callbacks?: GenerationCallbacks,
-  options?: { visionEnabled?: boolean; imageMapping?: ImageMapping; imageGenerationEnabled?: boolean; videoGenerationEnabled?: boolean }
+  options?: {
+    visionEnabled?: boolean;
+    imageMapping?: ImageMapping;
+    imageGenerationEnabled?: boolean;
+    videoGenerationEnabled?: boolean;
+  },
 ): Promise<GenerationResult<SceneOutline[]>> {
   // Build available images description for the prompt
-  let availableImagesText = requirements.language === 'zh-CN' ? '无可用图片' : 'No images available';
+  let availableImagesText =
+    requirements.language === 'zh-CN' ? '无可用图片' : 'No images available';
   let visionImages: Array<{ id: string; src: string }> | undefined;
 
   if (pdfImages && pdfImages.length > 0) {
     if (options?.visionEnabled && options?.imageMapping) {
       // Vision mode: split into vision images (first N) and text-only (rest)
-      const allWithSrc = pdfImages.filter(img => options.imageMapping![img.id]);
+      const allWithSrc = pdfImages.filter((img) => options.imageMapping![img.id]);
       const visionSlice = allWithSrc.slice(0, MAX_VISION_IMAGES);
       const textOnlySlice = allWithSrc.slice(MAX_VISION_IMAGES);
-      const noSrcImages = pdfImages.filter(img => !options.imageMapping![img.id]);
+      const noSrcImages = pdfImages.filter((img) => !options.imageMapping![img.id]);
 
-      const visionDescriptions = visionSlice.map(img => formatImagePlaceholder(img, requirements.language));
-      const textDescriptions = [...textOnlySlice, ...noSrcImages].map(img => formatImageDescription(img, requirements.language));
+      const visionDescriptions = visionSlice.map((img) =>
+        formatImagePlaceholder(img, requirements.language),
+      );
+      const textDescriptions = [...textOnlySlice, ...noSrcImages].map((img) =>
+        formatImageDescription(img, requirements.language),
+      );
       availableImagesText = [...visionDescriptions, ...textDescriptions].join('\n');
 
-      visionImages = visionSlice.map(img => ({ id: img.id, src: options.imageMapping![img.id], width: img.width, height: img.height }));
+      visionImages = visionSlice.map((img) => ({
+        id: img.id,
+        src: options.imageMapping![img.id],
+        width: img.width,
+        height: img.height,
+      }));
     } else {
       // Text-only mode: full descriptions
-      availableImagesText = pdfImages.map(img =>
-        formatImageDescription(img, requirements.language)
-      ).join('\n');
+      availableImagesText = pdfImages
+        .map((img) => formatImageDescription(img, requirements.language))
+        .join('\n');
     }
   }
 
   // Build user profile string for prompt injection
-  const userProfileText = (requirements.userNickname || requirements.userBio)
-    ? `## Student Profile\n\nStudent: ${requirements.userNickname || 'Unknown'}${requirements.userBio ? ` — ${requirements.userBio}` : ''}\n\nConsider this student's background when designing the course. Adapt difficulty, examples, and teaching approach accordingly.\n\n---`
-    : '';
+  const userProfileText =
+    requirements.userNickname || requirements.userBio
+      ? `## Student Profile\n\nStudent: ${requirements.userNickname || 'Unknown'}${requirements.userBio ? ` — ${requirements.userBio}` : ''}\n\nConsider this student's background when designing the course. Adapt difficulty, examples, and teaching approach accordingly.\n\n---`
+      : '';
 
   // Build media generation policy based on enabled flags
   const imageEnabled = options?.imageGenerationEnabled ?? false;
   const videoEnabled = options?.videoGenerationEnabled ?? false;
   let mediaGenerationPolicy = '';
   if (!imageEnabled && !videoEnabled) {
-    mediaGenerationPolicy = '**IMPORTANT: Do NOT include any mediaGenerations in the outlines. Both image and video generation are disabled.**';
+    mediaGenerationPolicy =
+      '**IMPORTANT: Do NOT include any mediaGenerations in the outlines. Both image and video generation are disabled.**';
   } else if (!imageEnabled) {
-    mediaGenerationPolicy = '**IMPORTANT: Do NOT include any image mediaGenerations (type: "image") in the outlines. Image generation is disabled. Video generation is allowed.**';
+    mediaGenerationPolicy =
+      '**IMPORTANT: Do NOT include any image mediaGenerations (type: "image") in the outlines. Image generation is disabled. Video generation is allowed.**';
   } else if (!videoEnabled) {
-    mediaGenerationPolicy = '**IMPORTANT: Do NOT include any video mediaGenerations (type: "video") in the outlines. Video generation is disabled. Image generation is allowed.**';
+    mediaGenerationPolicy =
+      '**IMPORTANT: Do NOT include any video mediaGenerations (type: "video") in the outlines. Video generation is disabled. Image generation is allowed.**';
   }
 
   // Use simplified prompt variables
-  const prompts = buildPrompt(
-    PROMPT_IDS.REQUIREMENTS_TO_OUTLINES,
-    {
-      // New simplified variables
-      requirement: requirements.requirement,
-      language: requirements.language,
-      pdfContent: pdfText ? pdfText.substring(0, MAX_PDF_CONTENT_CHARS) : (requirements.language === 'zh-CN' ? '无' : 'None'),
-      availableImages: availableImagesText,
-      userProfile: userProfileText,
-      mediaGenerationPolicy,
-    }
-  );
+  const prompts = buildPrompt(PROMPT_IDS.REQUIREMENTS_TO_OUTLINES, {
+    // New simplified variables
+    requirement: requirements.requirement,
+    language: requirements.language,
+    pdfContent: pdfText
+      ? pdfText.substring(0, MAX_PDF_CONTENT_CHARS)
+      : requirements.language === 'zh-CN'
+        ? '无'
+        : 'None',
+    availableImages: availableImagesText,
+    userProfile: userProfileText,
+    mediaGenerationPolicy,
+  });
 
   if (!prompts) {
     return { success: false, error: 'Prompt template not found' };
@@ -105,7 +125,10 @@ export async function generateSceneOutlinesFromRequirements(
     const outlines = parseJsonResponse<SceneOutline[]>(response);
 
     if (!outlines || !Array.isArray(outlines)) {
-      return { success: false, error: 'Failed to parse scene outlines response' };
+      return {
+        success: false,
+        error: 'Failed to parse scene outlines response',
+      };
     }
     // Ensure IDs, order, and language
     const enriched = outlines.map((outline, index) => ({
@@ -143,11 +166,15 @@ export function applyOutlineFallbacks(
   hasLanguageModel: boolean,
 ): SceneOutline {
   if (outline.type === 'interactive' && !outline.interactiveConfig) {
-    log.warn(`Interactive outline "${outline.title}" missing interactiveConfig, falling back to slide`);
+    log.warn(
+      `Interactive outline "${outline.title}" missing interactiveConfig, falling back to slide`,
+    );
     return { ...outline, type: 'slide' };
   }
   if (outline.type === 'pbl' && (!outline.pblConfig || !hasLanguageModel)) {
-    log.warn(`PBL outline "${outline.title}" missing pblConfig or languageModel, falling back to slide`);
+    log.warn(
+      `PBL outline "${outline.title}" missing pblConfig or languageModel, falling back to slide`,
+    );
     return { ...outline, type: 'slide' };
   }
   return outline;

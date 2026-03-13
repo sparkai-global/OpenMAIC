@@ -117,7 +117,12 @@ export interface StreamBufferCallbacks {
   onSpeechProgress(ratio: number | null): void;
   onThinking(data: { stage: string; agentId?: string } | null): void;
   onCueUser(fromAgentId?: string, prompt?: string): void;
-  onDone(data: { totalActions: number; totalAgents: number; agentHadContent?: boolean; directorState?: DirectorState }): void;
+  onDone(data: {
+    totalActions: number;
+    totalAgents: number;
+    agentHadContent?: boolean;
+    directorState?: DirectorState;
+  }): void;
   onError(message: string): void;
 }
 
@@ -243,7 +248,12 @@ export class StreamBuffer {
     this.items.push({ kind: 'cue_user', ...data });
   }
 
-  pushDone(data: { totalActions: number; totalAgents: number; agentHadContent?: boolean; directorState?: DirectorState }): void {
+  pushDone(data: {
+    totalActions: number;
+    totalAgents: number;
+    agentHadContent?: boolean;
+    directorState?: DirectorState;
+  }): void {
     if (this._disposed) return;
     this.sealLastText();
     this.items.push({ kind: 'done', ...data });

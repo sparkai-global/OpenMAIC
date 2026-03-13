@@ -12,7 +12,7 @@ import type { Participant, ParticipantRole } from '@/lib/types/roundtable';
 import { useUserProfileStore } from '@/lib/store/user-profile';
 
 interface AgentRegistryState {
-  agents: Record<string, AgentConfig>;  // Map of agentId -> config
+  agents: Record<string, AgentConfig>; // Map of agentId -> config
 
   // Actions
   addAgent: (agent: AgentConfig) => void;
@@ -24,20 +24,26 @@ interface AgentRegistryState {
 
 // Action types available to agents
 const WHITEBOARD_ACTIONS = [
-  'wb_open', 'wb_close', 'wb_draw_text', 'wb_draw_shape',
-  'wb_draw_chart', 'wb_draw_latex', 'wb_draw_table', 'wb_draw_line', 'wb_clear', 'wb_delete',
+  'wb_open',
+  'wb_close',
+  'wb_draw_text',
+  'wb_draw_shape',
+  'wb_draw_chart',
+  'wb_draw_latex',
+  'wb_draw_table',
+  'wb_draw_line',
+  'wb_clear',
+  'wb_delete',
 ];
 
-const SLIDE_ACTIONS = [
-  'spotlight', 'laser', 'play_video',
-];
+const SLIDE_ACTIONS = ['spotlight', 'laser', 'play_video'];
 
 // Default agents - always available on both server and client
 const DEFAULT_AGENTS: Record<string, AgentConfig> = {
   'default-1': {
     id: 'default-1',
-    name: "AI teacher",
-    role: "teacher",
+    name: 'AI teacher',
+    role: 'teacher',
     persona: `You are the lead teacher of this classroom. You teach with clarity, warmth, and genuine enthusiasm for the subject matter.
 
 Your teaching style:
@@ -50,21 +56,18 @@ Your teaching style:
 You can spotlight or laser-point at slide elements, and use the whiteboard for hand-drawn explanations. Use these actions naturally as part of your teaching flow. Never announce your actions; just teach.
 
 Tone: Professional yet approachable. Patient. Encouraging. You genuinely care about whether students understand.`,
-    avatar: "/avatars/teacher.png",
-    color: "#3b82f6",
-    allowedActions: [
-      ...SLIDE_ACTIONS,
-      ...WHITEBOARD_ACTIONS
-    ],
+    avatar: '/avatars/teacher.png',
+    color: '#3b82f6',
+    allowedActions: [...SLIDE_ACTIONS, ...WHITEBOARD_ACTIONS],
     priority: 10,
     createdAt: new Date(),
     updatedAt: new Date(),
-    isDefault: true
+    isDefault: true,
   },
   'default-2': {
     id: 'default-2',
-    name: "AI助教",
-    role: "assistant",
+    name: 'AI助教',
+    role: 'assistant',
     persona: `You are the teaching assistant. You support the lead teacher by filling in gaps, answering side questions, and making sure no student is left behind.
 
 Your style:
@@ -77,20 +80,18 @@ Your style:
 You play a supportive role — you don't take over the lesson, but you make sure everyone keeps up.
 
 Tone: Friendly, warm, down-to-earth. Like a helpful older classmate who just "gets it."`,
-    avatar: "/avatars/assist.png",
-    color: "#10b981",
-    allowedActions: [
-      ...WHITEBOARD_ACTIONS
-    ],
+    avatar: '/avatars/assist.png',
+    color: '#10b981',
+    allowedActions: [...WHITEBOARD_ACTIONS],
     priority: 7,
     createdAt: new Date(),
     updatedAt: new Date(),
-    isDefault: true
+    isDefault: true,
   },
   'default-3': {
     id: 'default-3',
-    name: "显眼包",
-    role: "student",
+    name: '显眼包',
+    role: 'student',
     persona: `You are the class clown — the student everyone notices. You bring energy and laughter to the classroom with your witty comments, playful observations, and unexpected takes on the material.
 
 Your personality:
@@ -103,18 +104,18 @@ Your personality:
 You keep things light. When the class gets too heavy or boring, you're the one who livens it up. But you also know when to dial it back during serious moments.
 
 Tone: Playful, energetic, a little cheeky. You speak casually, like you're chatting with friends. Keep responses SHORT — one-liners and quick reactions, not paragraphs.`,
-    avatar: "/avatars/clown.png",
-    color: "#f59e0b",
+    avatar: '/avatars/clown.png',
+    color: '#f59e0b',
     allowedActions: [...WHITEBOARD_ACTIONS],
     priority: 4,
     createdAt: new Date(),
     updatedAt: new Date(),
-    isDefault: true
+    isDefault: true,
   },
   'default-4': {
     id: 'default-4',
-    name: "好奇宝宝",
-    role: "student",
+    name: '好奇宝宝',
+    role: 'student',
     persona: `You are the endlessly curious student. You always have a question — and your questions often push the whole class to think deeper.
 
 Your personality:
@@ -127,18 +128,18 @@ Your personality:
 You represent the voice of genuine curiosity. Your questions make the teacher's explanations better for everyone.
 
 Tone: Eager, enthusiastic, occasionally puzzled. You speak with the excitement of someone discovering things for the first time. Keep questions concise and direct.`,
-    avatar: "/avatars/curious.png",
-    color: "#ec4899",
+    avatar: '/avatars/curious.png',
+    color: '#ec4899',
     allowedActions: [...WHITEBOARD_ACTIONS],
     priority: 5,
     createdAt: new Date(),
     updatedAt: new Date(),
-    isDefault: true
+    isDefault: true,
   },
   'default-5': {
     id: 'default-5',
-    name: "笔记员",
-    role: "student",
+    name: '笔记员',
+    role: 'student',
     persona: `You are the dedicated note-taker of the class. You listen carefully, organize information, and love sharing your structured summaries with everyone.
 
 Your personality:
@@ -151,18 +152,18 @@ Your personality:
 You're the student everyone wants to sit next to during exams. Your notes are legendary.
 
 Tone: Organized, helpful, slightly studious. You speak clearly and precisely. When sharing notes, use structured formats — numbered lists, key terms bolded, clear headers.`,
-    avatar: "/avatars/note-taker.png",
-    color: "#06b6d4",
+    avatar: '/avatars/note-taker.png',
+    color: '#06b6d4',
     allowedActions: [...WHITEBOARD_ACTIONS],
     priority: 5,
     createdAt: new Date(),
     updatedAt: new Date(),
-    isDefault: true
+    isDefault: true,
   },
   'default-6': {
     id: 'default-6',
-    name: "思考者",
-    role: "student",
+    name: '思考者',
+    role: 'student',
     persona: `You are the deep thinker of the class. While others focus on understanding the basics, you're already connecting ideas, questioning assumptions, and exploring implications.
 
 Your personality:
@@ -175,14 +176,14 @@ Your personality:
 You don't speak as often as others, but when you do, it changes the direction of the conversation. You value depth over breadth.
 
 Tone: Thoughtful, measured, intellectually curious. You pause before speaking. Your sentences are deliberate and carry weight. Ask provocative questions that make everyone stop and think.`,
-    avatar: "/avatars/thinker.png",
-    color: "#8b5cf6",
+    avatar: '/avatars/thinker.png',
+    color: '#8b5cf6',
     allowedActions: [...WHITEBOARD_ACTIONS],
     priority: 6,
     createdAt: new Date(),
     updatedAt: new Date(),
-    isDefault: true
-  }
+    isDefault: true,
+  },
 };
 
 export const useAgentRegistry = create<AgentRegistryState>()(
@@ -191,25 +192,28 @@ export const useAgentRegistry = create<AgentRegistryState>()(
       // Initialize with default agents so they're available on server
       agents: { ...DEFAULT_AGENTS },
 
-      addAgent: (agent) => set((state) => ({
-        agents: { ...state.agents, [agent.id]: agent }
-      })),
+      addAgent: (agent) =>
+        set((state) => ({
+          agents: { ...state.agents, [agent.id]: agent },
+        })),
 
-      updateAgent: (id, updates) => set((state) => ({
-        agents: {
-          ...state.agents,
-          [id]: { ...state.agents[id], ...updates, updatedAt: new Date() }
-        }
-      })),
+      updateAgent: (id, updates) =>
+        set((state) => ({
+          agents: {
+            ...state.agents,
+            [id]: { ...state.agents[id], ...updates, updatedAt: new Date() },
+          },
+        })),
 
-      deleteAgent: (id) => set((state) => {
-        const { [id]: _removed, ...rest } = state.agents;
-        return { agents: rest };
-      }),
+      deleteAgent: (id) =>
+        set((state) => {
+          const { [id]: _removed, ...rest } = state.agents;
+          return { agents: rest };
+        }),
 
       getAgent: (id) => get().agents[id],
 
-      listAgents: () => Object.values(get().agents)
+      listAgents: () => Object.values(get().agents),
     }),
     {
       name: 'agent-registry-storage',
@@ -234,11 +238,11 @@ export const useAgentRegistry = create<AgentRegistryState>()(
 
         return {
           ...currentState,
-          agents: mergedAgents
+          agents: mergedAgents,
         };
-      }
-    }
-  )
+      },
+    },
+  ),
 );
 
 /**
@@ -246,7 +250,10 @@ export const useAgentRegistry = create<AgentRegistryState>()(
  * Maps agent roles to participant roles for the UI
  * @param t - i18n translation function for localized display names
  */
-export function agentsToParticipants(agentIds: string[], t?: (key: string) => string): Participant[] {
+export function agentsToParticipants(
+  agentIds: string[],
+  t?: (key: string) => string,
+): Participant[] {
   const registry = useAgentRegistry.getState();
   const participants: Participant[] = [];
   let hasTeacher = false;
@@ -273,7 +280,8 @@ export function agentsToParticipants(agentIds: string[], t?: (key: string) => st
 
     // Use i18n name for default agents, fall back to registry name
     const i18nName = t?.(`settings.agentNames.${agent.id}`);
-    const displayName = (i18nName && i18nName !== `settings.agentNames.${agent.id}`) ? i18nName : agent.name;
+    const displayName =
+      i18nName && i18nName !== `settings.agentNames.${agent.id}` ? i18nName : agent.name;
 
     participants.push({
       id: agent.id,
@@ -347,7 +355,15 @@ export async function loadGeneratedAgentsForStage(stageId: string): Promise<stri
  */
 export async function saveGeneratedAgents(
   stageId: string,
-  agents: Array<{ id: string; name: string; role: string; persona: string; avatar: string; color: string; priority: number }>
+  agents: Array<{
+    id: string;
+    name: string;
+    role: string;
+    persona: string;
+    avatar: string;
+    color: string;
+    priority: number;
+  }>,
 ): Promise<string[]> {
   const { db } = await import('@/lib/utils/database');
 
@@ -361,7 +377,7 @@ export async function saveGeneratedAgents(
   }
 
   // Write to IndexedDB
-  const records = agents.map(a => ({ ...a, stageId, createdAt: Date.now() }));
+  const records = agents.map((a) => ({ ...a, stageId, createdAt: Date.now() }));
   await db.generatedAgents.bulkPut(records);
 
   // Add to registry
@@ -377,5 +393,5 @@ export async function saveGeneratedAgents(
     });
   }
 
-  return records.map(r => r.id);
+  return records.map((r) => r.id);
 }

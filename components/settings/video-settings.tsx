@@ -4,12 +4,7 @@ import { useState, useCallback, useMemo } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogDescription,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useI18n } from '@/lib/hooks/use-i18n';
 import { useSettingsStore } from '@/lib/store/settings';
 import { VIDEO_PROVIDERS } from '@/lib/media/video-providers';
@@ -59,7 +54,10 @@ export function VideoSettings({ selectedProviderId }: VideoSettingsProps) {
   const currentConfig = videoProvidersConfig[selectedProviderId];
   const currentProvider = VIDEO_PROVIDERS[selectedProviderId];
   const builtInModels = currentProvider?.models || [];
-  const customModels = useMemo(() => currentConfig?.customModels || [], [currentConfig?.customModels]);
+  const customModels = useMemo(
+    () => currentConfig?.customModels || [],
+    [currentConfig?.customModels],
+  );
   const isServerConfigured = !!currentConfig?.isServerConfigured;
 
   const handleApiKeyChange = (apiKey: string) => {
@@ -127,13 +125,17 @@ export function VideoSettings({ selectedProviderId }: VideoSettingsProps) {
         name: modelForm.name.trim() || modelForm.id.trim(),
       });
     }
-    setVideoProviderConfig(selectedProviderId, { customModels: newCustomModels });
+    setVideoProviderConfig(selectedProviderId, {
+      customModels: newCustomModels,
+    });
     setShowModelDialog(false);
   }, [modelForm, editingModelIndex, customModels, selectedProviderId, setVideoProviderConfig]);
 
   const handleDeleteModel = (index: number) => {
     const newCustomModels = customModels.filter((_, i) => i !== index);
-    setVideoProviderConfig(selectedProviderId, { customModels: newCustomModels });
+    setVideoProviderConfig(selectedProviderId, {
+      customModels: newCustomModels,
+    });
   };
 
   return (
@@ -195,7 +197,7 @@ export function VideoSettings({ selectedProviderId }: VideoSettingsProps) {
               testStatus === 'success' &&
                 'bg-green-50 text-green-700 border border-green-200 dark:bg-green-950/50 dark:text-green-400 dark:border-green-800',
               testStatus === 'error' &&
-                'bg-red-50 text-red-700 border border-red-200 dark:bg-red-950/50 dark:text-red-400 dark:border-red-800'
+                'bg-red-50 text-red-700 border border-red-200 dark:bg-red-950/50 dark:text-red-400 dark:border-red-800',
             )}
           >
             <div className="flex items-start gap-2 min-w-0">
@@ -214,11 +216,19 @@ export function VideoSettings({ selectedProviderId }: VideoSettingsProps) {
           type="url"
           value={currentConfig?.baseUrl || ''}
           onChange={(e) => handleBaseUrlChange(e.target.value)}
-          placeholder={currentConfig?.serverBaseUrl || currentProvider?.defaultBaseUrl || t('settings.enterCustomBaseUrl')}
+          placeholder={
+            currentConfig?.serverBaseUrl ||
+            currentProvider?.defaultBaseUrl ||
+            t('settings.enterCustomBaseUrl')
+          }
           className="h-8"
         />
         {(() => {
-          const effectiveBaseUrl = currentConfig?.baseUrl || currentConfig?.serverBaseUrl || currentProvider?.defaultBaseUrl || '';
+          const effectiveBaseUrl =
+            currentConfig?.baseUrl ||
+            currentConfig?.serverBaseUrl ||
+            currentProvider?.defaultBaseUrl ||
+            '';
           if (!effectiveBaseUrl) return null;
           return (
             <p className="text-xs text-muted-foreground break-all">
@@ -232,12 +242,7 @@ export function VideoSettings({ selectedProviderId }: VideoSettingsProps) {
       <div className="space-y-3">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <Label className="text-base">{t('settings.models')}</Label>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleOpenAddModel}
-            className="gap-1.5"
-          >
+          <Button variant="outline" size="sm" onClick={handleOpenAddModel} className="gap-1.5">
             <Plus className="h-3.5 w-3.5" />
             {t('settings.addNewModel')}
           </Button>
@@ -324,11 +329,7 @@ export function VideoSettings({ selectedProviderId }: VideoSettingsProps) {
               <Button variant="outline" size="sm" onClick={() => setShowModelDialog(false)}>
                 {t('common.cancel')}
               </Button>
-              <Button
-                size="sm"
-                onClick={handleSaveModel}
-                disabled={!modelForm.id.trim()}
-              >
+              <Button size="sm" onClick={handleSaveModel} disabled={!modelForm.id.trim()}>
                 {t('common.save')}
               </Button>
             </div>

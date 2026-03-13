@@ -1,7 +1,7 @@
 // Stage and Scene data types
-import type {Slide} from "@/lib/types/slides";
-import type { Action } from "@/lib/types/action";
-import type { PBLProjectConfig } from "@/lib/pbl/types";
+import type { Slide } from '@/lib/types/slides';
+import type { Action } from '@/lib/types/action';
+import type { PBLProjectConfig } from '@/lib/pbl/types';
 
 export type SceneType = 'slide' | 'quiz' | 'interactive' | 'pbl';
 
@@ -34,10 +34,10 @@ export interface Scene {
   type: SceneType;
   title: string;
   order: number; // Display order
-  
+
   // Type-specific content
   content: SceneContent;
-  
+
   // Actions to execute during playback
   actions?: Action[];
 
@@ -46,10 +46,10 @@ export interface Scene {
 
   // Multi-agent discussion configuration
   multiAgent?: {
-    enabled: boolean;              // Enable multi-agent for this scene
-    agentIds: string[];           // Which agents to include (from registry)
-    maxTurns: number;             // Max discussion turns (default: 10)
-    directorPrompt?: string;      // Optional custom director instructions
+    enabled: boolean; // Enable multi-agent for this scene
+    agentIds: string[]; // Which agents to include (from registry)
+    maxTurns: number; // Max discussion turns (default: 10)
+    directorPrompt?: string; // Optional custom director instructions
   };
 
   // Metadata
@@ -60,11 +60,7 @@ export interface Scene {
 /**
  * Scene content based on type
  */
-export type SceneContent =
-  | SlideContent
-  | QuizContent
-  | InteractiveContent
-  | PBLContent;
+export type SceneContent = SlideContent | QuizContent | InteractiveContent | PBLContent;
 
 /**
  * Slide content - PPTist Canvas data
@@ -84,8 +80,8 @@ export interface QuizContent {
 }
 
 export interface QuizOption {
-  label: string;  // Display text
-  value: string;  // Selection key: "A", "B", "C", "D"
+  label: string; // Display text
+  value: string; // Selection key: "A", "B", "C", "D"
 }
 
 export interface QuizQuestion {
@@ -93,11 +89,11 @@ export interface QuizQuestion {
   type: 'single' | 'multiple' | 'short_answer';
   question: string;
   options?: QuizOption[];
-  answer?: string[];             // Correct answer values: ["A"], ["A","C"], or undefined for text
-  analysis?: string;             // Explanation shown after grading
-  commentPrompt?: string;        // Grading guidance for text questions
-  hasAnswer?: boolean;           // Whether auto-grading is possible
-  points?: number;               // Points per question (default 1)
+  answer?: string[]; // Correct answer values: ["A"], ["A","C"], or undefined for text
+  analysis?: string; // Explanation shown after grading
+  commentPrompt?: string; // Grading guidance for text questions
+  hasAnswer?: boolean; // Whether auto-grading is possible
+  points?: number; // Points per question (default 1)
 }
 
 /**

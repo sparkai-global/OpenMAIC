@@ -29,7 +29,7 @@ export const maxDuration = 300;
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json() as VideoGenerationOptions;
+    const body = (await request.json()) as VideoGenerationOptions;
 
     if (!body.prompt) {
       return apiError('MISSING_REQUIRED_FIELD', 400, 'Missing prompt');
@@ -42,7 +42,11 @@ export async function POST(request: NextRequest) {
 
     const apiKey = resolveVideoApiKey(providerId, clientApiKey);
     if (!apiKey) {
-      return apiError('MISSING_API_KEY', 401, `No API key configured for video provider: ${providerId}`);
+      return apiError(
+        'MISSING_API_KEY',
+        401,
+        `No API key configured for video provider: ${providerId}`,
+      );
     }
 
     const baseUrl = resolveVideoBaseUrl(providerId, clientBaseUrl);
@@ -52,8 +56,8 @@ export async function POST(request: NextRequest) {
 
     log.info(
       `Generating video: provider=${providerId}, model=${clientModel || 'default'}, ` +
-      `prompt="${body.prompt.slice(0, 80)}...", duration=${options.duration ?? 'auto'}, ` +
-      `aspect=${options.aspectRatio ?? 'auto'}, resolution=${options.resolution ?? 'auto'}`,
+        `prompt="${body.prompt.slice(0, 80)}...", duration=${options.duration ?? 'auto'}, ` +
+        `aspect=${options.aspectRatio ?? 'auto'}, resolution=${options.resolution ?? 'auto'}`,
     );
 
     const result = await generateVideo(
@@ -61,7 +65,9 @@ export async function POST(request: NextRequest) {
       options,
     );
 
-    log.info(`Video generated: url=${result.url ? 'yes' : 'no'}, ${result.width}x${result.height}, ${result.duration}s`);
+    log.info(
+      `Video generated: url=${result.url ? 'yes' : 'no'}, ${result.width}x${result.height}, ${result.duration}s`,
+    );
 
     return apiSuccess({ result });
   } catch (error) {

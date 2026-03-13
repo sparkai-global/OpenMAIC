@@ -174,11 +174,11 @@ export interface SettingsState {
   setASRLanguage: (language: string) => void;
   setTTSProviderConfig: (
     providerId: TTSProviderId,
-    config: Partial<{ apiKey: string; baseUrl: string; enabled: boolean }>
+    config: Partial<{ apiKey: string; baseUrl: string; enabled: boolean }>,
   ) => void;
   setASRProviderConfig: (
     providerId: ASRProviderId,
-    config: Partial<{ apiKey: string; baseUrl: string; enabled: boolean }>
+    config: Partial<{ apiKey: string; baseUrl: string; enabled: boolean }>,
   ) => void;
   setTTSEnabled: (enabled: boolean) => void;
   setASREnabled: (enabled: boolean) => void;
@@ -187,7 +187,7 @@ export interface SettingsState {
   setPDFProvider: (providerId: PDFProviderId) => void;
   setPDFProviderConfig: (
     providerId: PDFProviderId,
-    config: Partial<{ apiKey: string; baseUrl: string; enabled: boolean }>
+    config: Partial<{ apiKey: string; baseUrl: string; enabled: boolean }>,
   ) => void;
 
   // Image Generation actions
@@ -195,7 +195,12 @@ export interface SettingsState {
   setImageModelId: (modelId: string) => void;
   setImageProviderConfig: (
     providerId: ImageProviderId,
-    config: Partial<{ apiKey: string; baseUrl: string; enabled: boolean; customModels: Array<{ id: string; name: string }> }>
+    config: Partial<{
+      apiKey: string;
+      baseUrl: string;
+      enabled: boolean;
+      customModels: Array<{ id: string; name: string }>;
+    }>,
   ) => void;
 
   // Video Generation actions
@@ -203,7 +208,12 @@ export interface SettingsState {
   setVideoModelId: (modelId: string) => void;
   setVideoProviderConfig: (
     providerId: VideoProviderId,
-    config: Partial<{ apiKey: string; baseUrl: string; enabled: boolean; customModels: Array<{ id: string; name: string }> }>
+    config: Partial<{
+      apiKey: string;
+      baseUrl: string;
+      enabled: boolean;
+      customModels: Array<{ id: string; name: string }>;
+    }>,
   ) => void;
 
   // Media generation toggle actions
@@ -214,7 +224,7 @@ export interface SettingsState {
   setWebSearchProvider: (providerId: WebSearchProviderId) => void;
   setWebSearchProviderConfig: (
     providerId: WebSearchProviderId,
-    config: Partial<{ apiKey: string; baseUrl: string; enabled: boolean }>
+    config: Partial<{ apiKey: string; baseUrl: string; enabled: boolean }>,
   ) => void;
 
   // Server provider actions
@@ -322,9 +332,8 @@ function ensureBuiltInProviders(state: Partial<SettingsState>): void {
 
       const existingModelIds = new Set(existing.models?.map((m) => m.id) || []);
       const newModels = provider.models.filter((m) => !existingModelIds.has(m.id));
-      const mergedModels = newModels.length > 0
-        ? [...newModels, ...(existing.models || [])]
-        : existing.models;
+      const mergedModels =
+        newModels.length > 0 ? [...newModels, ...(existing.models || [])] : existing.models;
 
       state.providersConfig![providerId] = {
         ...existing,
@@ -621,7 +630,7 @@ export const useSettingsStore = create<SettingsState>()(
           try {
             const res = await fetch('/api/server-providers');
             if (!res.ok) return;
-            const data = await res.json() as {
+            const data = (await res.json()) as {
               providers: Record<string, { models?: string[]; baseUrl?: string }>;
               tts: Record<string, { baseUrl?: string }>;
               asr: Record<string, { baseUrl?: string }>;
@@ -670,13 +679,21 @@ export const useSettingsStore = create<SettingsState>()(
               for (const pid of Object.keys(newTTSConfig)) {
                 const key = pid as TTSProviderId;
                 if (newTTSConfig[key]) {
-                  newTTSConfig[key] = { ...newTTSConfig[key], isServerConfigured: false, serverBaseUrl: undefined };
+                  newTTSConfig[key] = {
+                    ...newTTSConfig[key],
+                    isServerConfigured: false,
+                    serverBaseUrl: undefined,
+                  };
                 }
               }
               for (const [pid, info] of Object.entries(data.tts)) {
                 const key = pid as TTSProviderId;
                 if (newTTSConfig[key]) {
-                  newTTSConfig[key] = { ...newTTSConfig[key], isServerConfigured: true, serverBaseUrl: info.baseUrl };
+                  newTTSConfig[key] = {
+                    ...newTTSConfig[key],
+                    isServerConfigured: true,
+                    serverBaseUrl: info.baseUrl,
+                  };
                 }
               }
 
@@ -685,13 +702,21 @@ export const useSettingsStore = create<SettingsState>()(
               for (const pid of Object.keys(newASRConfig)) {
                 const key = pid as ASRProviderId;
                 if (newASRConfig[key]) {
-                  newASRConfig[key] = { ...newASRConfig[key], isServerConfigured: false, serverBaseUrl: undefined };
+                  newASRConfig[key] = {
+                    ...newASRConfig[key],
+                    isServerConfigured: false,
+                    serverBaseUrl: undefined,
+                  };
                 }
               }
               for (const [pid, info] of Object.entries(data.asr)) {
                 const key = pid as ASRProviderId;
                 if (newASRConfig[key]) {
-                  newASRConfig[key] = { ...newASRConfig[key], isServerConfigured: true, serverBaseUrl: info.baseUrl };
+                  newASRConfig[key] = {
+                    ...newASRConfig[key],
+                    isServerConfigured: true,
+                    serverBaseUrl: info.baseUrl,
+                  };
                 }
               }
 
@@ -700,13 +725,21 @@ export const useSettingsStore = create<SettingsState>()(
               for (const pid of Object.keys(newPDFConfig)) {
                 const key = pid as PDFProviderId;
                 if (newPDFConfig[key]) {
-                  newPDFConfig[key] = { ...newPDFConfig[key], isServerConfigured: false, serverBaseUrl: undefined };
+                  newPDFConfig[key] = {
+                    ...newPDFConfig[key],
+                    isServerConfigured: false,
+                    serverBaseUrl: undefined,
+                  };
                 }
               }
               for (const [pid, info] of Object.entries(data.pdf)) {
                 const key = pid as PDFProviderId;
                 if (newPDFConfig[key]) {
-                  newPDFConfig[key] = { ...newPDFConfig[key], isServerConfigured: true, serverBaseUrl: info.baseUrl };
+                  newPDFConfig[key] = {
+                    ...newPDFConfig[key],
+                    isServerConfigured: true,
+                    serverBaseUrl: info.baseUrl,
+                  };
                 }
               }
 
@@ -715,13 +748,21 @@ export const useSettingsStore = create<SettingsState>()(
               for (const pid of Object.keys(newImageConfig)) {
                 const key = pid as ImageProviderId;
                 if (newImageConfig[key]) {
-                  newImageConfig[key] = { ...newImageConfig[key], isServerConfigured: false, serverBaseUrl: undefined };
+                  newImageConfig[key] = {
+                    ...newImageConfig[key],
+                    isServerConfigured: false,
+                    serverBaseUrl: undefined,
+                  };
                 }
               }
               for (const [pid, info] of Object.entries(data.image)) {
                 const key = pid as ImageProviderId;
                 if (newImageConfig[key]) {
-                  newImageConfig[key] = { ...newImageConfig[key], isServerConfigured: true, serverBaseUrl: info.baseUrl };
+                  newImageConfig[key] = {
+                    ...newImageConfig[key],
+                    isServerConfigured: true,
+                    serverBaseUrl: info.baseUrl,
+                  };
                 }
               }
 
@@ -730,14 +771,22 @@ export const useSettingsStore = create<SettingsState>()(
               for (const pid of Object.keys(newVideoConfig)) {
                 const key = pid as VideoProviderId;
                 if (newVideoConfig[key]) {
-                  newVideoConfig[key] = { ...newVideoConfig[key], isServerConfigured: false, serverBaseUrl: undefined };
+                  newVideoConfig[key] = {
+                    ...newVideoConfig[key],
+                    isServerConfigured: false,
+                    serverBaseUrl: undefined,
+                  };
                 }
               }
               if (data.video) {
                 for (const [pid, info] of Object.entries(data.video)) {
                   const key = pid as VideoProviderId;
                   if (newVideoConfig[key]) {
-                    newVideoConfig[key] = { ...newVideoConfig[key], isServerConfigured: true, serverBaseUrl: info.baseUrl };
+                    newVideoConfig[key] = {
+                      ...newVideoConfig[key],
+                      isServerConfigured: true,
+                      serverBaseUrl: info.baseUrl,
+                    };
                   }
                 }
               }
@@ -745,13 +794,21 @@ export const useSettingsStore = create<SettingsState>()(
               // Merge Web Search config — reset all first, then mark server-configured
               const newWebSearchConfig = { ...state.webSearchProvidersConfig };
               for (const key of Object.keys(newWebSearchConfig) as WebSearchProviderId[]) {
-                newWebSearchConfig[key] = { ...newWebSearchConfig[key], isServerConfigured: false, serverBaseUrl: undefined };
+                newWebSearchConfig[key] = {
+                  ...newWebSearchConfig[key],
+                  isServerConfigured: false,
+                  serverBaseUrl: undefined,
+                };
               }
               if (data.webSearch) {
                 for (const [pid, info] of Object.entries(data.webSearch)) {
                   const key = pid as WebSearchProviderId;
                   if (newWebSearchConfig[key]) {
-                    newWebSearchConfig[key] = { ...newWebSearchConfig[key], isServerConfigured: true, serverBaseUrl: info.baseUrl };
+                    newWebSearchConfig[key] = {
+                      ...newWebSearchConfig[key],
+                      isServerConfigured: true,
+                      serverBaseUrl: info.baseUrl,
+                    };
                   }
                 }
               }
@@ -776,7 +833,10 @@ export const useSettingsStore = create<SettingsState>()(
 
                 // TTS: select first server provider if current is not server-configured
                 const serverTtsIds = Object.keys(data.tts) as TTSProviderId[];
-                if (serverTtsIds.length > 0 && !newTTSConfig[state.ttsProviderId]?.isServerConfigured) {
+                if (
+                  serverTtsIds.length > 0 &&
+                  !newTTSConfig[state.ttsProviderId]?.isServerConfigured
+                ) {
                   autoTtsProvider = serverTtsIds[0];
                   const defaultVoices: Record<TTSProviderId, string> = {
                     'openai-tts': 'alloy',
@@ -790,13 +850,19 @@ export const useSettingsStore = create<SettingsState>()(
 
                 // ASR: select first server provider if current is not server-configured
                 const serverAsrIds = Object.keys(data.asr) as ASRProviderId[];
-                if (serverAsrIds.length > 0 && !newASRConfig[state.asrProviderId]?.isServerConfigured) {
+                if (
+                  serverAsrIds.length > 0 &&
+                  !newASRConfig[state.asrProviderId]?.isServerConfigured
+                ) {
                   autoAsrProvider = serverAsrIds[0];
                 }
 
                 // Image: first server provider
                 const serverImageIds = Object.keys(data.image) as ImageProviderId[];
-                if (serverImageIds.length > 0 && !newImageConfig[state.imageProviderId]?.isServerConfigured) {
+                if (
+                  serverImageIds.length > 0 &&
+                  !newImageConfig[state.imageProviderId]?.isServerConfigured
+                ) {
                   autoImageProvider = serverImageIds[0];
                   const models = IMAGE_PROVIDERS[autoImageProvider]?.models;
                   if (models?.length) autoImageModel = models[0].id;
@@ -807,7 +873,10 @@ export const useSettingsStore = create<SettingsState>()(
 
                 // Video: first server provider
                 const serverVideoIds = Object.keys(data.video || {}) as VideoProviderId[];
-                if (serverVideoIds.length > 0 && !newVideoConfig[state.videoProviderId]?.isServerConfigured) {
+                if (
+                  serverVideoIds.length > 0 &&
+                  !newVideoConfig[state.videoProviderId]?.isServerConfigured
+                ) {
                   autoVideoProvider = serverVideoIds[0];
                   const models = VIDEO_PROVIDERS[autoVideoProvider]?.models;
                   if (models?.length) autoVideoModel = models[0].id;
@@ -852,12 +921,20 @@ export const useSettingsStore = create<SettingsState>()(
                   ttsVoice: autoTtsVoice,
                 }),
                 ...(autoAsrProvider && { asrProviderId: autoAsrProvider }),
-                ...(autoImageProvider && { imageProviderId: autoImageProvider }),
+                ...(autoImageProvider && {
+                  imageProviderId: autoImageProvider,
+                }),
                 ...(autoImageModel && { imageModelId: autoImageModel }),
-                ...(autoVideoProvider && { videoProviderId: autoVideoProvider }),
+                ...(autoVideoProvider && {
+                  videoProviderId: autoVideoProvider,
+                }),
                 ...(autoVideoModel && { videoModelId: autoVideoModel }),
-                ...(autoImageEnabled !== undefined && { imageGenerationEnabled: autoImageEnabled }),
-                ...(autoVideoEnabled !== undefined && { videoGenerationEnabled: autoVideoEnabled }),
+                ...(autoImageEnabled !== undefined && {
+                  imageGenerationEnabled: autoImageEnabled,
+                }),
+                ...(autoVideoEnabled !== undefined && {
+                  videoGenerationEnabled: autoVideoEnabled,
+                }),
                 ...(autoProviderId && { providerId: autoProviderId }),
                 ...(autoModelId && { modelId: autoModelId }),
               };
@@ -961,10 +1038,16 @@ export const useSettingsStore = create<SettingsState>()(
         if (!state.webSearchProvidersConfig) {
           const stateRecord = state as Record<string, unknown>;
           const oldApiKey = (stateRecord.webSearchApiKey as string) || '';
-          const oldIsServerConfigured = (stateRecord.webSearchIsServerConfigured as boolean) || false;
+          const oldIsServerConfigured =
+            (stateRecord.webSearchIsServerConfigured as boolean) || false;
           state.webSearchProviderId = 'tavily' as WebSearchProviderId;
           state.webSearchProvidersConfig = {
-            tavily: { apiKey: oldApiKey, baseUrl: '', enabled: true, isServerConfigured: oldIsServerConfigured },
+            tavily: {
+              apiKey: oldApiKey,
+              baseUrl: '',
+              enabled: true,
+              isServerConfigured: oldIsServerConfigured,
+            },
           } as SettingsState['webSearchProvidersConfig'];
           delete stateRecord.webSearchApiKey;
           delete stateRecord.webSearchIsServerConfigured;
@@ -979,6 +1062,6 @@ export const useSettingsStore = create<SettingsState>()(
         ensureBuiltInProviders(merged as Partial<SettingsState>);
         return merged as SettingsState;
       },
-    }
-  )
+    },
+  ),
 );

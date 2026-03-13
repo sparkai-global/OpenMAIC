@@ -13,10 +13,27 @@ Based on the slide's element list, key points, and description, generate a serie
 You MUST output a JSON array directly. Each element is an object with a `type` field:
 
 ```json
-[{"type":"action","name":"spotlight","params":{"elementId":"text_abc123"}},{"type":"text","content":"First, let's look at the key concept..."},{"type":"action","name":"spotlight","params":{"elementId":"chart_001"}},{"type":"text","content":"Now observe this chart showing the relationship..."}]
+[
+  {
+    "type": "action",
+    "name": "spotlight",
+    "params": { "elementId": "text_abc123" }
+  },
+  { "type": "text", "content": "First, let's look at the key concept..." },
+  {
+    "type": "action",
+    "name": "spotlight",
+    "params": { "elementId": "chart_001" }
+  },
+  {
+    "type": "text",
+    "content": "Now observe this chart showing the relationship..."
+  }
+]
 ```
 
 ### Format Rules
+
 1. Output a single JSON array — no explanation, no code fences
 2. `type:"action"` objects contain `name` and `params`
 3. `type:"text"` objects contain `content` (speech text)
@@ -24,6 +41,7 @@ You MUST output a JSON array directly. Each element is an object with a `type` f
 5. The `]` closing bracket marks the end of your response
 
 ### Ordering Principles
+
 - spotlight actions should appear BEFORE the corresponding text object (point first, then speak)
 - Multiple spotlight+text pairs create a natural "focus then explain" flow
 
@@ -36,7 +54,11 @@ You MUST output a JSON array directly. Each element is an object with a `type` f
 Highlight a specific element on the slide, used in conjunction with narration.
 
 ```json
-{"type":"action","name":"spotlight","params":{"elementId":"text_abc123"}}
+{
+  "type": "action",
+  "name": "spotlight",
+  "params": { "elementId": "text_abc123" }
+}
 ```
 
 - `elementId`: ID of element to focus on, **must** be selected from the provided element list
@@ -47,7 +69,7 @@ Highlight a specific element on the slide, used in conjunction with narration.
 Briefly point at an element with a laser dot to draw attention, lighter than spotlight.
 
 ```json
-{"type":"action","name":"laser","params":{"elementId":"text_abc123"}}
+{ "type": "action", "name": "laser", "params": { "elementId": "text_abc123" } }
 ```
 
 - `elementId`: ID of element to point at, **must** be from the provided element list
@@ -59,7 +81,11 @@ Briefly point at an element with a laser dot to draw attention, lighter than spo
 Start playback of a video element on the slide. This is a synchronous action — the engine waits until the video finishes playing before moving to the next action.
 
 ```json
-{"type":"action","name":"play_video","params":{"elementId":"video_abc123"}}
+{
+  "type": "action",
+  "name": "play_video",
+  "params": { "elementId": "video_abc123" }
+}
 ```
 
 - `elementId`: ID of the video element to play, **must** be from the provided element list and must be a `video` type element
@@ -73,7 +99,15 @@ Start playback of a video element on the slide. This is a synchronous action —
 Initiate classroom discussion, suitable for segments requiring student reflection.
 
 ```json
-{"type":"action","name":"discussion","params":{"topic":"Discussion topic","prompt":"Guiding prompt","agentId":"student_agent_id"}}
+{
+  "type": "action",
+  "name": "discussion",
+  "params": {
+    "topic": "Discussion topic",
+    "prompt": "Guiding prompt",
+    "agentId": "student_agent_id"
+  }
+}
 ```
 
 - `topic`: Core question for discussion
@@ -98,6 +132,7 @@ Generate natural teaching speech. The user prompt includes a **Course Outline** 
 - **Referencing earlier content**: Say "we just covered" or "as mentioned on page N". NEVER say "last class" or "previous session" — there is no previous session, everything is happening in this single class.
 
 Structure:
+
 - **Opening/Transition**: Based on page position (see above)
 - **Body**: Explain points one by one, with spotlight
 - **Summary**: Brief recap of this page's content

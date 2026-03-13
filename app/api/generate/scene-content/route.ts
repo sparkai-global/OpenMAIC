@@ -54,7 +54,11 @@ export async function POST(req: NextRequest) {
       return apiError('MISSING_REQUIRED_FIELD', 400, 'outline is required');
     }
     if (!allOutlines || allOutlines.length === 0) {
-      return apiError('MISSING_REQUIRED_FIELD', 400, 'allOutlines is required and must not be empty');
+      return apiError(
+        'MISSING_REQUIRED_FIELD',
+        400,
+        'allOutlines is required and must not be empty',
+      );
     }
     if (!stageId) {
       return apiError('MISSING_REQUIRED_FIELD', 400, 'stageId is required');
@@ -84,7 +88,10 @@ export async function POST(req: NextRequest) {
             model: languageModel,
             system: systemPrompt,
             messages: [
-              { role: 'user' as const, content: buildVisionUserContent(userPrompt, images) },
+              {
+                role: 'user' as const,
+                content: buildVisionUserContent(userPrompt, images),
+              },
             ],
             maxOutputTokens: modelInfo?.outputWindow,
           },
@@ -125,7 +132,9 @@ export async function POST(req: NextRequest) {
     const generatedMediaMapping: ImageMapping = {};
 
     // ── Generate content ──
-    log.info(`Generating content: "${effectiveOutline.title}" (${effectiveOutline.type}) [model=${modelString}]`);
+    log.info(
+      `Generating content: "${effectiveOutline.title}" (${effectiveOutline.type}) [model=${modelString}]`,
+    );
 
     const content = await generateSceneContent(
       effectiveOutline,
@@ -141,7 +150,11 @@ export async function POST(req: NextRequest) {
     if (!content) {
       log.error(`Failed to generate content for: "${effectiveOutline.title}"`);
 
-      return apiError('GENERATION_FAILED', 500, `Failed to generate content: ${effectiveOutline.title}`);
+      return apiError(
+        'GENERATION_FAILED',
+        500,
+        `Failed to generate content: ${effectiveOutline.title}`,
+      );
     }
 
     log.info(`Content generated successfully: "${effectiveOutline.title}"`);

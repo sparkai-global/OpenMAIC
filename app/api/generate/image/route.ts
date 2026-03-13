@@ -28,7 +28,7 @@ export const maxDuration = 60;
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json() as ImageGenerationOptions;
+    const body = (await request.json()) as ImageGenerationOptions;
 
     if (!body.prompt) {
       return apiError('MISSING_REQUIRED_FIELD', 400, 'Missing prompt');
@@ -41,7 +41,11 @@ export async function POST(request: NextRequest) {
 
     const apiKey = resolveImageApiKey(providerId, clientApiKey);
     if (!apiKey) {
-      return apiError('MISSING_API_KEY', 401, `No API key configured for image provider: ${providerId}`);
+      return apiError(
+        'MISSING_API_KEY',
+        401,
+        `No API key configured for image provider: ${providerId}`,
+      );
     }
 
     const baseUrl = resolveImageBaseUrl(providerId, clientBaseUrl);
@@ -55,13 +59,10 @@ export async function POST(request: NextRequest) {
 
     log.info(
       `Generating image: provider=${providerId}, model=${clientModel || 'default'}, ` +
-      `prompt="${body.prompt.slice(0, 80)}...", size=${body.width ?? 'auto'}x${body.height ?? 'auto'}`,
+        `prompt="${body.prompt.slice(0, 80)}...", size=${body.width ?? 'auto'}x${body.height ?? 'auto'}`,
     );
 
-    const result = await generateImage(
-      { providerId, apiKey, baseUrl, model: clientModel },
-      body,
-    );
+    const result = await generateImage({ providerId, apiKey, baseUrl, model: clientModel }, body);
 
     return apiSuccess({ result });
   } catch (error) {

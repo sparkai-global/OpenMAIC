@@ -1,6 +1,11 @@
 import { useMemo } from 'react';
-import {useCanvasStore} from '@/lib/store';
-import type { PPTVideoElement, PPTLatexElement, PPTAudioElement, PPTChartElement } from '@/lib/types/slides';
+import { useCanvasStore } from '@/lib/store';
+import type {
+  PPTVideoElement,
+  PPTLatexElement,
+  PPTAudioElement,
+  PPTChartElement,
+} from '@/lib/types/slides';
 import type { OperateResizeHandlers } from '@/lib/types/edit';
 import { useCommonOperate } from '../hooks/useCommonOperate';
 import { RotateHandler } from './RotateHandler';
@@ -13,22 +18,45 @@ interface CommonElementOperateProps {
   readonly elementInfo: PPTElement;
   readonly handlerVisible: boolean;
   readonly rotateElement: (e: React.MouseEvent, element: PPTElement) => void;
-  readonly scaleElement: (e: React.MouseEvent, element: PPTElement, command: OperateResizeHandlers) => void;
+  readonly scaleElement: (
+    e: React.MouseEvent,
+    element: PPTElement,
+    command: OperateResizeHandlers,
+  ) => void;
 }
 
-export function CommonElementOperate({ elementInfo, handlerVisible, rotateElement, scaleElement }: CommonElementOperateProps) {
+export function CommonElementOperate({
+  elementInfo,
+  handlerVisible,
+  rotateElement,
+  scaleElement,
+}: CommonElementOperateProps) {
   const canvasScale = useCanvasStore.use.canvasScale();
 
-  const scaleWidth = useMemo(() => elementInfo.width * canvasScale, [elementInfo.width, canvasScale]);
-  const scaleHeight = useMemo(() => elementInfo.height * canvasScale, [elementInfo.height, canvasScale]);
+  const scaleWidth = useMemo(
+    () => elementInfo.width * canvasScale,
+    [elementInfo.width, canvasScale],
+  );
+  const scaleHeight = useMemo(
+    () => elementInfo.height * canvasScale,
+    [elementInfo.height, canvasScale],
+  );
   const { resizeHandlers, borderLines } = useCommonOperate(scaleWidth, scaleHeight);
 
-  const cannotRotate = useMemo(() => ['chart', 'video', 'audio'].includes(elementInfo.type), [elementInfo.type]);
+  const cannotRotate = useMemo(
+    () => ['chart', 'video', 'audio'].includes(elementInfo.type),
+    [elementInfo.type],
+  );
 
   return (
     <div className="common-element-operate">
       {borderLines.map((line) => (
-        <BorderLine key={line.type} type={line.type} style={line.style} className="operate-border-line" />
+        <BorderLine
+          key={line.type}
+          type={line.type}
+          style={line.style}
+          className="operate-border-line"
+        />
       ))}
       {handlerVisible && (
         <>

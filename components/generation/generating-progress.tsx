@@ -6,8 +6,8 @@ import { Loader2, CheckCircle2, XCircle, Circle } from 'lucide-react';
 import { useI18n } from '@/lib/hooks/use-i18n';
 
 interface GeneratingProgressProps {
-  outlineReady: boolean;       // Is outline generation complete?
-  firstPageReady: boolean;     // Is first page generated?
+  outlineReady: boolean; // Is outline generation complete?
+  firstPageReady: boolean; // Is first page generated?
   statusMessage: string;
   error?: string | null;
 }
@@ -42,10 +42,10 @@ function StatusItem({
           hasError
             ? 'text-destructive'
             : completed
-            ? 'text-green-600 font-medium'
-            : inProgress
-            ? 'text-primary font-medium'
-            : 'text-muted-foreground'
+              ? 'text-green-600 font-medium'
+              : inProgress
+                ? 'text-primary font-medium'
+                : 'text-muted-foreground'
         }`}
       >
         {label}
@@ -91,7 +91,8 @@ export function GeneratingProgress({
             ) : (
               <>
                 <Loader2 className="size-5 animate-spin" />
-                {t('generation.generatingCourse')}{dots}
+                {t('generation.generatingCourse')}
+                {dots}
               </>
             )}
           </CardTitle>
@@ -104,9 +105,7 @@ export function GeneratingProgress({
               inProgress={!outlineReady && !error}
               hasError={!outlineReady && !!error}
               label={
-                outlineReady
-                  ? t('generation.outlineReady')
-                  : t('generation.generatingOutlines')
+                outlineReady ? t('generation.outlineReady') : t('generation.generatingOutlines')
               }
             />
             <StatusItem

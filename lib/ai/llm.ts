@@ -20,9 +20,7 @@ type GenerateTextParams = Parameters<typeof generateText>[0];
 type StreamTextParams = Parameters<typeof streamText>[0];
 
 function _extractRequestInfo(params: GenerateTextParams | StreamTextParams) {
-  const tools = params.tools
-    ? Object.keys(params.tools as Record<string, unknown>)
-    : undefined;
+  const tools = params.tools ? Object.keys(params.tools as Record<string, unknown>) : undefined;
 
   const p = params as Record<string, unknown>;
   return {
@@ -85,7 +83,11 @@ type ProviderOptions = Record<string, Record<string, unknown>>;
  * Build providerOptions to disable thinking, using the lowest possible
  * intensity for models that cannot be fully turned off.
  */
-function buildDisableThinking(modelId: string, providerType: ProviderType, _thinking: ThinkingCapability): ProviderOptions | undefined {
+function buildDisableThinking(
+  modelId: string,
+  providerType: ProviderType,
+  _thinking: ThinkingCapability,
+): ProviderOptions | undefined {
   switch (providerType) {
     case 'openai': {
       // GPT-5.1/5.2: support effort=none (fully off)
@@ -103,7 +105,9 @@ function buildDisableThinking(modelId: string, providerType: ProviderType, _thin
         return undefined;
       }
       if (!_thinking.toggleable && effort !== 'none') {
-        log.info(`[thinking-adapter] Model ${modelId} cannot fully disable thinking, using effort=${effort}`);
+        log.info(
+          `[thinking-adapter] Model ${modelId} cannot fully disable thinking, using effort=${effort}`,
+        );
       }
       return { openai: { reasoningEffort: effort } };
     }
@@ -118,11 +122,15 @@ function buildDisableThinking(modelId: string, providerType: ProviderType, _thin
       // Gemini 2.5 Pro: minimum thinkingBudget=128 (cannot fully disable)
       if (modelId.startsWith('gemini-3')) {
         const level = modelId.includes('flash') ? 'minimal' : 'low';
-        log.info(`[thinking-adapter] Model ${modelId} cannot fully disable thinking, using thinkingLevel=${level}`);
+        log.info(
+          `[thinking-adapter] Model ${modelId} cannot fully disable thinking, using thinkingLevel=${level}`,
+        );
         return { google: { thinkingConfig: { thinkingLevel: level } } };
       }
       if (modelId === 'gemini-2.5-pro') {
-        log.info(`[thinking-adapter] Model ${modelId} cannot fully disable thinking, using thinkingBudget=128`);
+        log.info(
+          `[thinking-adapter] Model ${modelId} cannot fully disable thinking, using thinkingBudget=128`,
+        );
         return { google: { thinkingConfig: { thinkingBudget: 128 } } };
       }
       // gemini-2.5-flash / flash-lite: can fully disable
@@ -137,7 +145,12 @@ function buildDisableThinking(modelId: string, providerType: ProviderType, _thin
 /**
  * Build providerOptions to enable thinking, optionally with a budget hint.
  */
-function buildEnableThinking(modelId: string, providerType: ProviderType, _thinking: ThinkingCapability, budgetTokens?: number): ProviderOptions | undefined {
+function buildEnableThinking(
+  modelId: string,
+  providerType: ProviderType,
+  _thinking: ThinkingCapability,
+  budgetTokens?: number,
+): ProviderOptions | undefined {
   switch (providerType) {
     case 'openai':
       // OpenAI uses discrete effort levels, no token-based budget.
@@ -155,7 +168,11 @@ function buildEnableThinking(modelId: string, providerType: ProviderType, _think
       }
       // Sonnet 4.5 / Haiku 4.5: must use enabled + budgetTokens
       const budget = budgetTokens ?? 10240; // sensible default
-      return { anthropic: { thinking: { type: 'enabled', budgetTokens: Math.max(1024, budget) } } };
+      return {
+        anthropic: {
+          thinking: { type: 'enabled', budgetTokens: Math.max(1024, budget) },
+        },
+      };
     }
 
     case 'google': {
@@ -166,7 +183,13 @@ function buildEnableThinking(modelId: string, providerType: ProviderType, _think
       // Gemini 2.5: uses thinkingBudget
       if (budgetTokens !== undefined) {
         const min = modelId === 'gemini-2.5-pro' ? 128 : 0;
-        return { google: { thinkingConfig: { thinkingBudget: Math.max(min, Math.min(24576, budgetTokens)) } } };
+        return {
+          google: {
+            thinkingConfig: {
+              thinkingBudget: Math.max(min, Math.min(24576, budgetTokens)),
+            },
+          },
+        };
       }
       // No budget specified — let model use dynamic default
       return undefined;
@@ -180,7 +203,10 @@ function buildEnableThinking(modelId: string, providerType: ProviderType, _think
 /**
  * Map a unified ThinkingConfig to provider-specific providerOptions.
  */
-function buildThinkingProviderOptions(modelId: string, config: ThinkingConfig): ProviderOptions | undefined {
+function buildThinkingProviderOptions(
+  modelId: string,
+  config: ThinkingConfig,
+): ProviderOptions | undefined {
   const info = MODEL_THINKING_MAP.get(modelId);
   if (!info?.thinking) return undefined; // model has no thinking capability
 
@@ -214,7 +240,10 @@ function getDefaultProviderOptions(modelId: string): ProviderOptions | undefined
  *
  * Priority: caller's providerOptions > ThinkingConfig > model defaults
  */
-function injectProviderOptions<T extends GenerateTextParams | StreamTextParams>(params: T, thinking?: ThinkingConfig): T {
+function injectProviderOptions<T extends GenerateTextParams | StreamTextParams>(
+  params: T,
+  thinking?: ThinkingConfig,
+): T {
   if ((params as Record<string, unknown>).providerOptions) return params; // caller explicitly set providerOptions
 
   const modelId = getModelId(params);
@@ -258,7 +287,7 @@ export async function callLLM<T extends GenerateTextParams>(
   source: string,
   retryOptions?: LLMRetryOptions,
   thinking?: ThinkingConfig,
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<GenerateTextResult<any, any>> {
   const maxAttempts = (retryOptions?.retries ?? 0) + 1;
   const validate = retryOptions?.validate ?? (maxAttempts > 1 ? DEFAULT_VALIDATE : undefined);
@@ -282,7 +311,9 @@ export async function callLLM<T extends GenerateTextParams>(
 
       // Validate result (only when retries are configured)
       if (validate && !validate(result.text)) {
-        log.warn(`[${source}] Validation failed (attempt ${attempt}/${maxAttempts}), ${attempt < maxAttempts ? 'retrying...' : 'giving up'}`);
+        log.warn(
+          `[${source}] Validation failed (attempt ${attempt}/${maxAttempts}), ${attempt < maxAttempts ? 'retrying...' : 'giving up'}`,
+        );
         lastResult = result;
         continue;
       }
@@ -316,14 +347,12 @@ export function streamLLM<T extends StreamTextParams>(
   params: T,
   source: string,
   thinking?: ThinkingConfig,
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): StreamTextResult<any, any> {
   // Resolve effective thinking config and wrap in thinkingContext
   const effectiveThinking = thinking ?? getGlobalThinkingConfig();
   const injectedParams = injectProviderOptions(params, effectiveThinking);
-  const result = thinkingContext.run(effectiveThinking, () =>
-    streamText(injectedParams),
-  );
+  const result = thinkingContext.run(effectiveThinking, () => streamText(injectedParams));
 
   return result;
 }

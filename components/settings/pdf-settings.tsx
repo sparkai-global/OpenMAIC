@@ -1,26 +1,26 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { useI18n } from "@/lib/hooks/use-i18n";
-import { useSettingsStore } from "@/lib/store/settings";
-import { PDF_PROVIDERS } from "@/lib/pdf/constants";
-import type { PDFProviderId } from "@/lib/pdf/types";
-import { CheckCircle2, Eye, EyeOff } from "lucide-react";
+import { useState } from 'react';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { useI18n } from '@/lib/hooks/use-i18n';
+import { useSettingsStore } from '@/lib/store/settings';
+import { PDF_PROVIDERS } from '@/lib/pdf/constants';
+import type { PDFProviderId } from '@/lib/pdf/types';
+import { CheckCircle2, Eye, EyeOff } from 'lucide-react';
 
 /**
  * Get display label for feature
  */
 function getFeatureLabel(feature: string, t: (key: string) => string): string {
   const labels: Record<string, string> = {
-    text: t("settings.featureText"),
-    images: t("settings.featureImages"),
-    tables: t("settings.featureTables"),
-    formulas: t("settings.featureFormulas"),
-    "layout-analysis": t("settings.featureLayoutAnalysis"),
-    metadata: t("settings.featureMetadata"),
+    text: t('settings.featureText'),
+    images: t('settings.featureImages'),
+    tables: t('settings.featureTables'),
+    formulas: t('settings.featureFormulas'),
+    'layout-analysis': t('settings.featureLayoutAnalysis'),
+    metadata: t('settings.featureMetadata'),
   };
   return labels[feature] || feature;
 }
@@ -51,7 +51,7 @@ export function PDFSettings({ selectedProviderId }: PDFSettingsProps) {
       {/* Server-configured notice */}
       {isServerConfigured && (
         <div className="rounded-lg border border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30 p-3 text-sm text-blue-700 dark:text-blue-300">
-          {t("settings.serverConfiguredNotice")}
+          {t('settings.serverConfiguredNotice')}
         </div>
       )}
 
@@ -60,14 +60,18 @@ export function PDFSettings({ selectedProviderId }: PDFSettingsProps) {
         <>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label className="text-sm">{t("settings.pdfApiKey")}</Label>
+              <Label className="text-sm">{t('settings.pdfApiKey')}</Label>
               <div className="relative">
                 <Input
-                  type={showApiKey ? "text" : "password"}
-                  placeholder={isServerConfigured ? t("settings.optionalOverride") : t("settings.enterApiKey")}
-                  value={pdfProvidersConfig[selectedProviderId]?.apiKey || ""}
+                  type={showApiKey ? 'text' : 'password'}
+                  placeholder={
+                    isServerConfigured ? t('settings.optionalOverride') : t('settings.enterApiKey')
+                  }
+                  value={pdfProvidersConfig[selectedProviderId]?.apiKey || ''}
                   onChange={(e) =>
-                    setPDFProviderConfig(selectedProviderId, { apiKey: e.target.value })
+                    setPDFProviderConfig(selectedProviderId, {
+                      apiKey: e.target.value,
+                    })
                   }
                   className="font-mono text-sm pr-10"
                 />
@@ -76,22 +80,20 @@ export function PDFSettings({ selectedProviderId }: PDFSettingsProps) {
                   onClick={() => setShowApiKey(!showApiKey)}
                   className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
-                  {showApiKey ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
+                  {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label className="text-sm">{t("settings.pdfBaseUrl")}</Label>
+              <Label className="text-sm">{t('settings.pdfBaseUrl')}</Label>
               <Input
                 placeholder="http://localhost:8080"
-                value={pdfProvidersConfig[selectedProviderId]?.baseUrl || ""}
+                value={pdfProvidersConfig[selectedProviderId]?.baseUrl || ''}
                 onChange={(e) =>
-                  setPDFProviderConfig(selectedProviderId, { baseUrl: e.target.value })
+                  setPDFProviderConfig(selectedProviderId, {
+                    baseUrl: e.target.value,
+                  })
                 }
                 className="text-sm"
               />
@@ -100,12 +102,12 @@ export function PDFSettings({ selectedProviderId }: PDFSettingsProps) {
 
           {/* Request URL Preview */}
           {(() => {
-            const effectiveBaseUrl = pdfProvidersConfig[selectedProviderId]?.baseUrl || "";
+            const effectiveBaseUrl = pdfProvidersConfig[selectedProviderId]?.baseUrl || '';
             if (!effectiveBaseUrl) return null;
-            const fullUrl = effectiveBaseUrl + "/file_parse";
+            const fullUrl = effectiveBaseUrl + '/file_parse';
             return (
               <p className="text-xs text-muted-foreground break-all">
-                {t("settings.requestUrl")}: {fullUrl}
+                {t('settings.requestUrl')}: {fullUrl}
               </p>
             );
           })()}
@@ -114,14 +116,10 @@ export function PDFSettings({ selectedProviderId }: PDFSettingsProps) {
 
       {/* Features List */}
       <div className="space-y-2">
-        <Label className="text-sm">{t("settings.pdfFeatures")}</Label>
+        <Label className="text-sm">{t('settings.pdfFeatures')}</Label>
         <div className="flex flex-wrap gap-2">
           {pdfProvider.features.map((feature) => (
-            <Badge
-              key={feature}
-              variant="secondary"
-              className="font-normal"
-            >
+            <Badge key={feature} variant="secondary" className="font-normal">
               <CheckCircle2 className="h-3 w-3 mr-1" />
               {getFeatureLabel(feature, t)}
             </Badge>

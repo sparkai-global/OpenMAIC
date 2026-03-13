@@ -17,14 +17,18 @@ import { AnimatePresence } from 'motion/react';
 
 export function ScreenCanvas() {
   const canvasScale = useCanvasStore.use.canvasScale();
-  const elements = useSceneSelector<SlideContent, PPTElement[]>(content => content.canvas.elements);
+  const elements = useSceneSelector<SlideContent, PPTElement[]>(
+    (content) => content.canvas.elements,
+  );
   const canvasRef = useRef<HTMLDivElement>(null);
 
   // Viewport size and positioning
   const { viewportStyles } = useViewportSize(canvasRef);
 
   // Get background style
-  const background = useSceneSelector<SlideContent, SlideBackground | undefined>(content => content.canvas.background);
+  const background = useSceneSelector<SlideContent, SlideBackground | undefined>(
+    (content) => content.canvas.background,
+  );
   const { backgroundStyle } = useSlideBackgroundStyle(background);
 
   // Get visual effect state
@@ -35,24 +39,27 @@ export function ScreenCanvas() {
   // Compute laser pointer geometry
   const laserGeometry = useMemo<PercentageGeometry | null>(() => {
     if (!laserElementId) return null;
-    const element = elements.find(el => el.id === laserElementId);
+    const element = elements.find((el) => el.id === laserElementId);
     if (!element) return null;
-    return findElementGeometry({ type: 'slide', content: { canvas: { elements } } } as Record<string, unknown>, laserElementId);
+    return findElementGeometry(
+      { type: 'slide', content: { canvas: { elements } } } as Record<string, unknown>,
+      laserElementId,
+    );
   }, [laserElementId, elements]);
 
   // Compute zoom target geometry
   const zoomGeometry = useMemo<PercentageGeometry | null>(() => {
     if (!zoomTarget) return null;
-    const element = elements.find(el => el.id === zoomTarget.elementId);
+    const element = elements.find((el) => el.id === zoomTarget.elementId);
     if (!element) return null;
-    return findElementGeometry({ type: 'slide', content: { canvas: { elements } } } as Record<string, unknown>, zoomTarget.elementId);
+    return findElementGeometry(
+      { type: 'slide', content: { canvas: { elements } } } as Record<string, unknown>,
+      zoomTarget.elementId,
+    );
   }, [zoomTarget, elements]);
 
   return (
-    <div
-      className="relative h-full w-full overflow-hidden select-none"
-      ref={canvasRef}
-    >
+    <div className="relative h-full w-full overflow-hidden select-none" ref={canvasRef}>
       <div
         className="absolute shadow-[0_0_0_1px_rgba(0,0,0,0.01),0_0_12px_0_rgba(0,0,0,0.1)] rounded-lg overflow-hidden transition-transform duration-700"
         style={{
@@ -60,17 +67,23 @@ export function ScreenCanvas() {
           height: `${viewportStyles.height * canvasScale}px`,
           left: `${viewportStyles.left}px`,
           top: `${viewportStyles.top}px`,
-          ...(zoomTarget && zoomGeometry ? {
-            transform: `scale(${zoomTarget.scale})`,
-            transformOrigin: `${zoomGeometry.centerX}% ${zoomGeometry.centerY}%`,
-          } : {}),
+          ...(zoomTarget && zoomGeometry
+            ? {
+                transform: `scale(${zoomTarget.scale})`,
+                transformOrigin: `${zoomGeometry.centerX}% ${zoomGeometry.centerY}%`,
+              }
+            : {}),
         }}
       >
         {/* Background layer */}
-        <div className="w-full h-full bg-position-center rounded-lg" style={{ ...backgroundStyle }}></div>
+        <div
+          className="w-full h-full bg-position-center rounded-lg"
+          style={{ ...backgroundStyle }}
+        ></div>
 
         {/* Content layer - scaled */}
-        <div className="absolute top-0 left-0 origin-top-left"
+        <div
+          className="absolute top-0 left-0 origin-top-left"
           style={{
             width: `${viewportStyles.width}px`,
             height: `${viewportStyles.height}px`,
@@ -78,11 +91,7 @@ export function ScreenCanvas() {
           }}
         >
           {elements.map((element, index) => (
-            <ScreenElement
-              key={element.id}
-              elementInfo={element}
-              elementIndex={index + 1}
-            />
+            <ScreenElement key={element.id} elementInfo={element} elementIndex={index + 1} />
           ))}
 
           {/* Highlight overlay - stacked above elements */}
@@ -108,7 +117,7 @@ export function ScreenCanvas() {
             </AnimatePresence>
           </div>
         </div>
-      </div >
+      </div>
     </div>
-  )
+  );
 }

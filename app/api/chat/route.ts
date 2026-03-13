@@ -18,10 +18,9 @@ import { getModel, parseModelString } from '@/lib/ai/providers';
 import { resolveApiKey, resolveBaseUrl, resolveProxy } from '@/lib/server/provider-config';
 import type { StatelessChatRequest, StatelessEvent } from '@/lib/types/chat';
 import type { ThinkingConfig } from '@/lib/types/provider';
-import { apiError } from '@/lib/server/api-response'
-import { createLogger } from '@/lib/logger'
-const log = createLogger('Chat API')
-
+import { apiError } from '@/lib/server/api-response';
+import { createLogger } from '@/lib/logger';
+const log = createLogger('Chat API');
 
 // Allow streaming responses up to 60 seconds
 export const maxDuration = 60;
@@ -73,7 +72,9 @@ export async function POST(req: NextRequest) {
     }
 
     log.info('Processing request');
-    log.info(`Agents: ${body.config.agentIds.join(', ')}, Messages: ${body.messages.length}, Turn: ${body.directorState?.turnCount ?? 0}`);
+    log.info(
+      `Agents: ${body.config.agentIds.join(', ')}, Messages: ${body.messages.length}, Turn: ${body.directorState?.turnCount ?? 0}`,
+    );
 
     // Create LanguageModel via the unified provider system
     const { model: languageModel } = getModel({
@@ -145,7 +146,11 @@ export async function POST(req: NextRequest) {
         // If aborted, just close the writer silently
         if (signal.aborted) {
           log.info('Request aborted during streaming');
-          try { await writer.close(); } catch { /* already closed */ }
+          try {
+            await writer.close();
+          } catch {
+            /* already closed */
+          }
           return;
         }
 
@@ -155,7 +160,9 @@ export async function POST(req: NextRequest) {
         try {
           const errorEvent: StatelessEvent = {
             type: 'error',
-            data: { message: error instanceof Error ? error.message : String(error) },
+            data: {
+              message: error instanceof Error ? error.message : String(error),
+            },
           };
           await writer.write(encoder.encode(`data: ${JSON.stringify(errorEvent)}\n\n`));
           await writer.close();
@@ -169,11 +176,15 @@ export async function POST(req: NextRequest) {
       headers: {
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive',
+        Connection: 'keep-alive',
       },
     });
   } catch (error) {
     log.error('Error:', error);
-    return apiError('INTERNAL_ERROR', 500, error instanceof Error ? error.message : 'Failed to process request');
+    return apiError(
+      'INTERNAL_ERROR',
+      500,
+      error instanceof Error ? error.message : 'Failed to process request',
+    );
   }
 }

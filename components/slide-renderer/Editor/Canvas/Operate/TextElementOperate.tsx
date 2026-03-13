@@ -11,25 +11,46 @@ interface TextElementOperateProps {
   readonly elementInfo: PPTTextElement;
   readonly handlerVisible: boolean;
   readonly rotateElement: (e: React.MouseEvent, element: PPTTextElement) => void;
-  readonly scaleElement: (e: React.MouseEvent, element: PPTTextElement, command: OperateResizeHandlers) => void;
+  readonly scaleElement: (
+    e: React.MouseEvent,
+    element: PPTTextElement,
+    command: OperateResizeHandlers,
+  ) => void;
 }
 
-export function TextElementOperate({ elementInfo, handlerVisible, rotateElement, scaleElement }: TextElementOperateProps) {
+export function TextElementOperate({
+  elementInfo,
+  handlerVisible,
+  rotateElement,
+  scaleElement,
+}: TextElementOperateProps) {
   const canvasScale = useCanvasStore.use.canvasScale();
 
-  const scaleWidth = useMemo(() => elementInfo.width * canvasScale, [elementInfo.width, canvasScale]);
-  const scaleHeight = useMemo(() => elementInfo.height * canvasScale, [elementInfo.height, canvasScale]);
+  const scaleWidth = useMemo(
+    () => elementInfo.width * canvasScale,
+    [elementInfo.width, canvasScale],
+  );
+  const scaleHeight = useMemo(
+    () => elementInfo.height * canvasScale,
+    [elementInfo.height, canvasScale],
+  );
 
-  const { textElementResizeHandlers, verticalTextElementResizeHandlers, borderLines } = useCommonOperate(scaleWidth, scaleHeight);
+  const { textElementResizeHandlers, verticalTextElementResizeHandlers, borderLines } =
+    useCommonOperate(scaleWidth, scaleHeight);
   const resizeHandlers = useMemo(
     () => (elementInfo.vertical ? verticalTextElementResizeHandlers : textElementResizeHandlers),
-    [elementInfo.vertical, textElementResizeHandlers, verticalTextElementResizeHandlers]
+    [elementInfo.vertical, textElementResizeHandlers, verticalTextElementResizeHandlers],
   );
 
   return (
     <div className="text-element-operate">
       {borderLines.map((line) => (
-        <BorderLine key={line.type} type={line.type} style={line.style} className="operate-border-line" />
+        <BorderLine
+          key={line.type}
+          type={line.type}
+          style={line.style}
+          className="operate-border-line"
+        />
       ))}
       {handlerVisible && (
         <>

@@ -23,13 +23,9 @@ function AnimatedElement({
   totalElements: number;
 }) {
   // Reverse stagger: last-drawn element exits first for a "wipe" cascade
-  const clearDelay = isClearing
-    ? (totalElements - 1 - index) * 0.055
-    : 0;
+  const clearDelay = isClearing ? (totalElements - 1 - index) * 0.055 : 0;
   // Alternate tilt direction for organic feel
-  const clearRotate = isClearing
-    ? (index % 2 === 0 ? 1 : -1) * (2 + index * 0.4)
-    : 0;
+  const clearRotate = isClearing ? (index % 2 === 0 ? 1 : -1) * (2 + index * 0.4) : 0;
 
   return (
     <motion.div
@@ -115,7 +111,10 @@ export function WhiteboardCanvas() {
   }, [updateScale]);
 
   return (
-    <div ref={containerRef} className="w-full h-full flex items-center justify-center overflow-hidden">
+    <div
+      ref={containerRef}
+      className="w-full h-full flex items-center justify-center overflow-hidden"
+    >
       {/* Layout wrapper: its size matches the scaled visual size so flex centering works correctly */}
       <div style={{ width: canvasWidth * scale, height: canvasHeight * scale }}>
         <div
@@ -133,7 +132,10 @@ export function WhiteboardCanvas() {
               <motion.div
                 key="placeholder"
                 initial={{ opacity: 0 }}
-                animate={{ opacity: 1, transition: { delay: 0.25, duration: 0.4 } }}
+                animate={{
+                  opacity: 1,
+                  transition: { delay: 0.25, duration: 0.4 },
+                }}
                 exit={{ opacity: 0, transition: { duration: 0.15 } }}
                 className="absolute inset-0 flex items-center justify-center"
               >

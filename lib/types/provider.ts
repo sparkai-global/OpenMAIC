@@ -6,16 +6,16 @@
  * Built-in provider IDs
  */
 export type BuiltInProviderId =
-  | "openai"
-  | "anthropic"
-  | "google"
-  | "deepseek"
-  | "qwen"
-  | "kimi"
-  | "minimax"
-  | "glm"
-  | "siliconflow"
-  | "doubao";
+  | 'openai'
+  | 'anthropic'
+  | 'google'
+  | 'deepseek'
+  | 'qwen'
+  | 'kimi'
+  | 'minimax'
+  | 'glm'
+  | 'siliconflow'
+  | 'doubao';
 
 /**
  * Provider ID (built-in or custom)
@@ -26,7 +26,7 @@ export type ProviderId = BuiltInProviderId | `custom-${string}`;
 /**
  * Provider API types
  */
-export type ProviderType = "openai" | "anthropic" | "google";
+export type ProviderType = 'openai' | 'anthropic' | 'google';
 
 /**
  * Describes a model's thinking/reasoning API control capability.

@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useState, useRef, useEffect, useCallback } from "react";
-import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -11,42 +11,53 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
-import { X, Trash2, Box, Settings, CheckCircle2, XCircle, FileText, Image as ImageIcon, Film, Search, Volume2, Mic } from "lucide-react";
-import { useI18n } from "@/lib/hooks/use-i18n";
-import { useSettingsStore } from "@/lib/store/settings";
-import { toast } from "sonner";
-import { type ProviderId } from "@/lib/ai/providers";
-import { PROVIDERS } from "@/lib/ai/providers";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
 import {
-  getProviderTypeLabel,
-} from "./utils";
-import { ProviderList } from "./provider-list";
-import { ProviderConfigPanel } from "./provider-config-panel";
-import { PDFSettings } from "./pdf-settings";
-import { PDF_PROVIDERS } from "@/lib/pdf/constants";
-import type { PDFProviderId } from "@/lib/pdf/types";
-import { ImageSettings } from "./image-settings";
-import { IMAGE_PROVIDERS } from "@/lib/media/image-providers";
-import type { ImageProviderId } from "@/lib/media/types";
-import { VideoSettings } from "./video-settings";
-import { VIDEO_PROVIDERS } from "@/lib/media/video-providers";
-import type { VideoProviderId } from "@/lib/media/types";
-import { TTSSettings } from "./tts-settings";
-import { TTS_PROVIDERS } from "@/lib/audio/constants";
-import type { TTSProviderId } from "@/lib/audio/types";
-import { ASRSettings } from "./asr-settings";
-import { ASR_PROVIDERS } from "@/lib/audio/constants";
-import type { ASRProviderId } from "@/lib/audio/types";
-import { WebSearchSettings } from "./web-search-settings";
-import { WEB_SEARCH_PROVIDERS } from "@/lib/web-search/constants";
-import type { WebSearchProviderId } from "@/lib/web-search/types";
-import { GeneralSettings } from "./general-settings";
-import { ModelEditDialog } from "./model-edit-dialog";
-import { AddProviderDialog, type NewProviderData } from "./add-provider-dialog";
-import type { SettingsSection, EditingModel } from "@/lib/types/settings";
+  X,
+  Trash2,
+  Box,
+  Settings,
+  CheckCircle2,
+  XCircle,
+  FileText,
+  Image as ImageIcon,
+  Film,
+  Search,
+  Volume2,
+  Mic,
+} from 'lucide-react';
+import { useI18n } from '@/lib/hooks/use-i18n';
+import { useSettingsStore } from '@/lib/store/settings';
+import { toast } from 'sonner';
+import { type ProviderId } from '@/lib/ai/providers';
+import { PROVIDERS } from '@/lib/ai/providers';
+import { cn } from '@/lib/utils';
+import { getProviderTypeLabel } from './utils';
+import { ProviderList } from './provider-list';
+import { ProviderConfigPanel } from './provider-config-panel';
+import { PDFSettings } from './pdf-settings';
+import { PDF_PROVIDERS } from '@/lib/pdf/constants';
+import type { PDFProviderId } from '@/lib/pdf/types';
+import { ImageSettings } from './image-settings';
+import { IMAGE_PROVIDERS } from '@/lib/media/image-providers';
+import type { ImageProviderId } from '@/lib/media/types';
+import { VideoSettings } from './video-settings';
+import { VIDEO_PROVIDERS } from '@/lib/media/video-providers';
+import type { VideoProviderId } from '@/lib/media/types';
+import { TTSSettings } from './tts-settings';
+import { TTS_PROVIDERS } from '@/lib/audio/constants';
+import type { TTSProviderId } from '@/lib/audio/types';
+import { ASRSettings } from './asr-settings';
+import { ASR_PROVIDERS } from '@/lib/audio/constants';
+import type { ASRProviderId } from '@/lib/audio/types';
+import { WebSearchSettings } from './web-search-settings';
+import { WEB_SEARCH_PROVIDERS } from '@/lib/web-search/constants';
+import type { WebSearchProviderId } from '@/lib/web-search/types';
+import { GeneralSettings } from './general-settings';
+import { ModelEditDialog } from './model-edit-dialog';
+import { AddProviderDialog, type NewProviderData } from './add-provider-dialog';
+import type { SettingsSection, EditingModel } from '@/lib/types/settings';
 
 // ─── Provider List Column (reusable) ───
 function ProviderListColumn<T extends string>({
@@ -72,10 +83,10 @@ function ProviderListColumn<T extends string>({
             key={provider.id}
             onClick={() => onSelect(provider.id)}
             className={cn(
-              "w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg transition-all border text-left",
+              'w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg transition-all border text-left',
               selectedId === provider.id
-                ? "bg-primary/5 border-primary/50 shadow-sm"
-                : "border-transparent hover:bg-muted/50"
+                ? 'bg-primary/5 border-primary/50 shadow-sm'
+                : 'border-transparent hover:bg-muted/50',
             )}
           >
             {provider.icon ? (
@@ -84,7 +95,7 @@ function ProviderListColumn<T extends string>({
                 alt={provider.name}
                 className="w-5 h-5 rounded"
                 onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = "none";
+                  (e.target as HTMLImageElement).style.display = 'none';
                 }}
               />
             ) : (
@@ -93,7 +104,7 @@ function ProviderListColumn<T extends string>({
             <span className="font-medium text-sm flex-1 truncate">{provider.name}</span>
             {configs[provider.id]?.isServerConfigured && (
               <span className="text-[10px] px-1 py-0 h-4 leading-4 rounded shrink-0 bg-muted text-muted-foreground">
-                {t("settings.serverConfigured")}
+                {t('settings.serverConfigured')}
               </span>
             )}
           </button>
@@ -106,49 +117,49 @@ function ProviderListColumn<T extends string>({
 // ─── Helper: get TTS/ASR provider display name ───
 function getTTSProviderName(providerId: TTSProviderId, t: (key: string) => string): string {
   const names: Record<TTSProviderId, string> = {
-    "openai-tts": t("settings.providerOpenAITTS"),
-    "azure-tts": t("settings.providerAzureTTS"),
-    "glm-tts": t("settings.providerGLMTTS"),
-    "qwen-tts": t("settings.providerQwenTTS"),
-    "browser-native-tts": t("settings.providerBrowserNativeTTS"),
+    'openai-tts': t('settings.providerOpenAITTS'),
+    'azure-tts': t('settings.providerAzureTTS'),
+    'glm-tts': t('settings.providerGLMTTS'),
+    'qwen-tts': t('settings.providerQwenTTS'),
+    'browser-native-tts': t('settings.providerBrowserNativeTTS'),
   };
   return names[providerId];
 }
 
 function getASRProviderName(providerId: ASRProviderId, t: (key: string) => string): string {
   const names: Record<ASRProviderId, string> = {
-    "openai-whisper": t("settings.providerOpenAIWhisper"),
-    "browser-native": t("settings.providerBrowserNative"),
-    "qwen-asr": t("settings.providerQwenASR"),
+    'openai-whisper': t('settings.providerOpenAIWhisper'),
+    'browser-native': t('settings.providerBrowserNative'),
+    'qwen-asr': t('settings.providerQwenASR'),
   };
   return names[providerId];
 }
 
 // ─── Image/Video provider name helpers ───
 const IMAGE_PROVIDER_NAMES: Record<ImageProviderId, string> = {
-  seedream: "providerSeedream",
-  "qwen-image": "providerQwenImage",
-  "nano-banana": "providerNanoBanana",
+  seedream: 'providerSeedream',
+  'qwen-image': 'providerQwenImage',
+  'nano-banana': 'providerNanoBanana',
 };
 
 const IMAGE_PROVIDER_ICONS: Record<ImageProviderId, string> = {
-  seedream: "/logos/doubao.svg",
-  "qwen-image": "/logos/bailian.svg",
-  "nano-banana": "/logos/gemini.svg",
+  seedream: '/logos/doubao.svg',
+  'qwen-image': '/logos/bailian.svg',
+  'nano-banana': '/logos/gemini.svg',
 };
 
 const VIDEO_PROVIDER_NAMES: Record<VideoProviderId, string> = {
-  seedance: "providerSeedance",
-  kling: "providerKling",
-  veo: "providerVeo",
-  sora: "providerSora",
+  seedance: 'providerSeedance',
+  kling: 'providerKling',
+  veo: 'providerVeo',
+  sora: 'providerSora',
 };
 
 const VIDEO_PROVIDER_ICONS: Record<VideoProviderId, string> = {
-  seedance: "/logos/doubao.svg",
-  kling: "/logos/kling.svg",
-  veo: "/logos/gemini.svg",
-  sora: "/logos/openai.svg",
+  seedance: '/logos/doubao.svg',
+  kling: '/logos/kling.svg',
+  veo: '/logos/gemini.svg',
+  sora: '/logos/openai.svg',
 };
 
 interface SettingsDialogProps {
@@ -183,22 +194,17 @@ export function SettingsDialog({ open, onOpenChange, initialSection }: SettingsD
   const setProvidersConfig = useSettingsStore((state) => state.setProvidersConfig);
 
   // Navigation
-  const [activeSection, setActiveSection] =
-    useState<SettingsSection>("providers");
-  const [selectedProviderId, setSelectedProviderId] =
-    useState<ProviderId>(providerId);
-  const [selectedPdfProviderId, setSelectedPdfProviderId] =
-    useState<PDFProviderId>(pdfProviderId);
+  const [activeSection, setActiveSection] = useState<SettingsSection>('providers');
+  const [selectedProviderId, setSelectedProviderId] = useState<ProviderId>(providerId);
+  const [selectedPdfProviderId, setSelectedPdfProviderId] = useState<PDFProviderId>(pdfProviderId);
   const [selectedWebSearchProviderId, setSelectedWebSearchProviderId] =
     useState<WebSearchProviderId>(webSearchProviderId);
   const [selectedImageProviderId, setSelectedImageProviderId] =
     useState<ImageProviderId>(imageProviderId);
   const [selectedVideoProviderId, setSelectedVideoProviderId] =
     useState<VideoProviderId>(videoProviderId);
-  const [selectedTTSProviderId, setSelectedTTSProviderId] =
-    useState<TTSProviderId>(ttsProviderId);
-  const [selectedASRProviderId, setSelectedASRProviderId] =
-    useState<ASRProviderId>(asrProviderId);
+  const [selectedTTSProviderId, setSelectedTTSProviderId] = useState<TTSProviderId>(ttsProviderId);
+  const [selectedASRProviderId, setSelectedASRProviderId] = useState<ASRProviderId>(asrProviderId);
 
   // Navigate to initialSection when dialog opens
   useEffect(() => {
@@ -219,26 +225,26 @@ export function SettingsDialog({ open, onOpenChange, initialSection }: SettingsD
   const [showAddProviderDialog, setShowAddProviderDialog] = useState(false);
 
   // Save status indicator
-  const [saveStatus, setSaveStatus] = useState<"idle" | "saved" | "error">("idle");
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saved' | 'error'>('idle');
 
   // Resizable column widths
   const [sidebarWidth, setSidebarWidth] = useState(192);
   const [providerListWidth, setProviderListWidth] = useState(192);
   const [isResizing, setIsResizing] = useState(false);
   const resizeRef = useRef<{
-    target: "sidebar" | "providerList";
+    target: 'sidebar' | 'providerList';
     startX: number;
     startWidth: number;
   } | null>(null);
 
   const handleResizeStart = useCallback(
-    (e: React.MouseEvent, target: "sidebar" | "providerList") => {
+    (e: React.MouseEvent, target: 'sidebar' | 'providerList') => {
       e.preventDefault();
-      const startWidth = target === "sidebar" ? sidebarWidth : providerListWidth;
+      const startWidth = target === 'sidebar' ? sidebarWidth : providerListWidth;
       resizeRef.current = { target, startX: e.clientX, startWidth };
       setIsResizing(true);
     },
-    [sidebarWidth, providerListWidth]
+    [sidebarWidth, providerListWidth],
   );
 
   useEffect(() => {
@@ -249,7 +255,7 @@ export function SettingsDialog({ open, onOpenChange, initialSection }: SettingsD
       const { target, startX, startWidth } = resizeRef.current;
       const delta = e.clientX - startX;
       const newWidth = Math.max(120, Math.min(360, startWidth + delta));
-      if (target === "sidebar") {
+      if (target === 'sidebar') {
         setSidebarWidth(newWidth);
       } else {
         setProviderListWidth(newWidth);
@@ -261,16 +267,16 @@ export function SettingsDialog({ open, onOpenChange, initialSection }: SettingsD
       setIsResizing(false);
     };
 
-    document.addEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mouseup", handleMouseUp);
-    document.body.style.userSelect = "none";
-    document.body.style.cursor = "col-resize";
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+    document.body.style.userSelect = 'none';
+    document.body.style.cursor = 'col-resize';
 
     return () => {
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
-      document.body.style.userSelect = "";
-      document.body.style.cursor = "";
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.body.style.userSelect = '';
+      document.body.style.cursor = '';
     };
   }, [isResizing]);
 
@@ -286,7 +292,7 @@ export function SettingsDialog({ open, onOpenChange, initialSection }: SettingsD
     pid: ProviderId,
     apiKey: string,
     baseUrl: string,
-    requiresApiKey: boolean
+    requiresApiKey: boolean,
   ) => {
     setProviderConfig(pid, {
       apiKey,
@@ -296,8 +302,8 @@ export function SettingsDialog({ open, onOpenChange, initialSection }: SettingsD
   };
 
   const handleProviderConfigSave = () => {
-    setSaveStatus("saved");
-    setTimeout(() => setSaveStatus("idle"), 2000);
+    setSaveStatus('saved');
+    setTimeout(() => setSaveStatus('idle'), 2000);
   };
 
   const selectedProvider = providersConfig[selectedProviderId]
@@ -328,8 +334,8 @@ export function SettingsDialog({ open, onOpenChange, initialSection }: SettingsD
       providerId: selectedProviderId,
       modelIndex: null,
       model: {
-        id: "",
-        name: "",
+        id: '',
+        name: '',
         capabilities: {
           streaming: true,
           tools: true,
@@ -377,7 +383,7 @@ export function SettingsDialog({ open, onOpenChange, initialSection }: SettingsD
     if (!editingModel) return;
     const { providerId: pid, modelIndex, model } = editingModel;
     if (!model.id.trim()) {
-      toast.error(t("settings.modelIdRequired"));
+      toast.error(t('settings.modelIdRequired'));
       return;
     }
     const currentModels = providersConfig[pid]?.models || [];
@@ -396,15 +402,15 @@ export function SettingsDialog({ open, onOpenChange, initialSection }: SettingsD
   // Handle provider management
   const handleAddProvider = (providerData: NewProviderData) => {
     if (!providerData.name.trim()) {
-      toast.error(t("settings.providerNameRequired"));
+      toast.error(t('settings.providerNameRequired'));
       return;
     }
     const newProviderId = `custom-${Date.now()}` as ProviderId;
     const updatedConfig = {
       ...providersConfig,
       [newProviderId]: {
-        apiKey: "",
-        baseUrl: "",
+        apiKey: '',
+        baseUrl: '',
         models: [],
         name: providerData.name,
         type: providerData.type,
@@ -421,7 +427,7 @@ export function SettingsDialog({ open, onOpenChange, initialSection }: SettingsD
 
   const handleDeleteProvider = (pid: ProviderId) => {
     if (providersConfig[pid]?.isBuiltIn) {
-      toast.error(t("settings.cannotDeleteBuiltIn"));
+      toast.error(t('settings.cannotDeleteBuiltIn'));
       return;
     }
     setProviderToDelete(pid);
@@ -435,17 +441,18 @@ export function SettingsDialog({ open, onOpenChange, initialSection }: SettingsD
     setProvidersConfig(updatedConfig);
     if (selectedProviderId === pid) {
       const firstRemainingPid = Object.keys(updatedConfig)[0] as ProviderId | undefined;
-      setSelectedProviderId(firstRemainingPid || "openai");
+      setSelectedProviderId(firstRemainingPid || 'openai');
     }
     if (providerId === pid) {
       const firstRemainingPid = Object.keys(updatedConfig)[0] as ProviderId | undefined;
       const firstModel = firstRemainingPid
-        ? (updatedConfig[firstRemainingPid]?.serverModels?.[0] || updatedConfig[firstRemainingPid]?.models?.[0]?.id)
+        ? updatedConfig[firstRemainingPid]?.serverModels?.[0] ||
+          updatedConfig[firstRemainingPid]?.models?.[0]?.id
         : undefined;
       if (firstRemainingPid && firstModel) {
         setModel(firstRemainingPid, firstModel);
       } else {
-        setModel("openai" as ProviderId, "gpt-4o-mini");
+        setModel('openai' as ProviderId, 'gpt-4o-mini');
       }
     }
     setProviderToDelete(null);
@@ -455,7 +462,7 @@ export function SettingsDialog({ open, onOpenChange, initialSection }: SettingsD
     const provider = PROVIDERS[pid];
     if (!provider) return;
     setProviderConfig(pid, { models: [...provider.models] });
-    toast.success(t("settings.resetSuccess"));
+    toast.success(t('settings.resetSuccess'));
   };
 
   // Get all providers from providersConfig
@@ -471,36 +478,60 @@ export function SettingsDialog({ open, onOpenChange, initialSection }: SettingsD
   }));
 
   // Sections that show a provider list column
-  const _hasProviderList = ["providers", "pdf", "web-search", "image", "video", "tts", "asr"].includes(activeSection);
+  const _hasProviderList = [
+    'providers',
+    'pdf',
+    'web-search',
+    'image',
+    'video',
+    'tts',
+    'asr',
+  ].includes(activeSection);
 
   // Get header content based on section
   const getHeaderContent = () => {
     switch (activeSection) {
-      case "general":
-        return <h2 className="text-lg font-semibold">{t("settings.systemSettings")}</h2>;
-      case "providers":
+      case 'general':
+        return <h2 className="text-lg font-semibold">{t('settings.systemSettings')}</h2>;
+      case 'providers':
         if (selectedProvider) {
           return (
             <>
               {selectedProvider.icon ? (
-                <img src={selectedProvider.icon} alt={selectedProvider.name} className="w-8 h-8 rounded" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                <img
+                  src={selectedProvider.icon}
+                  alt={selectedProvider.name}
+                  className="w-8 h-8 rounded"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = 'none';
+                  }}
+                />
               ) : (
                 <Box className="h-8 w-8 text-muted-foreground" />
               )}
               <div>
                 <h2 className="text-lg font-semibold">{selectedProvider.name}</h2>
-                <p className="text-xs text-muted-foreground">{getProviderTypeLabel(selectedProvider.type, t)}</p>
+                <p className="text-xs text-muted-foreground">
+                  {getProviderTypeLabel(selectedProvider.type, t)}
+                </p>
               </div>
             </>
           );
         }
         return null;
-      case "pdf": {
+      case 'pdf': {
         const pdfProvider = PDF_PROVIDERS[selectedPdfProviderId];
         return (
           <>
             {pdfProvider.icon ? (
-              <img src={pdfProvider.icon} alt={pdfProvider.name} className="w-8 h-8 rounded" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+              <img
+                src={pdfProvider.icon}
+                alt={pdfProvider.name}
+                className="w-8 h-8 rounded"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
+              />
             ) : (
               <Box className="h-8 w-8 text-muted-foreground" />
             )}
@@ -508,12 +539,19 @@ export function SettingsDialog({ open, onOpenChange, initialSection }: SettingsD
           </>
         );
       }
-      case "web-search": {
+      case 'web-search': {
         const wsProvider = WEB_SEARCH_PROVIDERS[selectedWebSearchProviderId];
         return (
           <>
             {wsProvider.icon ? (
-              <img src={wsProvider.icon} alt={wsProvider.name} className="w-8 h-8 rounded" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+              <img
+                src={wsProvider.icon}
+                alt={wsProvider.name}
+                className="w-8 h-8 rounded"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
+              />
             ) : (
               <Box className="h-8 w-8 text-muted-foreground" />
             )}
@@ -521,13 +559,20 @@ export function SettingsDialog({ open, onOpenChange, initialSection }: SettingsD
           </>
         );
       }
-      case "image": {
+      case 'image': {
         const imgProvider = IMAGE_PROVIDERS[selectedImageProviderId];
         const imgIcon = IMAGE_PROVIDER_ICONS[selectedImageProviderId];
         return (
           <>
             {imgIcon ? (
-              <img src={imgIcon} alt={imgProvider?.name} className="w-8 h-8 rounded" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+              <img
+                src={imgIcon}
+                alt={imgProvider?.name}
+                className="w-8 h-8 rounded"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
+              />
             ) : (
               <Box className="h-8 w-8 text-muted-foreground" />
             )}
@@ -537,13 +582,20 @@ export function SettingsDialog({ open, onOpenChange, initialSection }: SettingsD
           </>
         );
       }
-      case "video": {
+      case 'video': {
         const vidProvider = VIDEO_PROVIDERS[selectedVideoProviderId];
         const vidIcon = VIDEO_PROVIDER_ICONS[selectedVideoProviderId];
         return (
           <>
             {vidIcon ? (
-              <img src={vidIcon} alt={vidProvider?.name} className="w-8 h-8 rounded" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+              <img
+                src={vidIcon}
+                alt={vidProvider?.name}
+                className="w-8 h-8 rounded"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
+              />
             ) : (
               <Box className="h-8 w-8 text-muted-foreground" />
             )}
@@ -553,29 +605,47 @@ export function SettingsDialog({ open, onOpenChange, initialSection }: SettingsD
           </>
         );
       }
-      case "tts": {
+      case 'tts': {
         const ttsIcon = TTS_PROVIDERS[selectedTTSProviderId]?.icon;
         return (
           <>
             {ttsIcon ? (
-              <img src={ttsIcon} alt="" className="w-8 h-8 rounded" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+              <img
+                src={ttsIcon}
+                alt=""
+                className="w-8 h-8 rounded"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
+              />
             ) : (
               <Volume2 className="h-6 w-6 text-muted-foreground" />
             )}
-            <h2 className="text-lg font-semibold">{getTTSProviderName(selectedTTSProviderId, t)}</h2>
+            <h2 className="text-lg font-semibold">
+              {getTTSProviderName(selectedTTSProviderId, t)}
+            </h2>
           </>
         );
       }
-      case "asr": {
+      case 'asr': {
         const asrIcon = ASR_PROVIDERS[selectedASRProviderId]?.icon;
         return (
           <>
             {asrIcon ? (
-              <img src={asrIcon} alt="" className="w-8 h-8 rounded" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+              <img
+                src={asrIcon}
+                alt=""
+                className="w-8 h-8 rounded"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
+              />
             ) : (
               <Mic className="h-6 w-6 text-muted-foreground" />
             )}
-            <h2 className="text-lg font-semibold">{getASRProviderName(selectedASRProviderId, t)}</h2>
+            <h2 className="text-lg font-semibold">
+              {getASRProviderName(selectedASRProviderId, t)}
+            </h2>
           </>
         );
       }
@@ -586,132 +656,127 @@ export function SettingsDialog({ open, onOpenChange, initialSection }: SettingsD
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        className="h-[85vh] p-0 gap-0 block"
-        showCloseButton={false}
-      >
-        <DialogTitle className="sr-only">{t("settings.title")}</DialogTitle>
-        <DialogDescription className="sr-only">
-          {t("settings.description")}
-        </DialogDescription>
+      <DialogContent className="h-[85vh] p-0 gap-0 block" showCloseButton={false}>
+        <DialogTitle className="sr-only">{t('settings.title')}</DialogTitle>
+        <DialogDescription className="sr-only">{t('settings.description')}</DialogDescription>
         <div className="flex h-full overflow-hidden">
           {/* Left Sidebar - Navigation */}
           <div className="flex-shrink-0 bg-muted/30 p-3 space-y-1" style={{ width: sidebarWidth }}>
             <button
-              onClick={() => setActiveSection("providers")}
+              onClick={() => setActiveSection('providers')}
               className={cn(
-                "w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors text-left min-w-0",
-                activeSection === "providers"
-                  ? "bg-primary/10 text-primary font-medium"
-                  : "hover:bg-muted"
+                'w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors text-left min-w-0',
+                activeSection === 'providers'
+                  ? 'bg-primary/10 text-primary font-medium'
+                  : 'hover:bg-muted',
               )}
             >
               <Box className="h-4 w-4 shrink-0" />
-              <span className="truncate">{t("settings.providers")}</span>
+              <span className="truncate">{t('settings.providers')}</span>
             </button>
 
             <button
-              onClick={() => setActiveSection("image")}
+              onClick={() => setActiveSection('image')}
               className={cn(
-                "w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors text-left min-w-0",
-                activeSection === "image"
-                  ? "bg-primary/10 text-primary font-medium"
-                  : "hover:bg-muted"
+                'w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors text-left min-w-0',
+                activeSection === 'image'
+                  ? 'bg-primary/10 text-primary font-medium'
+                  : 'hover:bg-muted',
               )}
             >
               <ImageIcon className="h-4 w-4 shrink-0" />
-              <span className="truncate">{t("settings.imageSettings")}</span>
+              <span className="truncate">{t('settings.imageSettings')}</span>
             </button>
 
             <button
-              onClick={() => setActiveSection("video")}
+              onClick={() => setActiveSection('video')}
               className={cn(
-                "w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors text-left min-w-0",
-                activeSection === "video"
-                  ? "bg-primary/10 text-primary font-medium"
-                  : "hover:bg-muted"
+                'w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors text-left min-w-0',
+                activeSection === 'video'
+                  ? 'bg-primary/10 text-primary font-medium'
+                  : 'hover:bg-muted',
               )}
             >
               <Film className="h-4 w-4 shrink-0" />
-              <span className="truncate">{t("settings.videoSettings")}</span>
+              <span className="truncate">{t('settings.videoSettings')}</span>
             </button>
 
             <button
-              onClick={() => setActiveSection("tts")}
+              onClick={() => setActiveSection('tts')}
               className={cn(
-                "w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors text-left min-w-0",
-                activeSection === "tts"
-                  ? "bg-primary/10 text-primary font-medium"
-                  : "hover:bg-muted"
+                'w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors text-left min-w-0',
+                activeSection === 'tts'
+                  ? 'bg-primary/10 text-primary font-medium'
+                  : 'hover:bg-muted',
               )}
             >
               <Volume2 className="h-4 w-4 shrink-0" />
-              <span className="truncate">{t("settings.ttsSettings")}</span>
+              <span className="truncate">{t('settings.ttsSettings')}</span>
             </button>
 
             <button
-              onClick={() => setActiveSection("asr")}
+              onClick={() => setActiveSection('asr')}
               className={cn(
-                "w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors text-left min-w-0",
-                activeSection === "asr"
-                  ? "bg-primary/10 text-primary font-medium"
-                  : "hover:bg-muted"
+                'w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors text-left min-w-0',
+                activeSection === 'asr'
+                  ? 'bg-primary/10 text-primary font-medium'
+                  : 'hover:bg-muted',
               )}
             >
               <Mic className="h-4 w-4 shrink-0" />
-              <span className="truncate">{t("settings.asrSettings")}</span>
+              <span className="truncate">{t('settings.asrSettings')}</span>
             </button>
 
             <button
-              onClick={() => setActiveSection("pdf")}
+              onClick={() => setActiveSection('pdf')}
               className={cn(
-                "w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors text-left min-w-0",
-                activeSection === "pdf"
-                  ? "bg-primary/10 text-primary font-medium"
-                  : "hover:bg-muted"
+                'w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors text-left min-w-0',
+                activeSection === 'pdf'
+                  ? 'bg-primary/10 text-primary font-medium'
+                  : 'hover:bg-muted',
               )}
             >
               <FileText className="h-4 w-4 shrink-0" />
-              <span className="truncate">{t("settings.pdfSettings")}</span>
+              <span className="truncate">{t('settings.pdfSettings')}</span>
             </button>
 
             <button
-              onClick={() => setActiveSection("web-search")}
+              onClick={() => setActiveSection('web-search')}
               className={cn(
-                "w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors text-left min-w-0",
-                activeSection === "web-search"
-                  ? "bg-primary/10 text-primary font-medium"
-                  : "hover:bg-muted"
+                'w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors text-left min-w-0',
+                activeSection === 'web-search'
+                  ? 'bg-primary/10 text-primary font-medium'
+                  : 'hover:bg-muted',
               )}
             >
               <Search className="h-4 w-4 shrink-0" />
-              <span className="truncate">{t("settings.webSearchSettings")}</span>
+              <span className="truncate">{t('settings.webSearchSettings')}</span>
             </button>
 
             <button
-              onClick={() => setActiveSection("general")}
+              onClick={() => setActiveSection('general')}
               className={cn(
-                "w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors text-left min-w-0",
-                activeSection === "general"
-                  ? "bg-primary/10 text-primary font-medium"
-                  : "hover:bg-muted"
+                'w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors text-left min-w-0',
+                activeSection === 'general'
+                  ? 'bg-primary/10 text-primary font-medium'
+                  : 'hover:bg-muted',
               )}
             >
               <Settings className="h-4 w-4 shrink-0" />
-              <span className="truncate">{t("settings.systemSettings")}</span>
+              <span className="truncate">{t('settings.systemSettings')}</span>
             </button>
           </div>
 
           {/* Sidebar resize handle */}
           <div
-            onMouseDown={(e) => handleResizeStart(e, "sidebar")}
+            onMouseDown={(e) => handleResizeStart(e, 'sidebar')}
             className="flex-shrink-0 w-[5px] cursor-col-resize group flex justify-center"
           >
             <div className="w-px h-full bg-border group-hover:bg-primary/50 transition-colors" />
           </div>
 
           {/* Middle - Provider List (only shown for provider-based sections) */}
-          {activeSection === "providers" && (
+          {activeSection === 'providers' && (
             <>
               <ProviderList
                 providers={allProviders}
@@ -721,7 +786,7 @@ export function SettingsDialog({ open, onOpenChange, initialSection }: SettingsD
                 width={providerListWidth}
               />
               <div
-                onMouseDown={(e) => handleResizeStart(e, "providerList")}
+                onMouseDown={(e) => handleResizeStart(e, 'providerList')}
                 className="flex-shrink-0 w-[5px] cursor-col-resize group flex justify-center"
               >
                 <div className="w-px h-full bg-border group-hover:bg-primary/50 transition-colors" />
@@ -729,7 +794,7 @@ export function SettingsDialog({ open, onOpenChange, initialSection }: SettingsD
             </>
           )}
 
-          {activeSection === "pdf" && (
+          {activeSection === 'pdf' && (
             <>
               <ProviderListColumn
                 providers={Object.values(PDF_PROVIDERS)}
@@ -740,7 +805,7 @@ export function SettingsDialog({ open, onOpenChange, initialSection }: SettingsD
                 t={t}
               />
               <div
-                onMouseDown={(e) => handleResizeStart(e, "providerList")}
+                onMouseDown={(e) => handleResizeStart(e, 'providerList')}
                 className="flex-shrink-0 w-[5px] cursor-col-resize group flex justify-center"
               >
                 <div className="w-px h-full bg-border group-hover:bg-primary/50 transition-colors" />
@@ -748,7 +813,7 @@ export function SettingsDialog({ open, onOpenChange, initialSection }: SettingsD
             </>
           )}
 
-          {activeSection === "web-search" && (
+          {activeSection === 'web-search' && (
             <>
               <ProviderListColumn
                 providers={Object.values(WEB_SEARCH_PROVIDERS)}
@@ -759,7 +824,7 @@ export function SettingsDialog({ open, onOpenChange, initialSection }: SettingsD
                 t={t}
               />
               <div
-                onMouseDown={(e) => handleResizeStart(e, "providerList")}
+                onMouseDown={(e) => handleResizeStart(e, 'providerList')}
                 className="flex-shrink-0 w-[5px] cursor-col-resize group flex justify-center"
               >
                 <div className="w-px h-full bg-border group-hover:bg-primary/50 transition-colors" />
@@ -767,7 +832,7 @@ export function SettingsDialog({ open, onOpenChange, initialSection }: SettingsD
             </>
           )}
 
-          {activeSection === "image" && (
+          {activeSection === 'image' && (
             <>
               <ProviderListColumn
                 providers={Object.values(IMAGE_PROVIDERS).map((p) => ({
@@ -782,7 +847,7 @@ export function SettingsDialog({ open, onOpenChange, initialSection }: SettingsD
                 t={t}
               />
               <div
-                onMouseDown={(e) => handleResizeStart(e, "providerList")}
+                onMouseDown={(e) => handleResizeStart(e, 'providerList')}
                 className="flex-shrink-0 w-[5px] cursor-col-resize group flex justify-center"
               >
                 <div className="w-px h-full bg-border group-hover:bg-primary/50 transition-colors" />
@@ -790,7 +855,7 @@ export function SettingsDialog({ open, onOpenChange, initialSection }: SettingsD
             </>
           )}
 
-          {activeSection === "video" && (
+          {activeSection === 'video' && (
             <>
               <ProviderListColumn
                 providers={Object.values(VIDEO_PROVIDERS).map((p) => ({
@@ -805,7 +870,7 @@ export function SettingsDialog({ open, onOpenChange, initialSection }: SettingsD
                 t={t}
               />
               <div
-                onMouseDown={(e) => handleResizeStart(e, "providerList")}
+                onMouseDown={(e) => handleResizeStart(e, 'providerList')}
                 className="flex-shrink-0 w-[5px] cursor-col-resize group flex justify-center"
               >
                 <div className="w-px h-full bg-border group-hover:bg-primary/50 transition-colors" />
@@ -813,7 +878,7 @@ export function SettingsDialog({ open, onOpenChange, initialSection }: SettingsD
             </>
           )}
 
-          {activeSection === "tts" && (
+          {activeSection === 'tts' && (
             <>
               <ProviderListColumn
                 providers={Object.values(TTS_PROVIDERS).map((p) => ({
@@ -828,7 +893,7 @@ export function SettingsDialog({ open, onOpenChange, initialSection }: SettingsD
                 t={t}
               />
               <div
-                onMouseDown={(e) => handleResizeStart(e, "providerList")}
+                onMouseDown={(e) => handleResizeStart(e, 'providerList')}
                 className="flex-shrink-0 w-[5px] cursor-col-resize group flex justify-center"
               >
                 <div className="w-px h-full bg-border group-hover:bg-primary/50 transition-colors" />
@@ -836,7 +901,7 @@ export function SettingsDialog({ open, onOpenChange, initialSection }: SettingsD
             </>
           )}
 
-          {activeSection === "asr" && (
+          {activeSection === 'asr' && (
             <>
               <ProviderListColumn
                 providers={Object.values(ASR_PROVIDERS).map((p) => ({
@@ -851,7 +916,7 @@ export function SettingsDialog({ open, onOpenChange, initialSection }: SettingsD
                 t={t}
               />
               <div
-                onMouseDown={(e) => handleResizeStart(e, "providerList")}
+                onMouseDown={(e) => handleResizeStart(e, 'providerList')}
                 className="flex-shrink-0 w-[5px] cursor-col-resize group flex justify-center"
               >
                 <div className="w-px h-full bg-border group-hover:bg-primary/50 transition-colors" />
@@ -863,11 +928,9 @@ export function SettingsDialog({ open, onOpenChange, initialSection }: SettingsD
           <div className="flex-1 flex flex-col overflow-hidden min-w-0">
             {/* Header */}
             <div className="flex items-center justify-between p-5 border-b">
-              <div className="flex items-center gap-3">
-                {getHeaderContent()}
-              </div>
+              <div className="flex items-center gap-3">{getHeaderContent()}</div>
               <div className="flex items-center gap-2">
-                {activeSection === "providers" &&
+                {activeSection === 'providers' &&
                   !providersConfig[selectedProviderId]?.isBuiltIn && (
                     <Button
                       variant="ghost"
@@ -878,11 +941,7 @@ export function SettingsDialog({ open, onOpenChange, initialSection }: SettingsD
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   )}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => onOpenChange(false)}
-                >
+                <Button variant="ghost" size="icon" onClick={() => onOpenChange(false)}>
                   <X className="h-4 w-4" />
                 </Button>
               </div>
@@ -890,16 +949,16 @@ export function SettingsDialog({ open, onOpenChange, initialSection }: SettingsD
 
             {/* Content */}
             <div className="flex-1 overflow-y-auto p-5">
-              {activeSection === "general" && (
-                <GeneralSettings />
-              )}
+              {activeSection === 'general' && <GeneralSettings />}
 
-              {activeSection === "providers" && selectedProvider && (
+              {activeSection === 'providers' && selectedProvider && (
                 <ProviderConfigPanel
                   provider={selectedProvider}
-                  initialApiKey={providersConfig[selectedProviderId]?.apiKey || ""}
-                  initialBaseUrl={providersConfig[selectedProviderId]?.baseUrl || ""}
-                  initialRequiresApiKey={providersConfig[selectedProviderId]?.requiresApiKey ?? true}
+                  initialApiKey={providersConfig[selectedProviderId]?.apiKey || ''}
+                  initialBaseUrl={providersConfig[selectedProviderId]?.baseUrl || ''}
+                  initialRequiresApiKey={
+                    providersConfig[selectedProviderId]?.requiresApiKey ?? true
+                  }
                   providersConfig={providersConfig}
                   onConfigChange={(apiKey, baseUrl, requiresApiKey) =>
                     handleProviderConfigChange(selectedProviderId, apiKey, baseUrl, requiresApiKey)
@@ -913,33 +972,45 @@ export function SettingsDialog({ open, onOpenChange, initialSection }: SettingsD
                 />
               )}
 
-              {activeSection === "pdf" && <PDFSettings selectedProviderId={selectedPdfProviderId} />}
-              {activeSection === "web-search" && <WebSearchSettings selectedProviderId={selectedWebSearchProviderId} />}
-              {activeSection === "image" && <ImageSettings selectedProviderId={selectedImageProviderId} />}
-              {activeSection === "video" && <VideoSettings selectedProviderId={selectedVideoProviderId} />}
-              {activeSection === "tts" && <TTSSettings selectedProviderId={selectedTTSProviderId} />}
-              {activeSection === "asr" && <ASRSettings selectedProviderId={selectedASRProviderId} />}
+              {activeSection === 'pdf' && (
+                <PDFSettings selectedProviderId={selectedPdfProviderId} />
+              )}
+              {activeSection === 'web-search' && (
+                <WebSearchSettings selectedProviderId={selectedWebSearchProviderId} />
+              )}
+              {activeSection === 'image' && (
+                <ImageSettings selectedProviderId={selectedImageProviderId} />
+              )}
+              {activeSection === 'video' && (
+                <VideoSettings selectedProviderId={selectedVideoProviderId} />
+              )}
+              {activeSection === 'tts' && (
+                <TTSSettings selectedProviderId={selectedTTSProviderId} />
+              )}
+              {activeSection === 'asr' && (
+                <ASRSettings selectedProviderId={selectedASRProviderId} />
+              )}
             </div>
 
             {/* Footer */}
             <div className="flex items-center justify-end gap-3 px-5 py-3 border-t bg-muted/30">
-              {saveStatus === "saved" && (
+              {saveStatus === 'saved' && (
                 <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                   <CheckCircle2 className="h-4 w-4" />
-                  <span>{t("settings.saveSuccess")}</span>
+                  <span>{t('settings.saveSuccess')}</span>
                 </div>
               )}
-              {saveStatus === "error" && (
+              {saveStatus === 'error' && (
                 <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                   <XCircle className="h-4 w-4" />
-                  <span>{t("settings.saveFailed")}</span>
+                  <span>{t('settings.saveFailed')}</span>
                 </div>
               )}
               <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>
-                {t("settings.close")}
+                {t('settings.close')}
               </Button>
               <Button size="sm" onClick={handleSave}>
-                {t("settings.save")}
+                {t('settings.save')}
               </Button>
             </div>
           </div>
@@ -955,7 +1026,7 @@ export function SettingsDialog({ open, onOpenChange, initialSection }: SettingsD
         onSave={handleSaveModel}
         onAutoSave={handleAutoSaveModel}
         providerId={selectedProviderId}
-        apiKey={providersConfig[selectedProviderId]?.apiKey || ""}
+        apiKey={providersConfig[selectedProviderId]?.apiKey || ''}
         baseUrl={providersConfig[selectedProviderId]?.baseUrl}
         providerType={providersConfig[selectedProviderId]?.type}
         requiresApiKey={providersConfig[selectedProviderId]?.requiresApiKey}
@@ -969,18 +1040,19 @@ export function SettingsDialog({ open, onOpenChange, initialSection }: SettingsD
       />
 
       {/* Delete Provider Confirmation */}
-      <AlertDialog open={providerToDelete !== null} onOpenChange={(open) => !open && setProviderToDelete(null)}>
+      <AlertDialog
+        open={providerToDelete !== null}
+        onOpenChange={(open) => !open && setProviderToDelete(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t("settings.deleteProvider")}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t("settings.deleteProviderConfirm")}
-            </AlertDialogDescription>
+            <AlertDialogTitle>{t('settings.deleteProvider')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('settings.deleteProviderConfirm')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t("settings.cancelEdit")}</AlertDialogCancel>
+            <AlertDialogCancel>{t('settings.cancelEdit')}</AlertDialogCancel>
             <AlertDialogAction onClick={confirmDeleteProvider}>
-              {t("settings.deleteProvider")}
+              {t('settings.deleteProvider')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useState, useCallback } from "react";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { useState, useCallback } from 'react';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
   AlertDialogContent,
@@ -12,24 +12,24 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogCancel,
-} from "@/components/ui/alert-dialog";
-import { Loader2, Trash2, AlertTriangle } from "lucide-react";
-import { useI18n } from "@/lib/hooks/use-i18n";
-import { clearDatabase } from "@/lib/utils/database";
-import { toast } from "sonner";
-import { createLogger } from "@/lib/logger";
+} from '@/components/ui/alert-dialog';
+import { Loader2, Trash2, AlertTriangle } from 'lucide-react';
+import { useI18n } from '@/lib/hooks/use-i18n';
+import { clearDatabase } from '@/lib/utils/database';
+import { toast } from 'sonner';
+import { createLogger } from '@/lib/logger';
 
-const log = createLogger("GeneralSettings");
+const log = createLogger('GeneralSettings');
 
 export function GeneralSettings() {
   const { t } = useI18n();
 
   // Clear cache state
   const [showClearDialog, setShowClearDialog] = useState(false);
-  const [confirmInput, setConfirmInput] = useState("");
+  const [confirmInput, setConfirmInput] = useState('');
   const [clearing, setClearing] = useState(false);
 
-  const confirmPhrase = t("settings.clearCacheConfirmPhrase");
+  const confirmPhrase = t('settings.clearCacheConfirmPhrase');
   const isConfirmValid = confirmInput === confirmPhrase;
 
   const handleClearCache = useCallback(async () => {
@@ -43,22 +43,23 @@ export function GeneralSettings() {
       // 3. Clear sessionStorage
       sessionStorage.clear();
 
-      toast.success(t("settings.clearCacheSuccess"));
+      toast.success(t('settings.clearCacheSuccess'));
 
       // Reload page after a short delay
       setTimeout(() => {
         window.location.reload();
       }, 1000);
     } catch (error) {
-      log.error("Failed to clear cache:", error);
-      toast.error(t("settings.clearCacheFailed"));
+      log.error('Failed to clear cache:', error);
+      toast.error(t('settings.clearCacheFailed'));
       setClearing(false);
     }
   }, [isConfirmValid, t]);
 
-  const clearCacheItems = t("settings.clearCacheConfirmItems").split("、").length > 1
-    ? t("settings.clearCacheConfirmItems").split("、")
-    : t("settings.clearCacheConfirmItems").split(", ");
+  const clearCacheItems =
+    t('settings.clearCacheConfirmItems').split('、').length > 1
+      ? t('settings.clearCacheConfirmItems').split('、')
+      : t('settings.clearCacheConfirmItems').split(', ');
 
   return (
     <div className="flex flex-col gap-8">
@@ -84,17 +85,15 @@ export function GeneralSettings() {
             <div className="p-1.5 rounded-md bg-destructive/10 text-destructive">
               <AlertTriangle className="w-4 h-4" />
             </div>
-            <h3 className="text-sm font-semibold text-destructive">
-              {t("settings.dangerZone")}
-            </h3>
+            <h3 className="text-sm font-semibold text-destructive">{t('settings.dangerZone')}</h3>
           </div>
 
           {/* Content */}
           <div className="flex items-center justify-between gap-4">
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium">{t("settings.clearCache")}</p>
+              <p className="text-sm font-medium">{t('settings.clearCache')}</p>
               <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-                {t("settings.clearCacheDescription")}
+                {t('settings.clearCacheDescription')}
               </p>
             </div>
             <Button
@@ -102,33 +101,36 @@ export function GeneralSettings() {
               size="sm"
               className="shrink-0"
               onClick={() => {
-                setConfirmInput("");
+                setConfirmInput('');
                 setShowClearDialog(true);
               }}
             >
               <Trash2 className="w-3.5 h-3.5 mr-1.5" />
-              {t("settings.clearCache")}
+              {t('settings.clearCache')}
             </Button>
           </div>
         </div>
       </div>
 
       {/* Clear Cache Confirmation Dialog */}
-      <AlertDialog open={showClearDialog} onOpenChange={(open) => {
-        if (!clearing) {
-          setShowClearDialog(open);
-          if (!open) setConfirmInput("");
-        }
-      }}>
+      <AlertDialog
+        open={showClearDialog}
+        onOpenChange={(open) => {
+          if (!clearing) {
+            setShowClearDialog(open);
+            if (!open) setConfirmInput('');
+          }
+        }}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2 text-destructive">
               <AlertTriangle className="w-5 h-5" />
-              {t("settings.clearCacheConfirmTitle")}
+              {t('settings.clearCacheConfirmTitle')}
             </AlertDialogTitle>
             <AlertDialogDescription asChild>
               <div className="space-y-3">
-                <p>{t("settings.clearCacheConfirmDescription")}</p>
+                <p>{t('settings.clearCacheConfirmDescription')}</p>
                 <ul className="space-y-1.5 ml-1">
                   {clearCacheItems.map((item, i) => (
                     <li key={i} className="flex items-center gap-2 text-sm">
@@ -139,7 +141,7 @@ export function GeneralSettings() {
                 </ul>
                 <div className="pt-1">
                   <Label className="text-xs font-medium text-foreground">
-                    {t("settings.clearCacheConfirmInput")}
+                    {t('settings.clearCacheConfirmInput')}
                   </Label>
                   <Input
                     className="mt-1.5 h-9 text-sm"
@@ -147,7 +149,7 @@ export function GeneralSettings() {
                     value={confirmInput}
                     onChange={(e) => setConfirmInput(e.target.value)}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter" && isConfirmValid) {
+                      if (e.key === 'Enter' && isConfirmValid) {
                         handleClearCache();
                       }
                     }}
@@ -158,9 +160,7 @@ export function GeneralSettings() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={clearing}>
-              {t("common.cancel")}
-            </AlertDialogCancel>
+            <AlertDialogCancel disabled={clearing}>{t('common.cancel')}</AlertDialogCancel>
             <Button
               variant="destructive"
               disabled={!isConfirmValid || clearing}
@@ -171,7 +171,7 @@ export function GeneralSettings() {
               ) : (
                 <Trash2 className="w-4 h-4 mr-1.5" />
               )}
-              {t("settings.clearCacheButton")}
+              {t('settings.clearCacheButton')}
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>

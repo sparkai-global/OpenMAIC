@@ -1,16 +1,7 @@
 'use client';
 
 import { useState, useRef, useMemo } from 'react';
-import {
-  Bot,
-  Check,
-  ChevronLeft,
-  Globe,
-  Paperclip,
-  FileText,
-  X,
-  Globe2,
-} from 'lucide-react';
+import { Bot, Check, ChevronLeft, Globe, Paperclip, FileText, X, Globe2 } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   Select,
@@ -77,7 +68,9 @@ export function GenerationToolbar({
   const webSearchProvider = WEB_SEARCH_PROVIDERS[webSearchProviderId];
   const webSearchConfig = webSearchProvidersConfig[webSearchProviderId];
   const webSearchAvailable = webSearchProvider
-    ? !webSearchProvider.requiresApiKey || !!webSearchConfig?.apiKey || !!webSearchConfig?.isServerConfigured
+    ? !webSearchProvider.requiresApiKey ||
+      !!webSearchConfig?.apiKey ||
+      !!webSearchConfig?.isServerConfigured
     : false;
 
   // Configured LLM providers (only those with valid credentials + models + endpoint)
@@ -87,16 +80,17 @@ export function GenerationToolbar({
           ([, config]) =>
             (!config.requiresApiKey || config.apiKey || config.isServerConfigured) &&
             config.models.length >= 1 &&
-            (config.baseUrl || config.defaultBaseUrl || config.serverBaseUrl)
+            (config.baseUrl || config.defaultBaseUrl || config.serverBaseUrl),
         )
         .map(([id, config]) => ({
           id: id as ProviderId,
           name: config.name,
           icon: config.icon,
           isServerConfigured: config.isServerConfigured,
-          models: config.isServerConfigured && !config.apiKey && config.serverModels?.length
-            ? config.models.filter((m) => new Set(config.serverModels).has(m.id))
-            : config.models,
+          models:
+            config.isServerConfigured && !config.apiKey && config.serverModels?.length
+              ? config.models.filter((m) => new Set(config.serverModels).has(m.id))
+              : config.models,
         }))
     : [];
 
@@ -180,39 +174,37 @@ export function GenerationToolbar({
         <PopoverContent align="start" className="w-72 p-0">
           {/* Parser selector */}
           <div className="flex items-center gap-2 px-3 pt-3 pb-2">
-              <span className="text-xs font-medium text-muted-foreground shrink-0">
-                {t('toolbar.pdfParser')}
-              </span>
-              <Select
-                value={pdfProviderId}
-                onValueChange={(v) => setPDFProvider(v as PDFProviderId)}
-              >
-                <SelectTrigger className="h-7 text-xs flex-1 min-w-0">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.values(PDF_PROVIDERS).map((provider) => {
-                    const cfg = pdfProvidersConfig[provider.id];
-                    const available = !provider.requiresApiKey || !!cfg?.apiKey || !!cfg?.isServerConfigured;
-                    return (
-                      <SelectItem key={provider.id} value={provider.id} disabled={!available}>
-                        <div className={cn('flex items-center gap-1.5', !available && 'opacity-50')}>
-                          {provider.icon && (
-                            <img src={provider.icon} alt={provider.name} className="w-3.5 h-3.5" />
-                          )}
-                          {provider.name}
-                          {cfg?.isServerConfigured && (
-                            <span className="text-[9px] px-1 py-0 rounded border text-muted-foreground">
-                              {t('settings.serverConfigured')}
-                            </span>
-                          )}
-                        </div>
-                      </SelectItem>
-                    );
-                  })}
-                </SelectContent>
-              </Select>
-            </div>
+            <span className="text-xs font-medium text-muted-foreground shrink-0">
+              {t('toolbar.pdfParser')}
+            </span>
+            <Select value={pdfProviderId} onValueChange={(v) => setPDFProvider(v as PDFProviderId)}>
+              <SelectTrigger className="h-7 text-xs flex-1 min-w-0">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.values(PDF_PROVIDERS).map((provider) => {
+                  const cfg = pdfProvidersConfig[provider.id];
+                  const available =
+                    !provider.requiresApiKey || !!cfg?.apiKey || !!cfg?.isServerConfigured;
+                  return (
+                    <SelectItem key={provider.id} value={provider.id} disabled={!available}>
+                      <div className={cn('flex items-center gap-1.5', !available && 'opacity-50')}>
+                        {provider.icon && (
+                          <img src={provider.icon} alt={provider.name} className="w-3.5 h-3.5" />
+                        )}
+                        {provider.name}
+                        {cfg?.isServerConfigured && (
+                          <span className="text-[9px] px-1 py-0 rounded border text-muted-foreground">
+                            {t('settings.serverConfigured')}
+                          </span>
+                        )}
+                      </div>
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
+          </div>
 
           {/* Upload area / file info */}
           <div className="px-3 pb-3">
@@ -253,7 +245,7 @@ export function GenerationToolbar({
                   'flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-4 transition-colors cursor-pointer',
                   isDragging
                     ? 'border-violet-400 bg-violet-50 dark:bg-violet-950/20'
-                    : 'border-muted-foreground/20 hover:border-violet-300'
+                    : 'border-muted-foreground/20 hover:border-violet-300',
                 )}
                 onClick={() => fileInputRef.current?.click()}
                 onDragOver={(e) => {
@@ -298,13 +290,15 @@ export function GenerationToolbar({
                 'w-full flex items-center gap-2.5 rounded-lg border px-3 py-2.5 text-left transition-all',
                 webSearch
                   ? 'bg-violet-50 dark:bg-violet-950/20 border-violet-200 dark:border-violet-800'
-                  : 'border-border hover:bg-muted/50'
+                  : 'border-border hover:bg-muted/50',
               )}
             >
-              <Globe2 className={cn(
-                'size-4 shrink-0',
-                webSearch ? 'text-violet-600 dark:text-violet-400' : 'text-muted-foreground'
-              )} />
+              <Globe2
+                className={cn(
+                  'size-4 shrink-0',
+                  webSearch ? 'text-violet-600 dark:text-violet-400' : 'text-muted-foreground',
+                )}
+              />
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-medium">
                   {webSearch ? t('toolbar.webSearchOn') : t('toolbar.webSearchOff')}
@@ -330,10 +324,13 @@ export function GenerationToolbar({
                 <SelectContent>
                   {Object.values(WEB_SEARCH_PROVIDERS).map((provider) => {
                     const cfg = webSearchProvidersConfig[provider.id];
-                    const available = !provider.requiresApiKey || !!cfg?.apiKey || !!cfg?.isServerConfigured;
+                    const available =
+                      !provider.requiresApiKey || !!cfg?.apiKey || !!cfg?.isServerConfigured;
                     return (
                       <SelectItem key={provider.id} value={provider.id} disabled={!available}>
-                        <div className={cn('flex items-center gap-1.5', !available && 'opacity-50')}>
+                        <div
+                          className={cn('flex items-center gap-1.5', !available && 'opacity-50')}
+                        >
                           {provider.name}
                           {cfg?.isServerConfigured && (
                             <span className="text-[9px] px-1 py-0 rounded border text-muted-foreground">
@@ -352,10 +349,7 @@ export function GenerationToolbar({
       ) : (
         <Tooltip>
           <TooltipTrigger asChild>
-            <button
-              className={cn(pillCls, 'text-muted-foreground/40 cursor-not-allowed')}
-              disabled
-            >
+            <button className={cn(pillCls, 'text-muted-foreground/40 cursor-not-allowed')} disabled>
               <Globe2 className="size-3.5" />
             </button>
           </TooltipTrigger>
@@ -416,11 +410,17 @@ function ModelSelectorPopover({
 
   const activeProvider = useMemo(
     () => configuredProviders.find((p) => p.id === drillProvider),
-    [configuredProviders, drillProvider]
+    [configuredProviders, drillProvider],
   );
 
   return (
-    <Popover open={popoverOpen} onOpenChange={(open) => { setPopoverOpen(open); if (open) setDrillProvider(null); }}>
+    <Popover
+      open={popoverOpen}
+      onOpenChange={(open) => {
+        setPopoverOpen(open);
+        if (open) setDrillProvider(null);
+      }}
+    >
       <Tooltip>
         <TooltipTrigger asChild>
           <PopoverTrigger asChild>
@@ -428,7 +428,8 @@ function ModelSelectorPopover({
               className={cn(
                 'inline-flex items-center justify-center size-7 rounded-full transition-all cursor-pointer select-none',
                 'ring-1 ring-border/60 hover:ring-border hover:bg-muted/60',
-                currentModelId && 'ring-violet-300 dark:ring-violet-700 bg-violet-50 dark:bg-violet-950/20'
+                currentModelId &&
+                  'ring-violet-300 dark:ring-violet-700 bg-violet-50 dark:bg-violet-950/20',
               )}
             >
               {currentProviderConfig?.icon ? (
@@ -455,7 +456,9 @@ function ModelSelectorPopover({
         {!drillProvider && (
           <div className="max-h-72 overflow-y-auto">
             <div className="px-3 py-2 border-b">
-              <span className="text-xs font-semibold text-muted-foreground">{t('toolbar.selectProvider')}</span>
+              <span className="text-xs font-semibold text-muted-foreground">
+                {t('toolbar.selectProvider')}
+              </span>
             </div>
             {configuredProviders.map((provider) => {
               const isActive = currentProviderId === provider.id;
@@ -465,11 +468,15 @@ function ModelSelectorPopover({
                   onClick={() => setDrillProvider(provider.id)}
                   className={cn(
                     'w-full flex items-center gap-2.5 px-3 py-2.5 text-left transition-colors border-b border-border/30',
-                    isActive ? 'bg-violet-50/50 dark:bg-violet-950/10' : 'hover:bg-muted/50'
+                    isActive ? 'bg-violet-50/50 dark:bg-violet-950/10' : 'hover:bg-muted/50',
                   )}
                 >
                   {provider.icon ? (
-                    <img src={provider.icon} alt={provider.name} className="size-5 rounded-sm shrink-0" />
+                    <img
+                      src={provider.icon}
+                      alt={provider.name}
+                      className="size-5 rounded-sm shrink-0"
+                    />
                   ) : (
                     <Bot className="size-5 text-muted-foreground shrink-0" />
                   )}
@@ -502,7 +509,11 @@ function ModelSelectorPopover({
             >
               <ChevronLeft className="size-3.5 text-muted-foreground" />
               {activeProvider.icon ? (
-                <img src={activeProvider.icon} alt={activeProvider.name} className="size-4 rounded-sm" />
+                <img
+                  src={activeProvider.icon}
+                  alt={activeProvider.name}
+                  className="size-4 rounded-sm"
+                />
               ) : (
                 <Bot className="size-4 text-muted-foreground" />
               )}
@@ -517,16 +528,21 @@ function ModelSelectorPopover({
               return (
                 <button
                   key={model.id}
-                  onClick={() => { setModel(drillProvider, model.id); setPopoverOpen(false); }}
+                  onClick={() => {
+                    setModel(drillProvider, model.id);
+                    setPopoverOpen(false);
+                  }}
                   className={cn(
                     'w-full flex items-center gap-2 px-3 py-2 text-left transition-colors border-b border-border/30',
                     isSelected
                       ? 'bg-violet-50 dark:bg-violet-950/20 text-violet-700 dark:text-violet-300'
-                      : 'hover:bg-muted/50'
+                      : 'hover:bg-muted/50',
                   )}
                 >
                   <span className="flex-1 truncate font-mono text-xs">{model.name}</span>
-                  {isSelected && <Check className="size-3.5 shrink-0 text-violet-600 dark:text-violet-400" />}
+                  {isSelected && (
+                    <Check className="size-3.5 shrink-0 text-violet-600 dark:text-violet-400" />
+                  )}
                 </button>
               );
             })}

@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { useI18n } from "@/lib/hooks/use-i18n";
-import { useSettingsStore } from "@/lib/store/settings";
-import { WEB_SEARCH_PROVIDERS } from "@/lib/web-search/constants";
-import type { WebSearchProviderId } from "@/lib/web-search/types";
-import { Eye, EyeOff } from "lucide-react";
+import { useState } from 'react';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { useI18n } from '@/lib/hooks/use-i18n';
+import { useSettingsStore } from '@/lib/store/settings';
+import { WEB_SEARCH_PROVIDERS } from '@/lib/web-search/constants';
+import type { WebSearchProviderId } from '@/lib/web-search/types';
+import { Eye, EyeOff } from 'lucide-react';
 
 interface WebSearchSettingsProps {
   selectedProviderId: WebSearchProviderId;
@@ -35,7 +35,7 @@ export function WebSearchSettings({ selectedProviderId }: WebSearchSettingsProps
       {/* Server-configured notice */}
       {isServerConfigured && (
         <div className="rounded-lg border border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30 p-3 text-sm text-blue-700 dark:text-blue-300">
-          {t("settings.serverConfiguredNotice")}
+          {t('settings.serverConfiguredNotice')}
         </div>
       )}
 
@@ -44,14 +44,18 @@ export function WebSearchSettings({ selectedProviderId }: WebSearchSettingsProps
         <>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label className="text-sm">{t("settings.webSearchApiKey")}</Label>
+              <Label className="text-sm">{t('settings.webSearchApiKey')}</Label>
               <div className="relative">
                 <Input
-                  type={showApiKey ? "text" : "password"}
-                  placeholder={isServerConfigured ? t("settings.optionalOverride") : t("settings.enterApiKey")}
-                  value={webSearchProvidersConfig[selectedProviderId]?.apiKey || ""}
+                  type={showApiKey ? 'text' : 'password'}
+                  placeholder={
+                    isServerConfigured ? t('settings.optionalOverride') : t('settings.enterApiKey')
+                  }
+                  value={webSearchProvidersConfig[selectedProviderId]?.apiKey || ''}
                   onChange={(e) =>
-                    setWebSearchProviderConfig(selectedProviderId, { apiKey: e.target.value })
+                    setWebSearchProviderConfig(selectedProviderId, {
+                      apiKey: e.target.value,
+                    })
                   }
                   className="font-mono text-sm pr-10"
                 />
@@ -60,25 +64,21 @@ export function WebSearchSettings({ selectedProviderId }: WebSearchSettingsProps
                   onClick={() => setShowApiKey(!showApiKey)}
                   className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
-                  {showApiKey ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
+                  {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
-              <p className="text-xs text-muted-foreground">
-                {t("settings.webSearchApiKeyHint")}
-              </p>
+              <p className="text-xs text-muted-foreground">{t('settings.webSearchApiKeyHint')}</p>
             </div>
 
             <div className="space-y-2">
-              <Label className="text-sm">{t("settings.webSearchBaseUrl")}</Label>
+              <Label className="text-sm">{t('settings.webSearchBaseUrl')}</Label>
               <Input
-                placeholder={provider.defaultBaseUrl || "https://api.tavily.com"}
-                value={webSearchProvidersConfig[selectedProviderId]?.baseUrl || ""}
+                placeholder={provider.defaultBaseUrl || 'https://api.tavily.com'}
+                value={webSearchProvidersConfig[selectedProviderId]?.baseUrl || ''}
                 onChange={(e) =>
-                  setWebSearchProviderConfig(selectedProviderId, { baseUrl: e.target.value })
+                  setWebSearchProviderConfig(selectedProviderId, {
+                    baseUrl: e.target.value,
+                  })
                 }
                 className="text-sm"
               />
@@ -87,12 +87,15 @@ export function WebSearchSettings({ selectedProviderId }: WebSearchSettingsProps
 
           {/* Request URL Preview */}
           {(() => {
-            const effectiveBaseUrl = webSearchProvidersConfig[selectedProviderId]?.baseUrl || provider.defaultBaseUrl || "";
+            const effectiveBaseUrl =
+              webSearchProvidersConfig[selectedProviderId]?.baseUrl ||
+              provider.defaultBaseUrl ||
+              '';
             if (!effectiveBaseUrl) return null;
-            const fullUrl = effectiveBaseUrl + "/search";
+            const fullUrl = effectiveBaseUrl + '/search';
             return (
               <p className="text-xs text-muted-foreground break-all">
-                {t("settings.requestUrl")}: {fullUrl}
+                {t('settings.requestUrl')}: {fullUrl}
               </p>
             );
           })()}

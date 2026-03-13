@@ -1,13 +1,13 @@
-'use client'
+'use client';
 
-import type { PPTTableElement } from '@/lib/types/slides'
-import { StaticTable } from './StaticTable'
+import type { PPTTableElement } from '@/lib/types/slides';
+import { StaticTable } from './StaticTable';
 
-export { BaseTableElement } from './BaseTableElement'
+export { BaseTableElement } from './BaseTableElement';
 
 export interface TableElementProps {
-  elementInfo: PPTTableElement
-  selectElement?: (e: React.MouseEvent | React.TouchEvent, element: PPTTableElement) => void
+  elementInfo: PPTTableElement;
+  selectElement?: (e: React.MouseEvent | React.TouchEvent, element: PPTTableElement) => void;
 }
 
 /**
@@ -17,10 +17,10 @@ export interface TableElementProps {
  */
 export function TableElement({ elementInfo, selectElement }: TableElementProps) {
   const handleSelectElement = (e: React.MouseEvent | React.TouchEvent) => {
-    if (elementInfo.lock) return
-    e.stopPropagation()
-    selectElement?.(e, elementInfo)
-  }
+    if (elementInfo.lock) return;
+    e.stopPropagation();
+    selectElement?.(e, elementInfo);
+  };
 
   return (
     <div
@@ -47,5 +47,5 @@ export function TableElement({ elementInfo, selectElement }: TableElementProps) 
         </div>
       </div>
     </div>
-  )
+  );
 }

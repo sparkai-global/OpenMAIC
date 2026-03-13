@@ -82,7 +82,10 @@ export function ElementCreateSelection({ onCreated }: ElementCreateSelectionProp
 
       const minSize = 30;
 
-      if (creatingElement?.type === 'line' && (Math.abs(endPageX - startPageX) >= minSize || Math.abs(endPageY - startPageY) >= minSize)) {
+      if (
+        creatingElement?.type === 'line' &&
+        (Math.abs(endPageX - startPageX) >= minSize || Math.abs(endPageY - startPageY) >= minSize)
+      ) {
         onCreated({
           start: [startPageX, startPageY],
           end: [endPageX, endPageY],
@@ -180,7 +183,10 @@ export function ElementCreateSelection({ onCreated }: ElementCreateSelectionProp
       }}
     >
       {start && end && (
-        <div className={`selection absolute opacity-80 ${creatingElement?.type !== 'line' ? 'border border-primary' : ''}`} style={position}>
+        <div
+          className={`selection absolute opacity-80 ${creatingElement?.type !== 'line' ? 'border border-primary' : ''}`}
+          style={position}
+        >
           {/* Line drawing area */}
           {creatingElement?.type === 'line' && lineData && (
             <svg className="overflow-visible" width={lineData.svgWidth} height={lineData.svgHeight}>

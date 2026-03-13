@@ -27,7 +27,7 @@ export function SpotlightOverlay() {
   const [rect, setRect] = useState<SpotlightRect | null>(null);
 
   const elements = useSceneSelector<SlideContent, PPTElement[]>(
-    (content) => content.canvas.elements
+    (content) => content.canvas.elements,
   );
 
   // Compute target element position in SVG coordinate system via DOM measurement
@@ -105,18 +105,18 @@ export function SpotlightOverlay() {
                       y: rect.y - 8,
                       width: rect.w + 16,
                       height: rect.h + 16,
-                      rx: 4
+                      rx: 4,
                     }}
                     animate={{
                       x: rect.x - 0.4,
                       y: rect.y - 0.6,
                       width: rect.w + 0.8,
                       height: rect.h + 1.2,
-                      rx: 1
+                      rx: 1,
                     }}
                     transition={{
                       duration: 0.6,
-                      ease: [0.16, 1, 0.3, 1]
+                      ease: [0.16, 1, 0.3, 1],
                     }}
                   />
                 </mask>
@@ -139,7 +139,7 @@ export function SpotlightOverlay() {
                   width: rect.w + 8,
                   height: rect.h + 8,
                   opacity: 0,
-                  rx: 2
+                  rx: 2,
                 }}
                 animate={{
                   x: rect.x - 0.4,
@@ -147,7 +147,7 @@ export function SpotlightOverlay() {
                   width: rect.w + 0.8,
                   height: rect.h + 1.2,
                   opacity: 1,
-                  rx: 1
+                  rx: 1,
                 }}
                 fill="none"
                 stroke="rgba(255,255,255,0.7)"
@@ -156,7 +156,7 @@ export function SpotlightOverlay() {
                 transition={{
                   duration: 0.5,
                   delay: 0.05,
-                  ease: [0.16, 1, 0.3, 1]
+                  ease: [0.16, 1, 0.3, 1],
                 }}
               />
             </svg>

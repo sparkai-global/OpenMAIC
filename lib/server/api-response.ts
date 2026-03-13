@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { NextResponse } from 'next/server';
 
 export const API_ERROR_CODES = {
   MISSING_REQUIRED_FIELD: 'MISSING_REQUIRED_FIELD',
@@ -12,15 +12,15 @@ export const API_ERROR_CODES = {
   TRANSCRIPTION_FAILED: 'TRANSCRIPTION_FAILED',
   PARSE_FAILED: 'PARSE_FAILED',
   INTERNAL_ERROR: 'INTERNAL_ERROR',
-} as const
+} as const;
 
-export type ApiErrorCode = (typeof API_ERROR_CODES)[keyof typeof API_ERROR_CODES]
+export type ApiErrorCode = (typeof API_ERROR_CODES)[keyof typeof API_ERROR_CODES];
 
 export interface ApiErrorBody {
-  success: false
-  errorCode: ApiErrorCode
-  error: string
-  details?: string
+  success: false;
+  errorCode: ApiErrorCode;
+  error: string;
+  details?: string;
 }
 
 export function apiError(
@@ -30,14 +30,16 @@ export function apiError(
   details?: string,
 ): NextResponse<ApiErrorBody> {
   return NextResponse.json(
-    { success: false as const, errorCode: code, error, ...(details ? { details } : {}) },
+    {
+      success: false as const,
+      errorCode: code,
+      error,
+      ...(details ? { details } : {}),
+    },
     { status },
-  )
+  );
 }
 
-export function apiSuccess<T extends Record<string, unknown>>(
-  data: T,
-  status = 200,
-): NextResponse {
-  return NextResponse.json({ success: true, ...data }, { status })
+export function apiSuccess<T extends Record<string, unknown>>(data: T, status = 200): NextResponse {
+  return NextResponse.json({ success: true, ...data }, { status });
 }

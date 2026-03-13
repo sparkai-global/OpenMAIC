@@ -27,10 +27,10 @@ export interface MediaTask {
     style?: string;
     duration?: number;
   };
-  objectUrl?: string;       // URL.createObjectURL() for rendering
-  poster?: string;          // Video poster objectUrl
+  objectUrl?: string; // URL.createObjectURL() for rendering
+  poster?: string; // Video poster objectUrl
   error?: string;
-  errorCode?: string;       // Structured error code (e.g. 'CONTENT_SENSITIVE')
+  errorCode?: string; // Structured error code (e.g. 'CONTENT_SENSITIVE')
   retryCount: number;
   stageId: string;
 }
@@ -100,7 +100,9 @@ export const useMediaGenerationStore = create<MediaGenerationState>()((set, get)
     set((s) => {
       const task = s.tasks[elementId];
       if (!task) return s;
-      return { tasks: { ...s.tasks, [elementId]: { ...task, status: 'generating' } } };
+      return {
+        tasks: { ...s.tasks, [elementId]: { ...task, status: 'generating' } },
+      };
     }),
 
   markDone: (elementId, objectUrl, poster) =>
@@ -110,7 +112,13 @@ export const useMediaGenerationStore = create<MediaGenerationState>()((set, get)
       return {
         tasks: {
           ...s.tasks,
-          [elementId]: { ...task, status: 'done', objectUrl, poster, error: undefined },
+          [elementId]: {
+            ...task,
+            status: 'done',
+            objectUrl,
+            poster,
+            error: undefined,
+          },
         },
       };
     }),
@@ -134,7 +142,13 @@ export const useMediaGenerationStore = create<MediaGenerationState>()((set, get)
       return {
         tasks: {
           ...s.tasks,
-          [elementId]: { ...task, status: 'pending', error: undefined, errorCode: undefined, retryCount: task.retryCount + 1 },
+          [elementId]: {
+            ...task,
+            status: 'pending',
+            error: undefined,
+            errorCode: undefined,
+            retryCount: task.retryCount + 1,
+          },
         },
       };
     }),

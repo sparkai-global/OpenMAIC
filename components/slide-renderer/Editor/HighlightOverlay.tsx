@@ -26,15 +26,13 @@ export function HighlightOverlay() {
 
   // Get the element list of the current scene
   const elements = useSceneSelector<SlideContent, PPTElement[]>(
-    (content) => content.canvas.elements
+    (content) => content.canvas.elements,
   );
 
   // Find all elements to highlight (exclude line elements as they have no height property)
   const highlightedElements = useMemo(() => {
     if (!highlightedElementIds.length) return [];
-    return elements.filter(
-      (el) => highlightedElementIds.includes(el.id) && el.type !== 'line'
-    );
+    return elements.filter((el) => highlightedElementIds.includes(el.id) && el.type !== 'line');
   }, [elements, highlightedElementIds]);
 
   // Skip rendering if no highlighted elements
@@ -52,45 +50,47 @@ export function HighlightOverlay() {
         const height = 'height' in element ? element.height : 0;
         const rotate = 'rotate' in element ? element.rotate : 0;
         return (
-        <div
-          key={element.id}
-          className="highlight-overlay absolute pointer-events-none"
-          style={{
-            left: `${element.left}px`,
-            top: `${element.top}px`,
-            width: `${element.width}px`,
-            height: `${height}px`,
-            transform: `rotate(${rotate || 0}deg)`,
-            transformOrigin: 'center',
-            zIndex: 999,
-            transition: 'all 0.3s ease-in-out',
-          }}
-        >
-          {/* Highlight border */}
           <div
-            className={`absolute inset-0 rounded ${animated ? 'animate-pulse' : ''}`}
+            key={element.id}
+            className="highlight-overlay absolute pointer-events-none"
             style={{
-              border: `${borderWidth}px solid ${color}`,
-              boxShadow: `
+              left: `${element.left}px`,
+              top: `${element.top}px`,
+              width: `${element.width}px`,
+              height: `${height}px`,
+              transform: `rotate(${rotate || 0}deg)`,
+              transformOrigin: 'center',
+              zIndex: 999,
+              transition: 'all 0.3s ease-in-out',
+            }}
+          >
+            {/* Highlight border */}
+            <div
+              className={`absolute inset-0 rounded ${animated ? 'animate-pulse' : ''}`}
+              style={{
+                border: `${borderWidth}px solid ${color}`,
+                boxShadow: `
                 0 0 ${borderWidth * 3}px ${color},
                 inset 0 0 ${borderWidth * 2}px rgba(255,255,255,${opacity * 0.5})
               `,
-              backgroundColor: `${color}${Math.round(opacity * 255).toString(16).padStart(2, '0')}`,
-            }}
-          />
-
-          {/* Glow effect */}
-          {animated && (
-            <div
-              className="absolute inset-0 rounded animate-ping"
-              style={{
-                border: `${borderWidth}px solid ${color}`,
-                opacity: 0.5,
-                animationDuration: '2s',
+                backgroundColor: `${color}${Math.round(opacity * 255)
+                  .toString(16)
+                  .padStart(2, '0')}`,
               }}
             />
-          )}
-        </div>
+
+            {/* Glow effect */}
+            {animated && (
+              <div
+                className="absolute inset-0 rounded animate-ping"
+                style={{
+                  border: `${borderWidth}px solid ${color}`,
+                  opacity: 0.5,
+                  animationDuration: '2s',
+                }}
+              />
+            )}
+          </div>
         );
       })}
 

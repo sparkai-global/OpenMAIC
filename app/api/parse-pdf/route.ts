@@ -1,12 +1,11 @@
-import { NextRequest } from "next/server";
-import { parsePDF } from "@/lib/pdf/pdf-providers";
-import { resolvePDFApiKey, resolvePDFBaseUrl } from "@/lib/server/provider-config";
-import type { PDFProviderId } from "@/lib/pdf/types";
-import type { ParsedPdfContent } from "@/lib/types/pdf";
-import { createLogger } from '@/lib/logger'
+import { NextRequest } from 'next/server';
+import { parsePDF } from '@/lib/pdf/pdf-providers';
+import { resolvePDFApiKey, resolvePDFBaseUrl } from '@/lib/server/provider-config';
+import type { PDFProviderId } from '@/lib/pdf/types';
+import type { ParsedPdfContent } from '@/lib/types/pdf';
+import { createLogger } from '@/lib/logger';
 import { apiError, apiSuccess } from '@/lib/server/api-response';
-const log = createLogger('Parse PDF')
-
+const log = createLogger('Parse PDF');
 
 export async function POST(req: NextRequest) {
   try {
@@ -21,10 +20,10 @@ export async function POST(req: NextRequest) {
     }
 
     const formData = await req.formData();
-    const pdfFile = formData.get("pdf") as File | null;
-    const providerId = formData.get("providerId") as PDFProviderId | null;
-    const apiKey = formData.get("apiKey") as string | null;
-    const baseUrl = formData.get("baseUrl") as string | null;
+    const pdfFile = formData.get('pdf') as File | null;
+    const providerId = formData.get('providerId') as PDFProviderId | null;
+    const apiKey = formData.get('apiKey') as string | null;
+    const baseUrl = formData.get('baseUrl') as string | null;
 
     if (!pdfFile) {
       return apiError('MISSING_REQUIRED_FIELD', 400, 'No PDF file provided');
@@ -60,10 +59,6 @@ export async function POST(req: NextRequest) {
     return apiSuccess({ data: resultWithMetadata });
   } catch (error) {
     log.error('Error parsing PDF:', error);
-    return apiError(
-      'PARSE_FAILED',
-      500,
-      error instanceof Error ? error.message : 'Unknown error',
-    );
+    return apiError('PARSE_FAILED', 500, error instanceof Error ? error.message : 'Unknown error');
   }
 }

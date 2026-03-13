@@ -85,7 +85,8 @@ export const stageZhCN = {
       mentionHint: '使用 @question 提问，@judge 提交评审',
       placeholder: '输入消息...',
       send: '发送',
-      welcomeMessage: '你好！我是本任务的提问助手，当前任务：「{title}」\n\n为了帮助你开展工作，我准备了一些引导问题：\n\n{questions}\n\n随时可以 @question 向我提问！',
+      welcomeMessage:
+        '你好！我是本任务的提问助手，当前任务：「{title}」\n\n为了帮助你开展工作，我准备了一些引导问题：\n\n{questions}\n\n随时可以 @question 向我提问！',
       issueCompleteMessage: '任务「{completed}」已完成！进入下一个任务：「{next}」',
       allCompleteMessage: '🎉 所有任务都已完成！项目做得很棒！',
     },
@@ -135,7 +136,8 @@ export const stageEnUS = {
     paused: 'Paused',
     generationFailed: 'Generation failed',
     confirmSwitchTitle: 'Switch Scene',
-    confirmSwitchMessage: 'A topic is currently in progress. Switching scenes will end the current topic. Are you sure?',
+    confirmSwitchMessage:
+      'A topic is currently in progress. Switching scenes will end the current topic. Are you sure?',
     generatingNextPage: 'Scene is being generated, please wait...',
   },
   whiteboard: {
@@ -215,7 +217,8 @@ export const stageEnUS = {
       mentionHint: 'Use @question to ask, @judge to submit for review',
       placeholder: 'Type a message...',
       send: 'Send',
-      welcomeMessage: 'Hello! I\'m your Question Agent for this issue: "{title}"\n\nTo help guide your work, I\'ve prepared some questions for you:\n\n{questions}\n\nFeel free to @question me anytime if you need help or clarification!',
+      welcomeMessage:
+        'Hello! I\'m your Question Agent for this issue: "{title}"\n\nTo help guide your work, I\'ve prepared some questions for you:\n\n{questions}\n\nFeel free to @question me anytime if you need help or clarification!',
       issueCompleteMessage: 'Issue "{completed}" completed! Moving to next issue: "{next}"',
       allCompleteMessage: '🎉 All issues completed! Great work on the project!',
     },
@@ -232,7 +235,7 @@ export const stageEnUS = {
         desc: 'Each issue represents a learning task:',
         s1: {
           title: 'View current Issue',
-          desc: 'Check the issue\'s title, description, and assignee',
+          desc: "Check the issue's title, description, and assignee",
         },
         s2: {
           title: 'Get guidance',
@@ -241,7 +244,7 @@ export const stageEnUS = {
         },
         s3: {
           title: 'Submit your work',
-          example: '@judge I\'m done, please check my Notes',
+          example: "@judge I'm done, please check my Notes",
           desc: 'The Judge Agent evaluates your work and gives feedback:',
           complete: 'Automatically moves to the next issue',
           revision: 'Improve based on feedback',

@@ -45,7 +45,13 @@ export function ImageElement({ elementInfo, selectElement }: ImageElementProps) 
     if (!data) return;
 
     const { range, position } = data;
-    const originClip: ImageElementClip = elementInfo.clip || { shape: 'rect', range: [[0, 0], [100, 100]] };
+    const originClip: ImageElementClip = elementInfo.clip || {
+      shape: 'rect',
+      range: [
+        [0, 0],
+        [100, 100],
+      ],
+    };
 
     const left = elementInfo.left + position.left;
     const top = elementInfo.top + position.top;
@@ -56,10 +62,10 @@ export function ImageElement({ elementInfo, selectElement }: ImageElementProps) 
     let centerOffsetY = 0;
 
     if (elementInfo.rotate) {
-      const centerX = (left + width / 2) - (elementInfo.left + elementInfo.width / 2);
-      const centerY = -((top + height / 2) - (elementInfo.top + elementInfo.height / 2));
+      const centerX = left + width / 2 - (elementInfo.left + elementInfo.width / 2);
+      const centerY = -(top + height / 2 - (elementInfo.top + elementInfo.height / 2));
 
-      const radian = -elementInfo.rotate * Math.PI / 180;
+      const radian = (-elementInfo.rotate * Math.PI) / 180;
 
       const rotatedCenterX = centerX * Math.cos(radian) - centerY * Math.sin(radian);
       const rotatedCenterY = centerX * Math.sin(radian) + centerY * Math.cos(radian);

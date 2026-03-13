@@ -85,7 +85,11 @@ export function AgentBar() {
       {/* Teacher avatar — always shown */}
       {teacherAgent && (
         <div className="size-8 rounded-full overflow-hidden ring-2 ring-blue-400/40 dark:ring-blue-500/30 shrink-0">
-          <img src={teacherAgent.avatar} alt={getAgentName(teacherAgent)} className="size-full object-cover" />
+          <img
+            src={teacherAgent.avatar}
+            alt={getAgentName(teacherAgent)}
+            className="size-full object-cover"
+          />
         </div>
       )}
 
@@ -95,7 +99,11 @@ export function AgentBar() {
           <div className="flex -space-x-2">
             {agents.find((a) => a.role === 'assistant') && (
               <div className="size-6 rounded-full overflow-hidden ring-[1.5px] ring-background">
-                <img src={agents.find((a) => a.role === 'assistant')!.avatar} alt="" className="size-full object-cover" />
+                <img
+                  src={agents.find((a) => a.role === 'assistant')!.avatar}
+                  alt=""
+                  className="size-full object-cover"
+                />
               </div>
             )}
           </div>
@@ -111,12 +119,18 @@ export function AgentBar() {
                   key={agent.id}
                   className="size-6 rounded-full overflow-hidden ring-[1.5px] ring-background"
                 >
-                  <img src={agent.avatar} alt={getAgentName(agent)} className="size-full object-cover" />
+                  <img
+                    src={agent.avatar}
+                    alt={getAgentName(agent)}
+                    className="size-full object-cover"
+                  />
                 </div>
               ))}
               {nonTeacherSelected.length > 4 && (
                 <div className="size-6 rounded-full bg-muted ring-[1.5px] ring-background flex items-center justify-center">
-                  <span className="text-[9px] font-bold text-muted-foreground">+{nonTeacherSelected.length - 4}</span>
+                  <span className="text-[9px] font-bold text-muted-foreground">
+                    +{nonTeacherSelected.length - 4}
+                  </span>
                 </div>
               )}
             </div>
@@ -180,7 +194,7 @@ export function AgentBar() {
                     'flex-1 py-1.5 text-xs font-medium rounded-md transition-all text-center',
                     agentMode === 'preset'
                       ? 'bg-background shadow-sm text-foreground'
-                      : 'text-muted-foreground hover:text-foreground'
+                      : 'text-muted-foreground hover:text-foreground',
                   )}
                 >
                   {t('settings.agentModePreset')}
@@ -191,7 +205,7 @@ export function AgentBar() {
                     'flex-1 py-1.5 text-xs font-medium rounded-md transition-all text-center flex items-center justify-center gap-1',
                     agentMode === 'auto'
                       ? 'bg-background shadow-sm text-foreground'
-                      : 'text-muted-foreground hover:text-foreground'
+                      : 'text-muted-foreground hover:text-foreground',
                   )}
                 >
                   <Sparkles className="h-3 w-3" />
@@ -202,43 +216,52 @@ export function AgentBar() {
               {agentMode === 'preset' ? (
                 /* Agent list — teacher is always selected, no need to show */
                 <div className="max-h-72 overflow-y-auto -mx-1">
-                  {agents.filter((a) => a.role !== 'teacher').map((agent) => {
-                    const isSelected = selectedAgentIds.includes(agent.id);
-                    return (
-                      <div
-                        key={agent.id}
-                        onClick={() => toggleAgent(agent.id)}
-                        className={cn(
-                          'w-full flex items-center gap-3 px-3 py-2 text-left transition-colors cursor-pointer rounded-lg',
-                          isSelected ? 'bg-primary/5' : 'hover:bg-muted/50',
-                        )}
-                      >
-                        <Checkbox
-                          checked={isSelected}
-                          className="pointer-events-none"
-                        />
+                  {agents
+                    .filter((a) => a.role !== 'teacher')
+                    .map((agent) => {
+                      const isSelected = selectedAgentIds.includes(agent.id);
+                      return (
                         <div
-                          className="size-8 rounded-full overflow-hidden shrink-0 ring-1 ring-border/40"
-                          style={{ boxShadow: isSelected ? `0 0 0 2px ${agent.color}30` : undefined }}
+                          key={agent.id}
+                          onClick={() => toggleAgent(agent.id)}
+                          className={cn(
+                            'w-full flex items-center gap-3 px-3 py-2 text-left transition-colors cursor-pointer rounded-lg',
+                            isSelected ? 'bg-primary/5' : 'hover:bg-muted/50',
+                          )}
                         >
-                          <img src={agent.avatar} alt={getAgentName(agent)} className="size-full object-cover" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="text-sm font-medium flex items-center gap-1.5">
-                            {getAgentName(agent)}
-                            <span className="text-[10px] text-muted-foreground/50 font-normal">{getAgentRole(agent)}</span>
+                          <Checkbox checked={isSelected} className="pointer-events-none" />
+                          <div
+                            className="size-8 rounded-full overflow-hidden shrink-0 ring-1 ring-border/40"
+                            style={{
+                              boxShadow: isSelected ? `0 0 0 2px ${agent.color}30` : undefined,
+                            }}
+                          >
+                            <img
+                              src={agent.avatar}
+                              alt={getAgentName(agent)}
+                              className="size-full object-cover"
+                            />
                           </div>
-                          {(() => {
-                            const descKey = `settings.agentDescriptions.${agent.id}`;
-                            const desc = t(descKey);
-                            return desc !== descKey ? (
-                              <p className="text-xs text-muted-foreground/60 mt-0.5 leading-relaxed">{desc}</p>
-                            ) : null;
-                          })()}
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm font-medium flex items-center gap-1.5">
+                              {getAgentName(agent)}
+                              <span className="text-[10px] text-muted-foreground/50 font-normal">
+                                {getAgentRole(agent)}
+                              </span>
+                            </div>
+                            {(() => {
+                              const descKey = `settings.agentDescriptions.${agent.id}`;
+                              const desc = t(descKey);
+                              return desc !== descKey ? (
+                                <p className="text-xs text-muted-foreground/60 mt-0.5 leading-relaxed">
+                                  {desc}
+                                </p>
+                              ) : null;
+                            })()}
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
                 </div>
               ) : (
                 /* Auto-generate mode */
@@ -252,13 +275,17 @@ export function AgentBar() {
                     {/* Icon */}
                     <Shuffle className="relative size-7 text-violet-400 dark:text-violet-500" />
                   </div>
-                  <p className="text-xs text-muted-foreground text-center">{t('settings.agentModeAutoDesc')}</p>
+                  <p className="text-xs text-muted-foreground text-center">
+                    {t('settings.agentModeAutoDesc')}
+                  </p>
                 </div>
               )}
 
               {/* Max turns — always visible */}
               <div className="pt-2.5 mt-2.5 border-t flex items-center gap-3">
-                <span className="text-xs text-muted-foreground shrink-0">{t('settings.maxTurns')}</span>
+                <span className="text-xs text-muted-foreground shrink-0">
+                  {t('settings.maxTurns')}
+                </span>
                 <Input
                   type="number"
                   min="1"

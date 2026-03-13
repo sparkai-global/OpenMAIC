@@ -32,54 +32,55 @@ export function useAudioRecorder(options: UseAudioRecorderOptions = {}) {
   const speechRecognitionRef = useRef<any>(null);
 
   // Send audio to server for transcription
-  const transcribeAudio = useCallback(async (audioBlob: Blob) => {
-    setIsProcessing(true);
+  const transcribeAudio = useCallback(
+    async (audioBlob: Blob) => {
+      setIsProcessing(true);
 
-    try {
-      const formData = new FormData();
-      formData.append('audio', audioBlob, 'recording.webm');
+      try {
+        const formData = new FormData();
+        formData.append('audio', audioBlob, 'recording.webm');
 
-      // Get current ASR configuration from settings store
-      // Note: This requires importing useSettingsStore in browser context
-      if (typeof window !== 'undefined') {
-        const { useSettingsStore } = await import('@/lib/store/settings');
-        const { asrProviderId, asrLanguage, asrProvidersConfig } = useSettingsStore.getState();
+        // Get current ASR configuration from settings store
+        // Note: This requires importing useSettingsStore in browser context
+        if (typeof window !== 'undefined') {
+          const { useSettingsStore } = await import('@/lib/store/settings');
+          const { asrProviderId, asrLanguage, asrProvidersConfig } = useSettingsStore.getState();
 
-        formData.append('providerId', asrProviderId);
-        formData.append('language', asrLanguage);
+          formData.append('providerId', asrProviderId);
+          formData.append('language', asrLanguage);
 
-        // Append API key and base URL if configured
-        const providerConfig = asrProvidersConfig?.[asrProviderId];
-        if (providerConfig?.apiKey?.trim()) {
-          formData.append('apiKey', providerConfig.apiKey);
+          // Append API key and base URL if configured
+          const providerConfig = asrProvidersConfig?.[asrProviderId];
+          if (providerConfig?.apiKey?.trim()) {
+            formData.append('apiKey', providerConfig.apiKey);
+          }
+          if (providerConfig?.baseUrl?.trim()) {
+            formData.append('baseUrl', providerConfig.baseUrl);
+          }
         }
-        if (providerConfig?.baseUrl?.trim()) {
-          formData.append('baseUrl', providerConfig.baseUrl);
+
+        const response = await fetch('/api/transcription', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Transcription failed');
         }
+
+        const result = await response.json();
+        onTranscription?.(result.text);
+      } catch (error) {
+        log.error('Transcription error:', error);
+        onError?.(error instanceof Error ? error.message : '语音识别失败，请重试');
+      } finally {
+        setIsProcessing(false);
+        setRecordingTime(0);
       }
-
-      const response = await fetch('/api/transcription', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Transcription failed');
-      }
-
-      const result = await response.json();
-      onTranscription?.(result.text);
-    } catch (error) {
-      log.error('Transcription error:', error);
-      onError?.(
-        error instanceof Error ? error.message : '语音识别失败，请重试'
-      );
-    } finally {
-      setIsProcessing(false);
-      setRecordingTime(0);
-    }
-  }, [onTranscription, onError]);
+    },
+    [onTranscription, onError],
+  );
 
   // Start recording
   const startRecording = useCallback(async () => {
@@ -114,7 +115,11 @@ export function useAudioRecorder(options: UseAudioRecorderOptions = {}) {
             }, 1000);
           };
 
-          recognition.onresult = (event: { results: { [index: number]: { [index: number]: { transcript: string } } } }) => {
+          recognition.onresult = (event: {
+            results: {
+              [index: number]: { [index: number]: { transcript: string } };
+            };
+          }) => {
             const transcript = event.results[0][0].transcript;
             onTranscription?.(transcript);
           };

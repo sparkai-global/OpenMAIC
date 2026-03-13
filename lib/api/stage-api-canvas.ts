@@ -6,16 +6,11 @@
  * Uses useCanvasStore for visual overlay effects.
  */
 
-import type {
-  SlideContent,
-} from "@/lib/types/stage";
-import type {
-  SlideTheme,
-  SlideBackground,
-} from "@/lib/types/slides";
-import { useCanvasStore } from "@/lib/store/canvas";
-import type { StageStore, APIResult, HighlightOptions, SpotlightOptions } from "./stage-api-types";
-import { getScene } from "./stage-api-defaults";
+import type { SlideContent } from '@/lib/types/stage';
+import type { SlideTheme, SlideBackground } from '@/lib/types/slides';
+import { useCanvasStore } from '@/lib/store/canvas';
+import type { StageStore, APIResult, HighlightOptions, SpotlightOptions } from './stage-api-types';
+import { getScene } from './stage-api-defaults';
 
 /**
  * Create the canvas operations API
@@ -32,16 +27,13 @@ export function createCanvasAPI(store: StageStore) {
      * @param background - Background settings
      * @returns Whether successful
      */
-    setBackground(
-      sceneId: string,
-      background: SlideBackground,
-    ): APIResult<boolean> {
+    setBackground(sceneId: string, background: SlideBackground): APIResult<boolean> {
       try {
         const state = store.getState();
         const scene = getScene(state.scenes, sceneId);
 
-        if (!scene || scene.type !== "slide") {
-          return { success: false, error: "Invalid scene" };
+        if (!scene || scene.type !== 'slide') {
+          return { success: false, error: 'Invalid scene' };
         }
 
         const content = scene.content as SlideContent;
@@ -83,8 +75,8 @@ export function createCanvasAPI(store: StageStore) {
         const state = store.getState();
         const scene = getScene(state.scenes, sceneId);
 
-        if (!scene || scene.type !== "slide") {
-          return { success: false, error: "Invalid scene" };
+        if (!scene || scene.type !== 'slide') {
+          return { success: false, error: 'Invalid scene' };
         }
 
         const content = scene.content as SlideContent;
@@ -132,7 +124,7 @@ export function createCanvasAPI(store: StageStore) {
       elementId: string,
       options: HighlightOptions = {},
     ): APIResult<boolean> {
-      const { duration, color = "#ff6b6b", style = "outline" } = options;
+      const { duration, color = '#ff6b6b', style = 'outline' } = options;
 
       try {
         // Use the new Canvas Store highlight overlay API
@@ -140,7 +132,7 @@ export function createCanvasAPI(store: StageStore) {
         const canvasStore = useCanvasStore.getState();
         canvasStore.setHighlight([elementId], {
           color,
-          opacity: style === "fill" ? 0.3 : 0.5,
+          opacity: style === 'fill' ? 0.3 : 0.5,
           borderWidth: 3,
           animated: true,
         });
@@ -373,7 +365,7 @@ export function createCanvasAPI(store: StageStore) {
       elementIds: string[],
       options: HighlightOptions = {},
     ): APIResult<boolean> {
-      const { duration, color = "#ff6b6b" } = options;
+      const { duration, color = '#ff6b6b' } = options;
 
       try {
         const canvasStore = useCanvasStore.getState();

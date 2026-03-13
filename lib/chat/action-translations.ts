@@ -1,10 +1,5 @@
 import { Badge } from '@/components/ui/badge';
-import {
-  CheckCircleIcon,
-  CircleIcon,
-  ClockIcon,
-  XCircleIcon,
-} from 'lucide-react';
+import { CheckCircleIcon, CircleIcon, ClockIcon, XCircleIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { createElement } from 'react';
 
@@ -38,12 +33,22 @@ export function getActionDisplayName(t: (key: string) => string, actionName: str
 export function getStatusBadge(t: (key: string) => string, state: string): ReactNode {
   const iconMap: Record<string, ReactNode> = {
     'input-streaming': createElement(CircleIcon, { className: 'size-4' }),
-    'input-available': createElement(ClockIcon, { className: 'size-4 animate-pulse' }),
-    'output-available': createElement(CheckCircleIcon, { className: 'size-4 text-green-600' }),
-    'output-error': createElement(XCircleIcon, { className: 'size-4 text-red-600' }),
-    'output-denied': createElement(XCircleIcon, { className: 'size-4 text-orange-600' }),
+    'input-available': createElement(ClockIcon, {
+      className: 'size-4 animate-pulse',
+    }),
+    'output-available': createElement(CheckCircleIcon, {
+      className: 'size-4 text-green-600',
+    }),
+    'output-error': createElement(XCircleIcon, {
+      className: 'size-4 text-red-600',
+    }),
+    'output-denied': createElement(XCircleIcon, {
+      className: 'size-4 text-orange-600',
+    }),
     running: createElement(ClockIcon, { className: 'size-4 animate-pulse' }),
-    result: createElement(CheckCircleIcon, { className: 'size-4 text-green-600' }),
+    result: createElement(CheckCircleIcon, {
+      className: 'size-4 text-green-600',
+    }),
     error: createElement(XCircleIcon, { className: 'size-4 text-red-600' }),
   };
 
@@ -52,7 +57,10 @@ export function getStatusBadge(t: (key: string) => string, state: string): React
 
   return createElement(
     Badge,
-    { className: 'gap-1.5 rounded-full text-xs', variant: 'secondary' as const },
+    {
+      className: 'gap-1.5 rounded-full text-xs',
+      variant: 'secondary' as const,
+    },
     iconMap[state] || createElement(CircleIcon, { className: 'size-4' }),
     label,
   );
@@ -67,9 +75,7 @@ export function getMessageTextParts(message: {
   if (!message.parts || message.parts.length === 0) {
     return [];
   }
-  return message.parts.filter(
-    (part) => part.type === 'text' || part.type === 'step-start',
-  );
+  return message.parts.filter((part) => part.type === 'text' || part.type === 'step-start');
 }
 
 /**
@@ -81,7 +87,5 @@ export function getMessageActionParts(message: {
   if (!message.parts || message.parts.length === 0) {
     return [];
   }
-  return message.parts.filter(
-    (part) => part.type && part.type.startsWith('action-'),
-  );
+  return message.parts.filter((part) => part.type && part.type.startsWith('action-'));
 }

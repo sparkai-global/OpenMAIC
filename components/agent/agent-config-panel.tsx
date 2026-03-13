@@ -33,9 +33,7 @@ export function AgentConfigPanel() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold">智能体配置</h2>
-          <p className="text-sm text-muted-foreground">
-            管理课堂讨论的AI智能体
-          </p>
+          <p className="text-sm text-muted-foreground">管理课堂讨论的AI智能体</p>
         </div>
         <Button size="sm" variant="outline">
           <PlusIcon className="w-4 h-4 mr-2" />
@@ -64,15 +62,18 @@ export function AgentConfigPanel() {
                       }}
                     >
                       <AvatarImage src={agent.avatar} alt={agent.name} />
-                      <AvatarFallback style={{ backgroundColor: `${agent.color}20`, color: agent.color }}>
+                      <AvatarFallback
+                        style={{
+                          backgroundColor: `${agent.color}20`,
+                          color: agent.color,
+                        }}
+                      >
                         {agent.name.charAt(0)}
                       </AvatarFallback>
                     </Avatar>
                     <div>
                       <CardTitle className="text-base">{agent.name}</CardTitle>
-                      <CardDescription className="text-sm">
-                        {agent.role}
-                      </CardDescription>
+                      <CardDescription className="text-sm">{agent.role}</CardDescription>
                     </div>
                   </div>
                   <div className="flex gap-2">
@@ -90,9 +91,7 @@ export function AgentConfigPanel() {
               <CardContent className="p-4 pt-0">
                 <div className="space-y-2">
                   <div>
-                    <p className="text-xs font-medium text-muted-foreground mb-1">
-                      能力描述
-                    </p>
+                    <p className="text-xs font-medium text-muted-foreground mb-1">能力描述</p>
                     <p className="text-sm line-clamp-2">{agent.persona}</p>
                   </div>
                   <div>
@@ -114,11 +113,7 @@ export function AgentConfigPanel() {
                   </div>
                   {!agent.isDefault && (
                     <div className="flex gap-2 pt-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="flex-1"
-                      >
+                      <Button size="sm" variant="outline" className="flex-1">
                         <EditIcon className="w-3 h-3 mr-1" />
                         编辑
                       </Button>
@@ -144,9 +139,7 @@ export function AgentConfigPanel() {
       {agents.length === 0 && (
         <div className="flex-1 flex items-center justify-center text-center p-8">
           <div className="max-w-sm">
-            <p className="text-muted-foreground mb-4">
-              还没有配置智能体
-            </p>
+            <p className="text-muted-foreground mb-4">还没有配置智能体</p>
             <Button>
               <PlusIcon className="w-4 h-4 mr-2" />
               创建第一个智能体

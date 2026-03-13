@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import {useCanvasStore, useSceneSelector} from '@/lib/store';
+import { useCanvasStore, useSceneSelector } from '@/lib/store';
 import {
   ElementTypes,
   type PPTElement,
@@ -7,7 +7,8 @@ import {
   type PPTVideoElement,
   type PPTAudioElement,
   type PPTShapeElement,
-  type PPTChartElement, type Slide,
+  type PPTChartElement,
+  type Slide,
   type PPTAnimation,
 } from '@/lib/types/slides';
 import type { OperateLineHandlers, OperateResizeHandlers } from '@/lib/types/edit';
@@ -17,7 +18,7 @@ import { ShapeElementOperate } from './ShapeElementOperate';
 import { LineElementOperate } from './LineElementOperate';
 import { TableElementOperate } from './TableElementOperate';
 import { CommonElementOperate } from './CommonElementOperate';
-import type {SlideContent} from "@/lib/types/stage";
+import type { SlideContent } from '@/lib/types/stage';
 
 interface OperateProps {
   readonly elementInfo: PPTElement;
@@ -25,10 +26,28 @@ interface OperateProps {
   readonly isActive: boolean;
   readonly isActiveGroupElement: boolean;
   readonly isMultiSelect: boolean;
-  readonly rotateElement: (e: React.MouseEvent, element: Exclude<PPTElement, PPTChartElement | PPTLineElement | PPTVideoElement | PPTAudioElement>) => void;
-  readonly scaleElement: (e: React.MouseEvent, element: Exclude<PPTElement, PPTLineElement>, command: OperateResizeHandlers) => void;
-  readonly dragLineElement: (e: React.MouseEvent, element: PPTLineElement, command: OperateLineHandlers) => void;
-  readonly moveShapeKeypoint: (e: React.MouseEvent, element: PPTShapeElement, index: number) => void;
+  readonly rotateElement: (
+    e: React.MouseEvent,
+    element: Exclude<
+      PPTElement,
+      PPTChartElement | PPTLineElement | PPTVideoElement | PPTAudioElement
+    >,
+  ) => void;
+  readonly scaleElement: (
+    e: React.MouseEvent,
+    element: Exclude<PPTElement, PPTLineElement>,
+    command: OperateResizeHandlers,
+  ) => void;
+  readonly dragLineElement: (
+    e: React.MouseEvent,
+    element: PPTLineElement,
+    command: OperateLineHandlers,
+  ) => void;
+  readonly moveShapeKeypoint: (
+    e: React.MouseEvent,
+    element: PPTShapeElement,
+    index: number,
+  ) => void;
   readonly openLinkDialog: () => void;
 }
 
@@ -48,27 +67,30 @@ export function Operate({
   const toolbarState = useCanvasStore.use.toolbarState();
 
   // Get the formatted animations using a proper selector to avoid infinite loops
-  const currentSlide = useSceneSelector<SlideContent, Slide>(content => content.canvas);
+  const currentSlide = useSceneSelector<SlideContent, Slide>((content) => content.canvas);
 
   const formatedAnimations = useMemo(() => {
     if (!currentSlide?.animations) return [];
 
     const els = currentSlide.elements;
-    const elIds = els.map(el => el.id);
-    const animations = currentSlide.animations.filter(animation => elIds.includes(animation.elId));
+    const elIds = els.map((el) => el.id);
+    const animations = currentSlide.animations.filter((animation) =>
+      elIds.includes(animation.elId),
+    );
 
-    const formatedAnimations: { animations: PPTAnimation[]; autoNext: boolean }[] = [];
+    const formatedAnimations: {
+      animations: PPTAnimation[];
+      autoNext: boolean;
+    }[] = [];
     for (const animation of animations) {
       if (animation.trigger === 'click' || !formatedAnimations.length) {
         formatedAnimations.push({ animations: [animation], autoNext: false });
-      }
-      else if (animation.trigger === 'meantime') {
+      } else if (animation.trigger === 'meantime') {
         const last = formatedAnimations[formatedAnimations.length - 1];
         last.animations = last.animations.filter((item) => item.elId !== animation.elId);
         last.animations.push(animation);
         formatedAnimations[formatedAnimations.length - 1] = last;
-      }
-      else if (animation.trigger === 'auto') {
+      } else if (animation.trigger === 'auto') {
         const last = formatedAnimations[formatedAnimations.length - 1];
         last.autoNext = true;
         formatedAnimations[formatedAnimations.length - 1] = last;

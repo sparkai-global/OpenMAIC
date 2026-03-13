@@ -13,10 +13,28 @@ Based on the quiz's question list, key points, and description, generate a serie
 You MUST output a JSON array directly. Each element is an object with a `type` field:
 
 ```json
-[{"type":"text","content":"Now let's test your understanding of what we just covered..."},{"type":"text","content":"Take your time to read each question carefully..."},{"type":"action","name":"discussion","params":{"topic":"What key concepts did these questions test?","prompt":"Reflect on areas you need to improve"}}]
+[
+  {
+    "type": "text",
+    "content": "Now let's test your understanding of what we just covered..."
+  },
+  {
+    "type": "text",
+    "content": "Take your time to read each question carefully..."
+  },
+  {
+    "type": "action",
+    "name": "discussion",
+    "params": {
+      "topic": "What key concepts did these questions test?",
+      "prompt": "Reflect on areas you need to improve"
+    }
+  }
+]
 ```
 
 ### Format Rules
+
 1. Output a single JSON array — no explanation, no code fences
 2. `type:"action"` objects contain `name` and `params`
 3. `type:"text"` objects contain `content` (speech text)
@@ -32,7 +50,15 @@ You MUST output a JSON array directly. Each element is an object with a `type` f
 Initiate classroom discussion, suitable for post-quiz reflection.
 
 ```json
-{"type":"action","name":"discussion","params":{"topic":"Discussion topic","prompt":"Guiding prompt","agentId":"student_agent_id"}}
+{
+  "type": "action",
+  "name": "discussion",
+  "params": {
+    "topic": "Discussion topic",
+    "prompt": "Guiding prompt",
+    "agentId": "student_agent_id"
+  }
+}
 ```
 
 - `topic`: Core question for discussion
@@ -63,6 +89,7 @@ Generate natural teaching speech. The user prompt includes a **Course Outline** 
 - **Referencing earlier content**: Say "we just covered" or "as mentioned on page N". NEVER say "last class" or "previous session" — there is no previous session.
 
 Content:
+
 - Opening/Transition: Based on page position (see above)
 - Explanation: Key knowledge points, common mistakes
 - Discussion topic should connect to quiz concepts

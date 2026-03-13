@@ -4,23 +4,23 @@
  */
 
 export interface AgentConfig {
-  id: string;                    // Unique agent ID
-  name: string;                  // Display name (Chinese)
-  role: string;                  // Short role description
-  persona: string;               // Full system prompt (personality, responsibilities)
-  avatar: string;                // Emoji or image URL
-  color: string;                 // UI theme color (hex)
-  allowedActions: string[];      // Action types this agent can use
-  priority: number;              // Priority for director selection (1-10)
+  id: string; // Unique agent ID
+  name: string; // Display name (Chinese)
+  role: string; // Short role description
+  persona: string; // Full system prompt (personality, responsibilities)
+  avatar: string; // Emoji or image URL
+  color: string; // UI theme color (hex)
+  allowedActions: string[]; // Action types this agent can use
+  priority: number; // Priority for director selection (1-10)
 
   // Metadata
   createdAt: Date;
   updatedAt: Date;
-  isDefault: boolean;            // Is this a default template?
+  isDefault: boolean; // Is this a default template?
 
   // LLM-generated agent fields
-  isGenerated?: boolean;         // true for LLM-generated agents
-  boundStageId?: string;         // stage ID this agent was generated for
+  isGenerated?: boolean; // true for LLM-generated agents
+  boundStageId?: string; // stage ID this agent was generated for
 }
 
 export interface AgentTemplate {
@@ -34,35 +34,38 @@ export interface AgentTemplate {
   priority: number;
 
   // LLM-generated agent fields
-  isGenerated?: boolean;         // true for LLM-generated agents
-  boundStageId?: string;         // stage ID this agent was generated for
+  isGenerated?: boolean; // true for LLM-generated agents
+  boundStageId?: string; // stage ID this agent was generated for
 }
 
 /**
  * Create a new AgentConfig from a template
  */
-export function createAgentFromTemplate(
-  template: AgentTemplate,
-  id: string
-): AgentConfig {
+export function createAgentFromTemplate(template: AgentTemplate, id: string): AgentConfig {
   return {
     id,
     ...template,
     createdAt: new Date(),
     updatedAt: new Date(),
-    isDefault: false
+    isDefault: false,
   };
 }
 
 // Action types available to agents (canonical source for role-based mapping)
 export const WHITEBOARD_ACTIONS = [
-  'wb_open', 'wb_close', 'wb_draw_text', 'wb_draw_shape',
-  'wb_draw_chart', 'wb_draw_latex', 'wb_draw_table', 'wb_draw_line', 'wb_clear', 'wb_delete',
+  'wb_open',
+  'wb_close',
+  'wb_draw_text',
+  'wb_draw_shape',
+  'wb_draw_chart',
+  'wb_draw_latex',
+  'wb_draw_table',
+  'wb_draw_line',
+  'wb_clear',
+  'wb_delete',
 ];
 
-export const SLIDE_ACTIONS = [
-  'spotlight', 'laser', 'play_video',
-];
+export const SLIDE_ACTIONS = ['spotlight', 'laser', 'play_video'];
 
 /**
  * Maps agent roles to their allowed action sets.

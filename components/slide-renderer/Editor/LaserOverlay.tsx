@@ -17,12 +17,16 @@ interface LaserOverlayProps {
  * - Elegant light dot with soft breathing glow
  * - Uses percentage positioning (0-100)
  */
-export function LaserOverlay({ geometry, color = '#ff3b30', duration: _duration = 3000 }: LaserOverlayProps) {
+export function LaserOverlay({
+  geometry,
+  color = '#ff3b30',
+  duration: _duration = 3000,
+}: LaserOverlayProps) {
   const { centerX, centerY } = geometry;
 
   const startPos = {
     x: centerX > 50 ? 105 : -5,
-    y: centerY > 50 ? 105 : -5
+    y: centerY > 50 ? 105 : -5,
   };
 
   return (
@@ -42,7 +46,7 @@ export function LaserOverlay({ geometry, color = '#ff3b30', duration: _duration 
         opacity: 0,
         left: `${startPos.x}%`,
         top: `${startPos.y}%`,
-        transition: { duration: 0.25, ease: [0.4, 0, 1, 1] }
+        transition: { duration: 0.25, ease: [0.4, 0, 1, 1] },
       }}
       transition={{
         left: { duration: 0.5, ease: [0.22, 1, 0.36, 1] },
@@ -55,7 +59,12 @@ export function LaserOverlay({ geometry, color = '#ff3b30', duration: _duration 
         {/* Ring pulse */}
         <motion.div
           animate={{ scale: [1, 2.8], opacity: [0.6, 0] }}
-          transition={{ repeat: Infinity, duration: 1.5, ease: "easeOut", repeatDelay: 0.3 }}
+          transition={{
+            repeat: Infinity,
+            duration: 1.5,
+            ease: 'easeOut',
+            repeatDelay: 0.3,
+          }}
           className="absolute inset-0 rounded-full"
           style={{ border: `1.5px solid ${color}` }}
         />

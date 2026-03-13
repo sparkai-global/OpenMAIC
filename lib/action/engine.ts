@@ -44,7 +44,7 @@ const SHAPE_PATHS: Record<string, string> = {
 // ==================== Helpers ====================
 
 function delay(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 // ==================== ActionEngine ====================
@@ -167,9 +167,11 @@ export class ActionEngine {
 
     return new Promise<void>((resolve) => {
       this.audioPlayer!.onEnded(() => resolve());
-      this.audioPlayer!.play(action.audioId || '').then((audioStarted) => {
-        if (!audioStarted) resolve();
-      }).catch(() => resolve());
+      this.audioPlayer!.play(action.audioId || '')
+        .then((audioStarted) => {
+          if (!audioStarted) resolve();
+        })
+        .catch(() => resolve());
     });
   }
 
@@ -236,12 +238,19 @@ export class ActionEngine {
 
     // Search current scene first for efficiency, then remaining scenes
     const orderedScenes = currentSceneId
-      ? [scenes.find(s => s.id === currentSceneId), ...scenes.filter(s => s.id !== currentSceneId)]
+      ? [
+          scenes.find((s) => s.id === currentSceneId),
+          ...scenes.filter((s) => s.id !== currentSceneId),
+        ]
       : scenes;
 
     for (const scene of orderedScenes) {
       if (!scene || scene.type !== 'slide') continue;
-      const elements = (scene.content as { canvas?: { elements?: Array<{ id: string; src?: string }> } })?.canvas?.elements;
+      const elements = (
+        scene.content as {
+          canvas?: { elements?: Array<{ id: string; src?: string }> };
+        }
+      )?.canvas?.elements;
       if (!Array.isArray(elements)) continue;
       const el = elements.find((e: { id: string }) => e.id === elementId);
       if (el && 'src' in el && typeof el.src === 'string' && isMediaPlaceholder(el.src)) {
@@ -290,7 +299,7 @@ export class ActionEngine {
         rotate: 0,
         defaultFontName: 'Microsoft YaHei',
         defaultColor: action.color ?? '#333333',
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any,
       wb.data.id,
     );
@@ -316,7 +325,7 @@ export class ActionEngine {
         rotate: 0,
         fill: action.fillColor ?? '#5b9bd5',
         fixedRatio: false,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any,
       wb.data.id,
     );
@@ -341,7 +350,7 @@ export class ActionEngine {
         chartType: action.chartType,
         data: action.data,
         themeColors: action.themeColors ?? ['#5b9bd5', '#ed7d31', '#a5a5a5', '#ffc000', '#4472c4'],
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any,
       wb.data.id,
     );
@@ -373,7 +382,7 @@ export class ActionEngine {
           html,
           color: action.color ?? '#000000',
           fixedRatio: true,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any,
         wb.data.id,
       );
@@ -404,7 +413,7 @@ export class ActionEngine {
         colspan: 1,
         rowspan: 1,
         text,
-      }))
+      })),
     );
 
     this.stageAPI.whiteboard.addElement(
@@ -419,15 +428,21 @@ export class ActionEngine {
         colWidths,
         cellMinHeight: 36,
         data: tableData,
-        outline: action.outline ?? { width: 2, style: 'solid', color: '#eeece1' },
-        theme: action.theme ? {
-          color: action.theme.color,
-          rowHeader: true,
-          rowFooter: false,
-          colHeader: false,
-          colFooter: false,
-        } : undefined,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        outline: action.outline ?? {
+          width: 2,
+          style: 'solid',
+          color: '#eeece1',
+        },
+        theme: action.theme
+          ? {
+              color: action.theme.color,
+              rowHeader: true,
+              rowFooter: false,
+              colHeader: false,
+              colFooter: false,
+            }
+          : undefined,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any,
       wb.data.id,
     );
@@ -459,7 +474,7 @@ export class ActionEngine {
         style: action.style ?? 'solid',
         color: action.color ?? '#333333',
         points: action.points ?? ['', ''],
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any,
       wb.data.id,
     );

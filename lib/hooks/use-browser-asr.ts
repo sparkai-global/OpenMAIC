@@ -4,7 +4,7 @@
  * Completely free, no API key required
  */
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { createLogger } from '@/lib/logger';
 
 const log = createLogger('BrowserASR');
@@ -12,13 +12,13 @@ const log = createLogger('BrowserASR');
 // Note: Window.SpeechRecognition declaration is in components/ai-elements/prompt-input.tsx
 
 export type ASRErrorCode =
-  | "not-supported"
-  | "no-speech"
-  | "audio-capture"
-  | "not-allowed"
-  | "network"
-  | "aborted"
-  | "unknown";
+  | 'not-supported'
+  | 'no-speech'
+  | 'audio-capture'
+  | 'not-allowed'
+  | 'network'
+  | 'aborted'
+  | 'unknown';
 
 export interface UseBrowserASROptions {
   onTranscription?: (text: string) => void;
@@ -32,13 +32,13 @@ export function useBrowserASR(options: UseBrowserASROptions = {}) {
   const {
     onTranscription,
     onError,
-    language = "zh-CN",
+    language = 'zh-CN',
     continuous = false,
     interimResults = false,
   } = options;
 
   const [isListening, setIsListening] = useState(false);
-  const [interimTranscript, setInterimTranscript] = useState("");
+  const [interimTranscript, setInterimTranscript] = useState('');
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Web Speech API SpeechRecognition not typed
   const recognitionRef = useRef<any>(null);
 
@@ -52,23 +52,24 @@ export function useBrowserASR(options: UseBrowserASROptions = {}) {
   }, [onTranscription, onError]);
 
   // SSR-safe support detection
-  const [isSupported] = useState(() =>
-    typeof window !== 'undefined' && !!(window.SpeechRecognition || window.webkitSpeechRecognition),
+  const [isSupported] = useState(
+    () =>
+      typeof window !== 'undefined' &&
+      !!(window.SpeechRecognition || window.webkitSpeechRecognition),
   );
 
   const startListening = useCallback(() => {
     // Check if Speech Recognition is supported
     if (
-      typeof window === "undefined" ||
+      typeof window === 'undefined' ||
       (!window.SpeechRecognition && !window.webkitSpeechRecognition)
     ) {
-      onErrorRef.current?.("not-supported");
+      onErrorRef.current?.('not-supported');
       return;
     }
 
     // Create Speech Recognition instance
-    const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognition = new SpeechRecognition();
 
     recognition.lang = language;
@@ -77,12 +78,21 @@ export function useBrowserASR(options: UseBrowserASROptions = {}) {
 
     recognition.onstart = () => {
       setIsListening(true);
-      setInterimTranscript("");
+      setInterimTranscript('');
     };
 
-    recognition.onresult = (event: { resultIndex: number; results: { [index: number]: { [index: number]: { transcript: string }; isFinal: boolean }; length: number } }) => {
-      let finalTranscript = "";
-      let interimText = "";
+    recognition.onresult = (event: {
+      resultIndex: number;
+      results: {
+        [index: number]: {
+          [index: number]: { transcript: string };
+          isFinal: boolean;
+        };
+        length: number;
+      };
+    }) => {
+      let finalTranscript = '';
+      let interimText = '';
 
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const transcript = event.results[i][0].transcript;
@@ -99,27 +109,27 @@ export function useBrowserASR(options: UseBrowserASROptions = {}) {
 
       if (finalTranscript) {
         onTranscriptionRef.current?.(finalTranscript);
-        setInterimTranscript("");
+        setInterimTranscript('');
       }
     };
 
     recognition.onerror = (event: { error: string }) => {
-      log.error("Speech recognition error:", event.error);
+      log.error('Speech recognition error:', event.error);
       const errorCodeMap: Record<string, ASRErrorCode> = {
-        "no-speech": "no-speech",
-        "audio-capture": "audio-capture",
-        "not-allowed": "not-allowed",
-        "network": "network",
-        "aborted": "aborted",
+        'no-speech': 'no-speech',
+        'audio-capture': 'audio-capture',
+        'not-allowed': 'not-allowed',
+        network: 'network',
+        aborted: 'aborted',
       };
-      onErrorRef.current?.(errorCodeMap[event.error] ?? "unknown");
+      onErrorRef.current?.(errorCodeMap[event.error] ?? 'unknown');
       setIsListening(false);
-      setInterimTranscript("");
+      setInterimTranscript('');
     };
 
     recognition.onend = () => {
       setIsListening(false);
-      setInterimTranscript("");
+      setInterimTranscript('');
     };
 
     recognition.start();
@@ -131,7 +141,7 @@ export function useBrowserASR(options: UseBrowserASROptions = {}) {
       recognitionRef.current.stop();
       recognitionRef.current = null;
       setIsListening(false);
-      setInterimTranscript("");
+      setInterimTranscript('');
     }
   }, []);
 

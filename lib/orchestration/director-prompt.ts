@@ -15,9 +15,16 @@ const log = createLogger('DirectorPrompt');
  */
 export interface WhiteboardActionRecord {
   actionName:
-    | 'wb_draw_text' | 'wb_draw_shape' | 'wb_draw_chart'
-    | 'wb_draw_latex' | 'wb_draw_table' | 'wb_draw_line'
-    | 'wb_clear' | 'wb_delete' | 'wb_open' | 'wb_close';
+    | 'wb_draw_text'
+    | 'wb_draw_shape'
+    | 'wb_draw_chart'
+    | 'wb_draw_latex'
+    | 'wb_draw_table'
+    | 'wb_draw_line'
+    | 'wb_clear'
+    | 'wb_delete'
+    | 'wb_open'
+    | 'wb_close';
   agentId: string;
   agentName: string;
   params: Record<string, unknown>;
@@ -78,19 +85,20 @@ This is a student-initiated discussion, not a Q&A session.\n`
 
   const rule1 = isDiscussion
     ? `1. The discussion initiator${triggerAgentId ? ` ("${triggerAgentId}")` : ''} should speak first to kick off the topic. Then the teacher responds to guide the discussion. After that, other students may add their perspectives.`
-    : '1. The teacher (role: teacher, highest priority) should usually speak first to address the user\'s question or topic.';
+    : "1. The teacher (role: teacher, highest priority) should usually speak first to address the user's question or topic.";
 
   // Build whiteboard state section for director awareness
   const whiteboardSection = buildWhiteboardStateForDirector(whiteboardLedger);
 
   // Build student profile section for director awareness
-  const studentProfileSection = (userProfile?.nickname || userProfile?.bio)
-    ? `
+  const studentProfileSection =
+    userProfile?.nickname || userProfile?.bio
+      ? `
 # Student Profile
 Student name: ${userProfile.nickname || 'Unknown'}
 ${userProfile.bio ? `Background: ${userProfile.bio}` : ''}
 `
-    : '';
+      : '';
 
   return `You are the Director of a multi-agent classroom. Your job is to decide which agent should speak next based on the conversation context.
 
@@ -147,9 +155,13 @@ function summarizeAgentWhiteboardActions(actions: WhiteboardActionRecord[]): str
         parts.push(`drew shape(${a.params.type || 'rectangle'})`);
         break;
       case 'wb_draw_chart': {
-        const labels = Array.isArray(a.params.labels) ? a.params.labels : (a.params.data as Record<string, unknown>)?.labels;
+        const labels = Array.isArray(a.params.labels)
+          ? a.params.labels
+          : (a.params.data as Record<string, unknown>)?.labels;
         const chartType = a.params.chartType || a.params.type || 'bar';
-        parts.push(`drew chart(${chartType}${labels ? `, labels: [${(labels as string[]).slice(0, 4).join(',')}]` : ''})`);
+        parts.push(
+          `drew chart(${chartType}${labels ? `, labels: [${(labels as string[]).slice(0, 4).join(',')}]` : ''})`,
+        );
         break;
       }
       case 'wb_draw_latex': {
@@ -221,9 +233,10 @@ function buildWhiteboardStateForDirector(ledger?: WhiteboardActionRecord[]): str
   if (!ledger || ledger.length === 0) return '';
 
   const { elementCount, contributors } = summarizeWhiteboardForDirector(ledger);
-  const crowdedWarning = elementCount > 5
-    ? '\n⚠ The whiteboard is getting crowded. Consider routing to an agent that will organize or clear it rather than adding more.'
-    : '';
+  const crowdedWarning =
+    elementCount > 5
+      ? '\n⚠ The whiteboard is getting crowded. Consider routing to an agent that will organize or clear it rather than adding more.'
+      : '';
 
   return `
 # Whiteboard State

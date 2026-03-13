@@ -11,23 +11,43 @@ interface TableElementOperateProps {
   readonly elementInfo: PPTTableElement;
   readonly handlerVisible: boolean;
   readonly rotateElement: (e: React.MouseEvent, element: PPTTableElement) => void;
-  readonly scaleElement: (e: React.MouseEvent, element: PPTTableElement, command: OperateResizeHandlers) => void;
+  readonly scaleElement: (
+    e: React.MouseEvent,
+    element: PPTTableElement,
+    command: OperateResizeHandlers,
+  ) => void;
 }
 
-export function TableElementOperate({ elementInfo, handlerVisible, rotateElement, scaleElement }: TableElementOperateProps) {
+export function TableElementOperate({
+  elementInfo,
+  handlerVisible,
+  rotateElement,
+  scaleElement,
+}: TableElementOperateProps) {
   const canvasScale = useCanvasStore.use.canvasScale();
 
   const outlineWidth = useMemo(() => elementInfo.outline.width || 1, [elementInfo.outline.width]);
 
-  const scaleWidth = useMemo(() => (elementInfo.width + outlineWidth) * canvasScale, [elementInfo.width, outlineWidth, canvasScale]);
-  const scaleHeight = useMemo(() => elementInfo.height * canvasScale, [elementInfo.height, canvasScale]);
+  const scaleWidth = useMemo(
+    () => (elementInfo.width + outlineWidth) * canvasScale,
+    [elementInfo.width, outlineWidth, canvasScale],
+  );
+  const scaleHeight = useMemo(
+    () => elementInfo.height * canvasScale,
+    [elementInfo.height, canvasScale],
+  );
 
   const { resizeHandlers, borderLines } = useCommonOperate(scaleWidth, scaleHeight);
 
   return (
     <div className="table-element-operate">
       {borderLines.map((line) => (
-        <BorderLine key={line.type} type={line.type} style={line.style} className="operate-border-line" />
+        <BorderLine
+          key={line.type}
+          type={line.type}
+          style={line.style}
+          className="operate-border-line"
+        />
       ))}
       {handlerVisible && (
         <>

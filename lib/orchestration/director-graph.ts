@@ -28,7 +28,11 @@ import type { StatelessChatRequest } from '@/lib/types/chat';
 import type { ThinkingConfig } from '@/lib/types/provider';
 import type { AgentConfig } from '@/lib/orchestration/registry/types';
 import { useAgentRegistry } from '@/lib/orchestration/registry/store';
-import { buildStructuredPrompt, summarizeConversation, convertMessagesToOpenAI } from './prompt-builder';
+import {
+  buildStructuredPrompt,
+  summarizeConversation,
+  convertMessagesToOpenAI,
+} from './prompt-builder';
 import { buildDirectorPrompt, parseDirectorDecision } from './director-prompt';
 import { getEffectiveActions } from './tool-schemas';
 import type { AgentTurnSummary, WhiteboardActionRecord } from './director-prompt';
@@ -97,11 +101,15 @@ function resolveAgent(state: OrchestratorStateType, agentId: string): AgentConfi
  */
 async function directorNode(
   state: OrchestratorStateType,
-  config: LangGraphRunnableConfig
+  config: LangGraphRunnableConfig,
 ): Promise<Partial<OrchestratorStateType>> {
   const rawWrite = config.writer as (chunk: StatelessEvent) => void;
   const write = (chunk: StatelessEvent) => {
-    try { rawWrite(chunk); } catch { /* controller closed after abort */ }
+    try {
+      rawWrite(chunk);
+    } catch {
+      /* controller closed after abort */
+    }
   };
   const isSingleAgent = state.availableAgentIds.length <= 1;
 
@@ -133,10 +141,15 @@ async function directorNode(
     const triggerId = state.triggerAgentId;
     if (state.availableAgentIds.includes(triggerId)) {
       log.info(`[Director] First turn: dispatching trigger agent "${triggerId}"`);
-      write({ type: 'thinking', data: { stage: 'agent_loading', agentId: triggerId } });
+      write({
+        type: 'thinking',
+        data: { stage: 'agent_loading', agentId: triggerId },
+      });
       return { currentAgentId: triggerId, shouldEnd: false };
     }
-    log.warn(`[Director] Trigger agent "${triggerId}" not in available agents, falling through to LLM`);
+    log.warn(
+      `[Director] Trigger agent "${triggerId}" not in available agents, falling through to LLM`,
+    );
   }
 
   // ── Multi agent: LLM-based decision ──
@@ -170,7 +183,7 @@ async function directorNode(
   try {
     const result = await adapter._generate(
       [new SystemMessage(prompt), new HumanMessage('Decide which agent should speak next.')],
-      { signal: config.signal } as Record<string, unknown>
+      { signal: config.signal } as Record<string, unknown>,
     );
 
     const content = result.generations[0]?.text || '';
@@ -185,7 +198,10 @@ async function directorNode(
 
     if (decision.nextAgentId === 'USER') {
       log.info('[Director] Decision: cue USER to speak');
-      write({ type: 'cue_user', data: { fromAgentId: state.currentAgentId || undefined } });
+      write({
+        type: 'cue_user',
+        data: { fromAgentId: state.currentAgentId || undefined },
+      });
       return { shouldEnd: true };
     }
 
@@ -195,7 +211,10 @@ async function directorNode(
       return { shouldEnd: true };
     }
 
-    write({ type: 'thinking', data: { stage: 'agent_loading', agentId: decision.nextAgentId } });
+    write({
+      type: 'thinking',
+      data: { stage: 'agent_loading', agentId: decision.nextAgentId },
+    });
 
     log.info(`[Director] Decision: dispatch agent "${decision.nextAgentId}"`);
     return {
@@ -221,8 +240,12 @@ function directorCondition(state: OrchestratorStateType): 'agent_generate' | typ
 async function runAgentGeneration(
   state: OrchestratorStateType,
   agentId: string,
-  config: LangGraphRunnableConfig
-): Promise<{ contentPreview: string; actionCount: number; whiteboardActions: WhiteboardActionRecord[] }> {
+  config: LangGraphRunnableConfig,
+): Promise<{
+  contentPreview: string;
+  actionCount: number;
+  whiteboardActions: WhiteboardActionRecord[];
+}> {
   const agentConfig = resolveAgent(state, agentId);
   if (!agentConfig) {
     throw new Error(`Agent not found: ${agentId}`);
@@ -230,7 +253,11 @@ async function runAgentGeneration(
 
   const rawWrite = config.writer as (chunk: StatelessEvent) => void;
   const write = (chunk: StatelessEvent) => {
-    try { rawWrite(chunk); } catch (e) { log.warn(`[AgentGenerate] write failed for ${agentId}:`, e); }
+    try {
+      rawWrite(chunk);
+    } catch (e) {
+      log.warn(`[AgentGenerate] write failed for ${agentId}:`, e);
+    }
   };
   const messageId = `assistant-${agentId}-${Date.now()}`;
 
@@ -248,20 +275,27 @@ async function runAgentGeneration(
   // Compute effective actions: filter by scene type for defense-in-depth
   // e.g. spotlight/laser stripped for non-slide scenes even if in static allowedActions
   const currentScene = state.storeState.currentSceneId
-    ? state.storeState.scenes.find(s => s.id === state.storeState.currentSceneId)
+    ? state.storeState.scenes.find((s) => s.id === state.storeState.currentSceneId)
     : undefined;
   const sceneType = currentScene?.type;
   const effectiveActions = getEffectiveActions(agentConfig.allowedActions, sceneType);
 
   const discussionContext = state.discussionContext || undefined;
-  const systemPrompt = buildStructuredPrompt(agentConfig, state.storeState, discussionContext, state.whiteboardLedger, state.userProfile || undefined, state.agentResponses);
+  const systemPrompt = buildStructuredPrompt(
+    agentConfig,
+    state.storeState,
+    discussionContext,
+    state.whiteboardLedger,
+    state.userProfile || undefined,
+    state.agentResponses,
+  );
   const openaiMessages = convertMessagesToOpenAI(state.messages, agentId);
   const adapter = new AISdkLangGraphAdapter(state.languageModel, state.thinkingConfig ?? undefined);
 
   const lcMessages = [
     new SystemMessage(systemPrompt),
     ...openaiMessages.map((m) =>
-      m.role === 'user' ? new HumanMessage(m.content) : new AIMessage(m.content)
+      m.role === 'user' ? new HumanMessage(m.content) : new AIMessage(m.content),
     ),
   ];
 
@@ -273,7 +307,7 @@ async function runAgentGeneration(
   if (!lcMessages.some((m) => m instanceof HumanMessage)) {
     lcMessages.push(new HumanMessage('Please begin.'));
   } else if (lastMsg instanceof AIMessage) {
-    lcMessages.push(new HumanMessage('It\'s your turn to speak. Respond from your perspective.'));
+    lcMessages.push(new HumanMessage("It's your turn to speak. Respond from your perspective."));
   }
 
   const parserState = createParserState();
@@ -282,7 +316,9 @@ async function runAgentGeneration(
   const whiteboardActions: WhiteboardActionRecord[] = [];
 
   try {
-    for await (const chunk of adapter.streamGenerate(lcMessages, { signal: config.signal })) {
+    for await (const chunk of adapter.streamGenerate(lcMessages, {
+      signal: config.signal,
+    })) {
       if (chunk.type === 'delta') {
         const parseResult = parseStructuredChunk(chunk.content, parserState);
 
@@ -291,12 +327,19 @@ async function runAgentGeneration(
         // trailing partial text deltas (Step 6) are in textChunks but not in ordered.
         let emittedTextCount = 0;
         if (parseResult.ordered.length > 0 || parseResult.textChunks.length > 0) {
-          log.debug(`[AgentGenerate] Parse: ordered=${parseResult.ordered.length} (${parseResult.ordered.map(e => e.type).join(',')}), textChunks=${parseResult.textChunks.length}, actions=${parseResult.actions.length}, done=${parseResult.isDone}`);
+          log.debug(
+            `[AgentGenerate] Parse: ordered=${parseResult.ordered.length} (${parseResult.ordered.map((e) => e.type).join(',')}), textChunks=${parseResult.textChunks.length}, actions=${parseResult.actions.length}, done=${parseResult.isDone}`,
+          );
         }
         for (const entry of parseResult.ordered) {
           if (entry.type === 'text') {
             const rawText = parseResult.textChunks[entry.index];
-            if (!rawText) { log.warn(`[AgentGenerate] Ordered text entry index=${entry.index} but textChunks[${entry.index}] is empty`); continue; }
+            if (!rawText) {
+              log.warn(
+                `[AgentGenerate] Ordered text entry index=${entry.index} but textChunks[${entry.index}] is empty`,
+              );
+              continue;
+            }
             const text = rawText.replace(/^>+\s?/gm, '');
             if (!text) continue;
             fullText += text;
@@ -309,7 +352,9 @@ async function runAgentGeneration(
             const ac = parseResult.actions[entry.index];
             if (!ac) continue;
             if (!effectiveActions.includes(ac.actionName)) {
-              log.warn(`[AgentGenerate] Agent ${agentConfig.name} attempted disallowed action: ${ac.actionName}, skipping`);
+              log.warn(
+                `[AgentGenerate] Agent ${agentConfig.name} attempted disallowed action: ${ac.actionName}, skipping`,
+              );
               continue;
             }
             actionCount++;
@@ -393,7 +438,7 @@ async function runAgentGeneration(
  */
 async function agentGenerateNode(
   state: OrchestratorStateType,
-  config: LangGraphRunnableConfig
+  config: LangGraphRunnableConfig,
 ): Promise<Partial<OrchestratorStateType>> {
   const agentId = state.currentAgentId;
   if (!agentId) {
@@ -404,7 +449,9 @@ async function agentGenerateNode(
   const result = await runAgentGeneration(state, agentId, config);
 
   if (!result.contentPreview && result.actionCount === 0) {
-    log.warn(`[AgentGenerate] Agent "${agentConfig?.name || agentId}" produced empty response (no text, no actions)`);
+    log.warn(
+      `[AgentGenerate] Agent "${agentConfig?.name || agentId}" produced empty response (no text, no actions)`,
+    );
   }
 
   return {
@@ -472,7 +519,10 @@ export function buildInitialState(
   }
 
   const discussionContext = request.config.discussionTopic
-    ? { topic: request.config.discussionTopic, prompt: request.config.discussionPrompt }
+    ? {
+        topic: request.config.discussionTopic,
+        prompt: request.config.discussionPrompt,
+      }
     : null;
 
   const incoming = request.directorState;
@@ -482,7 +532,7 @@ export function buildInitialState(
     messages: request.messages,
     storeState: request.storeState,
     availableAgentIds: request.config.agentIds,
-    maxTurns: turnCount + 1,  // Allow exactly one more director→agent cycle
+    maxTurns: turnCount + 1, // Allow exactly one more director→agent cycle
     languageModel,
     thinkingConfig: thinkingConfig ?? null,
     discussionContext,

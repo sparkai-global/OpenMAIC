@@ -18,11 +18,7 @@ export function ImageEllipseOutline({ width, height, outline }: ImageEllipseOutl
   if (!outline) return null;
 
   return (
-    <svg
-      className="absolute top-0 left-0 z-[2] overflow-visible"
-      width={width}
-      height={height}
-    >
+    <svg className="absolute top-0 left-0 z-[2] overflow-visible" width={width} height={height}>
       <ellipse
         vectorEffect="non-scaling-stroke"
         strokeLinecap="butt"

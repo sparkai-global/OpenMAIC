@@ -53,13 +53,13 @@ export interface WbOpenAction extends ActionBase {
 export interface WbDrawTextAction extends ActionBase {
   type: 'wb_draw_text';
   elementId?: string; // Custom element ID for later reference (e.g. wb_delete)
-  content: string;  // HTML string or plain text
+  content: string; // HTML string or plain text
   x: number;
   y: number;
-  width?: number;   // default 400
-  height?: number;  // default 100
+  width?: number; // default 400
+  height?: number; // default 100
   fontSize?: number; // default 18
-  color?: string;    // default '#333333'
+  color?: string; // default '#333333'
 }
 
 /** Draw shape on whiteboard (wait for render) */
@@ -98,9 +98,9 @@ export interface WbDrawLatexAction extends ActionBase {
   latex: string;
   x: number;
   y: number;
-  width?: number;  // default 400
+  width?: number; // default 400
   height?: number; // auto-calculated based on formula aspect ratio
-  color?: string;  // default '#000000'
+  color?: string; // default '#000000'
 }
 
 /** Draw table on whiteboard (wait for render) */
@@ -120,14 +120,14 @@ export interface WbDrawTableAction extends ActionBase {
 export interface WbDrawLineAction extends ActionBase {
   type: 'wb_draw_line';
   elementId?: string; // Custom element ID for later reference (e.g. wb_delete)
-  startX: number;      // Start X position (0-1000)
-  startY: number;      // Start Y position (0-562)
-  endX: number;        // End X position (0-1000)
-  endY: number;        // End Y position (0-562)
-  color?: string;      // Default '#333333'
-  width?: number;      // Line width, default 2
-  style?: 'solid' | 'dashed';  // Default 'solid'
-  points?: ['', 'arrow'] | ['arrow', ''] | ['arrow', 'arrow'] | ['', ''];  // Endpoint markers, default ['', '']
+  startX: number; // Start X position (0-1000)
+  startY: number; // Start Y position (0-562)
+  endX: number; // End X position (0-1000)
+  endY: number; // End Y position (0-562)
+  color?: string; // Default '#333333'
+  width?: number; // Line width, default 2
+  style?: 'solid' | 'dashed'; // Default 'solid'
+  points?: ['', 'arrow'] | ['arrow', ''] | ['arrow', 'arrow'] | ['', '']; // Endpoint markers, default ['', '']
 }
 
 /** Clear all whiteboard elements */
@@ -189,9 +189,19 @@ export const SLIDE_ONLY_ACTIONS: ActionType[] = ['spotlight', 'laser'];
 
 /** Action types that must complete before the next action runs */
 export const SYNC_ACTIONS: ActionType[] = [
-  'speech', 'play_video', 'wb_open', 'wb_draw_text', 'wb_draw_shape',
-  'wb_draw_chart', 'wb_draw_latex', 'wb_draw_table', 'wb_draw_line',
-  'wb_clear', 'wb_delete', 'wb_close', 'discussion',
+  'speech',
+  'play_video',
+  'wb_open',
+  'wb_draw_text',
+  'wb_draw_shape',
+  'wb_draw_chart',
+  'wb_draw_latex',
+  'wb_draw_table',
+  'wb_draw_line',
+  'wb_clear',
+  'wb_delete',
+  'wb_close',
+  'discussion',
 ];
 
 // ==================== Canvas utility types (non-action) ====================

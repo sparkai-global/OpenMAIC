@@ -100,15 +100,9 @@ export function Whiteboard({ isOpen, onClose }: WhiteboardProps) {
                   title={t('whiteboard.clear')}
                 >
                   <motion.div
-                    animate={
-                      isClearing
-                        ? { rotate: [0, -15, 15, -10, 10, 0] }
-                        : { rotate: 0 }
-                    }
+                    animate={isClearing ? { rotate: [0, -15, 15, -10, 10, 0] } : { rotate: 0 }}
                     transition={
-                      isClearing
-                        ? { duration: 0.5, ease: 'easeInOut' }
-                        : { duration: 0.2 }
+                      isClearing ? { duration: 0.5, ease: 'easeInOut' } : { duration: 0.2 }
                     }
                   >
                     <Eraser className="w-4 h-4" />

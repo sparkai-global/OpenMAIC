@@ -5,9 +5,9 @@
  * Handles scene navigation (goTo, next, previous, current).
  */
 
-import type { Scene } from "@/lib/types/stage";
-import type { StageStore, APIResult } from "./stage-api-types";
-import { validateSceneId, getScene } from "./stage-api-defaults";
+import type { Scene } from '@/lib/types/stage';
+import type { StageStore, APIResult } from './stage-api-types';
+import { validateSceneId, getScene } from './stage-api-defaults';
 
 /**
  * Create the navigation API
@@ -49,14 +49,12 @@ export function createNavigationAPI(store: StageStore) {
         const state = store.getState();
 
         if (!state.currentSceneId || state.scenes.length === 0) {
-          return { success: false, error: "No current scene" };
+          return { success: false, error: 'No current scene' };
         }
 
-        const currentIndex = state.scenes.findIndex(
-          (s) => s.id === state.currentSceneId,
-        );
+        const currentIndex = state.scenes.findIndex((s) => s.id === state.currentSceneId);
         if (currentIndex === -1 || currentIndex === state.scenes.length - 1) {
-          return { success: false, error: "Already at last scene" };
+          return { success: false, error: 'Already at last scene' };
         }
 
         const nextScene = state.scenes[currentIndex + 1];
@@ -78,14 +76,12 @@ export function createNavigationAPI(store: StageStore) {
         const state = store.getState();
 
         if (!state.currentSceneId || state.scenes.length === 0) {
-          return { success: false, error: "No current scene" };
+          return { success: false, error: 'No current scene' };
         }
 
-        const currentIndex = state.scenes.findIndex(
-          (s) => s.id === state.currentSceneId,
-        );
+        const currentIndex = state.scenes.findIndex((s) => s.id === state.currentSceneId);
         if (currentIndex === -1 || currentIndex === 0) {
-          return { success: false, error: "Already at first scene" };
+          return { success: false, error: 'Already at first scene' };
         }
 
         const prevScene = state.scenes[currentIndex - 1];
@@ -107,12 +103,12 @@ export function createNavigationAPI(store: StageStore) {
         const state = store.getState();
 
         if (!state.currentSceneId) {
-          return { success: false, error: "No current scene" };
+          return { success: false, error: 'No current scene' };
         }
 
         const scene = getScene(state.scenes, state.currentSceneId);
         if (!scene) {
-          return { success: false, error: "Current scene not found" };
+          return { success: false, error: 'Current scene not found' };
         }
 
         return { success: true, data: scene };

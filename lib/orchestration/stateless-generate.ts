@@ -91,13 +91,17 @@ function emitItem(
       result.textChunks.push(content);
       // Use per-call array index (not cumulative segment index) so that
       // director-graph can read result.textChunks[entry.index] correctly.
-      result.ordered.push({ type: 'text', index: result.textChunks.length - 1 });
+      result.ordered.push({
+        type: 'text',
+        index: result.textChunks.length - 1,
+      });
       return { textSegmentIndex: textSegmentIndex + 1, actionSegmentIndex };
     }
   } else if (item.type === 'action') {
     // Support both new format (name/params) and legacy format (tool_name/parameters)
     const action: ParsedAction = {
-      actionId: (item.action_id as string) || `action-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      actionId:
+        (item.action_id as string) || `action-${Date.now()}-${Math.random().toString(36).slice(2)}`,
       actionName: (item.name || item.tool_name) as string,
       params: (item.params || item.parameters || {}) as Record<string, unknown>,
     };
@@ -166,7 +170,10 @@ export function parseStructuredChunk(chunk: string, state: ParserState): ParseRe
     parsed = JSON.parse(repaired);
   } catch {
     try {
-      parsed = parsePartialJson(state.buffer, Allow.ARR | Allow.OBJ | Allow.STR | Allow.NUM | Allow.BOOL | Allow.NULL);
+      parsed = parsePartialJson(
+        state.buffer,
+        Allow.ARR | Allow.OBJ | Allow.STR | Allow.NUM | Allow.BOOL | Allow.NULL,
+      );
     } catch {
       return result;
     }
@@ -197,14 +204,21 @@ export function parseStructuredChunk(chunk: string, state: ParserState): ParseRe
 
     // If this item was previously the trailing partial text item, we've already
     // streamed its content incrementally. Only emit the remaining delta, not the full content.
-    if (i === state.lastParsedItemCount && state.lastPartialTextLength > 0 && item.type === 'text') {
+    if (
+      i === state.lastParsedItemCount &&
+      state.lastPartialTextLength > 0 &&
+      item.type === 'text'
+    ) {
       const content = item.content || '';
       const remaining = content.slice(state.lastPartialTextLength);
       if (remaining) {
         result.textChunks.push(remaining);
       }
       // Use per-call array index for consistency with emitItem fix
-      result.ordered.push({ type: 'text', index: result.textChunks.length - 1 });
+      result.ordered.push({
+        type: 'text',
+        index: result.textChunks.length - 1,
+      });
       textSegmentIndex++;
       state.lastPartialTextLength = 0;
       continue;
@@ -306,8 +320,12 @@ export async function* statelessGenerate(
   languageModel: LanguageModel,
   thinkingConfig?: ThinkingConfig,
 ): AsyncGenerator<StatelessEvent> {
-  log.info(`[StatelessGenerate] Starting orchestration for agents: ${request.config.agentIds.join(', ')}`);
-  log.info(`[StatelessGenerate] Message count: ${request.messages.length}, turnCount: ${request.directorState?.turnCount ?? 0}`);
+  log.info(
+    `[StatelessGenerate] Starting orchestration for agents: ${request.config.agentIds.join(', ')}`,
+  );
+  log.info(
+    `[StatelessGenerate] Message count: ${request.messages.length}, turnCount: ${request.directorState?.turnCount ?? 0}`,
+  );
 
   try {
     const graph = createOrchestrationGraph();
@@ -370,33 +388,36 @@ export async function* statelessGenerate(
     const prevLedger = incoming?.whiteboardLedger ?? [];
     const prevTurnCount = incoming?.turnCount ?? 0;
 
-    const directorState = totalAgents > 0
-      ? {
-          turnCount: prevTurnCount + 1,
-          agentResponses: [
-            ...prevResponses,
-            {
-              agentId: currentAgentId!,
-              agentName: currentAgentName || currentAgentId!,
-              contentPreview,
-              actionCount: agentActionCount,
-              whiteboardActions: [...agentWbActions],
-            },
-          ],
-          whiteboardLedger: [...prevLedger, ...agentWbActions],
-        }
-      : {
-          turnCount: prevTurnCount,
-          agentResponses: prevResponses,
-          whiteboardLedger: prevLedger,
-        };
+    const directorState =
+      totalAgents > 0
+        ? {
+            turnCount: prevTurnCount + 1,
+            agentResponses: [
+              ...prevResponses,
+              {
+                agentId: currentAgentId!,
+                agentName: currentAgentName || currentAgentId!,
+                contentPreview,
+                actionCount: agentActionCount,
+                whiteboardActions: [...agentWbActions],
+              },
+            ],
+            whiteboardLedger: [...prevLedger, ...agentWbActions],
+          }
+        : {
+            turnCount: prevTurnCount,
+            agentResponses: prevResponses,
+            whiteboardLedger: prevLedger,
+          };
 
     yield {
       type: 'done',
       data: { totalActions, totalAgents, agentHadContent, directorState },
     };
 
-    log.info(`[StatelessGenerate] Completed. Agents: ${totalAgents}, Actions: ${totalActions}, hadContent: ${agentHadContent}, turnCount: ${directorState.turnCount}`);
+    log.info(
+      `[StatelessGenerate] Completed. Agents: ${totalAgents}, Actions: ${totalActions}, hadContent: ${agentHadContent}, turnCount: ${directorState.turnCount}`,
+    );
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') {
       yield { type: 'error', data: { message: 'Request interrupted' } };
@@ -404,7 +425,9 @@ export async function* statelessGenerate(
       log.error('[StatelessGenerate] Error:', error);
       yield {
         type: 'error',
-        data: { message: error instanceof Error ? error.message : String(error) },
+        data: {
+          message: error instanceof Error ? error.message : String(error),
+        },
       };
     }
   }

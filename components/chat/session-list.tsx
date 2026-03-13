@@ -52,7 +52,12 @@ export function SessionList({
       {sessions.map((session) => {
         const isExpanded = expandedSessionIds.has(session.id);
         const isActive = session.status === 'active';
-        const dotColor = session.type === 'lecture' ? 'bg-purple-500' : session.type === 'qa' ? 'bg-blue-500' : 'bg-amber-500';
+        const dotColor =
+          session.type === 'lecture'
+            ? 'bg-purple-500'
+            : session.type === 'qa'
+              ? 'bg-blue-500'
+              : 'bg-amber-500';
 
         return (
           <div
@@ -61,7 +66,7 @@ export function SessionList({
               'rounded-xl border transition-all duration-500 overflow-hidden',
               isActive
                 ? 'border-purple-200 dark:border-purple-700 bg-purple-50/30 dark:bg-purple-900/20 shadow-sm'
-                : 'border-gray-100 dark:border-gray-800 bg-white/50 dark:bg-gray-800/50'
+                : 'border-gray-100 dark:border-gray-800 bg-white/50 dark:bg-gray-800/50',
             )}
           >
             {/* Session Header */}
@@ -75,7 +80,7 @@ export function SessionList({
                   <span
                     className={cn(
                       dotColor,
-                      'animate-ping absolute inline-flex h-full w-full rounded-full opacity-75'
+                      'animate-ping absolute inline-flex h-full w-full rounded-full opacity-75',
                     )}
                   />
                 )}
@@ -83,7 +88,7 @@ export function SessionList({
               <span
                 className={cn(
                   'text-[8px] font-extrabold uppercase tracking-wider px-1.5 py-px rounded shrink-0',
-                  sessionBadgeStyles[session.type]
+                  sessionBadgeStyles[session.type],
                 )}
               >
                 {t(`chat.badge.${session.type}`)}
@@ -100,7 +105,7 @@ export function SessionList({
               <ChevronDown
                 className={cn(
                   'w-3.5 h-3.5 text-gray-400 dark:text-gray-500 transition-transform duration-200 shrink-0',
-                  !isExpanded && '-rotate-90'
+                  !isExpanded && '-rotate-90',
                 )}
               />
             </button>

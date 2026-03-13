@@ -28,9 +28,12 @@ export function parseJsonResponse<T>(response: string): T | null {
 
   if (jsonStartArray !== -1 || jsonStartObject !== -1) {
     // Prefer the structure that appears first
-    const startIndex = jsonStartArray === -1 ? jsonStartObject :
-                       jsonStartObject === -1 ? jsonStartArray :
-                       Math.min(jsonStartArray, jsonStartObject);
+    const startIndex =
+      jsonStartArray === -1
+        ? jsonStartObject
+        : jsonStartObject === -1
+          ? jsonStartArray
+          : Math.min(jsonStartArray, jsonStartObject);
 
     // Find the matching close bracket
     let depth = 0;
@@ -163,10 +166,14 @@ export function tryParseJson<T>(jsonStr: string): T | null {
     // Remove or escape control characters
     fixed = fixed.replace(/[\x00-\x1F\x7F]/g, (char) => {
       switch (char) {
-        case '\n': return '\\n';
-        case '\r': return '\\r';
-        case '\t': return '\\t';
-        default: return '';
+        case '\n':
+          return '\\n';
+        case '\r':
+          return '\\r';
+        case '\t':
+          return '\\t';
+        default:
+          return '';
       }
     });
 

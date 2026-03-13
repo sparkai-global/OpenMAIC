@@ -1,5 +1,5 @@
 export function formatContextWindow(size?: number): string {
-  if (!size) return "-";
+  if (!size) return '-';
 
   // For M: prefer decimal (use decimal for exact thousands)
   if (size >= 1000000) {

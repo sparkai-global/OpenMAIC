@@ -5,14 +5,10 @@
  * Handles element CRUD operations for slide-type scenes.
  */
 
-import type {
-  SlideContent,
-} from "@/lib/types/stage";
-import type {
-  PPTElement,
-} from "@/lib/types/slides";
-import type { StageStore, APIResult, CreateElementParams } from "./stage-api-types";
-import { generateId, getScene } from "./stage-api-defaults";
+import type { SlideContent } from '@/lib/types/stage';
+import type { PPTElement } from '@/lib/types/slides';
+import type { StageStore, APIResult, CreateElementParams } from './stage-api-types';
+import { generateId, getScene } from './stage-api-defaults';
 
 /**
  * Create the element management API
@@ -38,7 +34,7 @@ export function createElementAPI(store: StageStore) {
           return { success: false, error: `Scene not found: ${sceneId}` };
         }
 
-        if (scene.type !== "slide") {
+        if (scene.type !== 'slide') {
           return { success: false, error: `Scene is not a slide: ${sceneId}` };
         }
 
@@ -84,10 +80,7 @@ export function createElementAPI(store: StageStore) {
      * @param elements - Element array
      * @returns Element ID array
      */
-    addBatch(
-      sceneId: string,
-      elements: CreateElementParams[],
-    ): APIResult<string[]> {
+    addBatch(sceneId: string, elements: CreateElementParams[]): APIResult<string[]> {
       try {
         const state = store.getState();
         const scene = getScene(state.scenes, sceneId);
@@ -96,7 +89,7 @@ export function createElementAPI(store: StageStore) {
           return { success: false, error: `Scene not found: ${sceneId}` };
         }
 
-        if (scene.type !== "slide") {
+        if (scene.type !== 'slide') {
           return { success: false, error: `Scene is not a slide: ${sceneId}` };
         }
 
@@ -155,7 +148,7 @@ export function createElementAPI(store: StageStore) {
           return { success: false, error: `Scene not found: ${sceneId}` };
         }
 
-        if (scene.type !== "slide") {
+        if (scene.type !== 'slide') {
           return { success: false, error: `Scene is not a slide: ${sceneId}` };
         }
 
@@ -169,9 +162,7 @@ export function createElementAPI(store: StageStore) {
                 ...content,
                 canvas: {
                   ...content.canvas,
-                  elements: content.canvas.elements.filter(
-                    (el) => el.id !== elementId,
-                  ),
+                  elements: content.canvas.elements.filter((el) => el.id !== elementId),
                 },
               },
               updatedAt: Date.now(),
@@ -205,7 +196,7 @@ export function createElementAPI(store: StageStore) {
           return { success: false, error: `Scene not found: ${sceneId}` };
         }
 
-        if (scene.type !== "slide") {
+        if (scene.type !== 'slide') {
           return { success: false, error: `Scene is not a slide: ${sceneId}` };
         }
 
@@ -220,9 +211,7 @@ export function createElementAPI(store: StageStore) {
                 ...content,
                 canvas: {
                   ...content.canvas,
-                  elements: content.canvas.elements.filter(
-                    (el) => !elementIdSet.has(el.id),
-                  ),
+                  elements: content.canvas.elements.filter((el) => !elementIdSet.has(el.id)),
                 },
               },
               updatedAt: Date.now(),
@@ -247,11 +236,7 @@ export function createElementAPI(store: StageStore) {
      * @param updates - Properties to update
      * @returns Whether successful
      */
-    update(
-      sceneId: string,
-      elementId: string,
-      updates: Partial<PPTElement>,
-    ): APIResult<boolean> {
+    update(sceneId: string, elementId: string, updates: Partial<PPTElement>): APIResult<boolean> {
       try {
         const state = store.getState();
         const scene = getScene(state.scenes, sceneId);
@@ -260,7 +245,7 @@ export function createElementAPI(store: StageStore) {
           return { success: false, error: `Scene not found: ${sceneId}` };
         }
 
-        if (scene.type !== "slide") {
+        if (scene.type !== 'slide') {
           return { success: false, error: `Scene is not a slide: ${sceneId}` };
         }
 
@@ -309,14 +294,12 @@ export function createElementAPI(store: StageStore) {
           return { success: false, error: `Scene not found: ${sceneId}` };
         }
 
-        if (scene.type !== "slide") {
+        if (scene.type !== 'slide') {
           return { success: false, error: `Scene is not a slide: ${sceneId}` };
         }
 
         const content = scene.content as SlideContent;
-        const element = content.canvas.elements.find(
-          (el) => el.id === elementId,
-        );
+        const element = content.canvas.elements.find((el) => el.id === elementId);
 
         if (!element) {
           return { success: false, error: `Element not found: ${elementId}` };
@@ -343,7 +326,7 @@ export function createElementAPI(store: StageStore) {
           return { success: false, error: `Scene not found: ${sceneId}` };
         }
 
-        if (scene.type !== "slide") {
+        if (scene.type !== 'slide') {
           return { success: false, error: `Scene is not a slide: ${sceneId}` };
         }
 
@@ -364,12 +347,7 @@ export function createElementAPI(store: StageStore) {
      * @param deltaY - Y-axis movement distance
      * @returns Whether successful
      */
-    move(
-      sceneId: string,
-      elementId: string,
-      deltaX: number,
-      deltaY: number,
-    ): APIResult<boolean> {
+    move(sceneId: string, elementId: string, deltaX: number, deltaY: number): APIResult<boolean> {
       try {
         const state = store.getState();
         const scene = getScene(state.scenes, sceneId);
@@ -378,7 +356,7 @@ export function createElementAPI(store: StageStore) {
           return { success: false, error: `Scene not found: ${sceneId}` };
         }
 
-        if (scene.type !== "slide") {
+        if (scene.type !== 'slide') {
           return { success: false, error: `Scene is not a slide: ${sceneId}` };
         }
 

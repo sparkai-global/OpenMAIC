@@ -20,16 +20,22 @@ export function buildCourseContext(ctx?: SceneGenerationContext): string {
 
   // Position information
   lines.push('');
-  lines.push('IMPORTANT: All pages belong to the SAME class session. Do NOT greet again after the first page. When referencing content from earlier pages, say "we just covered" or "as mentioned on page N" — NEVER say "last class" or "previous session" because there is no previous session.');
+  lines.push(
+    'IMPORTANT: All pages belong to the SAME class session. Do NOT greet again after the first page. When referencing content from earlier pages, say "we just covered" or "as mentioned on page N" — NEVER say "last class" or "previous session" because there is no previous session.',
+  );
   lines.push('');
   if (ctx.pageIndex === 1) {
     lines.push('Position: This is the FIRST page. Open with a greeting and course introduction.');
   } else if (ctx.pageIndex === ctx.totalPages) {
     lines.push('Position: This is the LAST page. Conclude the course with a summary and closing.');
-    lines.push('Transition: Continue naturally from the previous page. Do NOT greet or re-introduce.');
+    lines.push(
+      'Transition: Continue naturally from the previous page. Do NOT greet or re-introduce.',
+    );
   } else {
     lines.push(`Position: Page ${ctx.pageIndex} of ${ctx.totalPages} (middle of the course).`);
-    lines.push('Transition: Continue naturally from the previous page. Do NOT greet or re-introduce.');
+    lines.push(
+      'Transition: Continue naturally from the previous page. Do NOT greet or re-introduce.',
+    );
   }
 
   // Previous page speech for transition reference
@@ -59,7 +65,7 @@ export function formatAgentsForPrompt(agents?: AgentInfo[]): string {
 export function formatTeacherPersonaForPrompt(agents?: AgentInfo[]): string {
   if (!agents || agents.length === 0) return '';
 
-  const teacher = agents.find(a => a.role === 'teacher');
+  const teacher = agents.find((a) => a.role === 'teacher');
   if (!teacher?.persona) return '';
 
   return `Teacher Persona:\nName: ${teacher.name}\n${teacher.persona}\n\nPlease adapt the content style and tone to match this teacher's personality and teaching approach.`;
@@ -104,11 +110,11 @@ export function formatImagePlaceholder(img: PdfImage, language: string): string 
  */
 export function buildVisionUserContent(
   userPrompt: string,
-  images: Array<{ id: string; src: string; width?: number; height?: number }>
+  images: Array<{ id: string; src: string; width?: number; height?: number }>,
 ): Array<{ type: 'text'; text: string } | { type: 'image'; image: string; mimeType?: string }> {
-  const parts: Array<{ type: 'text'; text: string } | { type: 'image'; image: string; mimeType?: string }> = [
-    { type: 'text', text: userPrompt },
-  ];
+  const parts: Array<
+    { type: 'text'; text: string } | { type: 'image'; image: string; mimeType?: string }
+  > = [{ type: 'text', text: userPrompt }];
   if (images.length > 0) {
     parts.push({ type: 'text', text: '\n\n--- Attached Images ---' });
     for (const img of images) {
@@ -121,7 +127,11 @@ export function buildVisionUserContent(
       // Strip data URI prefix — AI SDK only accepts http(s) URLs or raw base64
       const dataUriMatch = img.src.match(/^data:([^;]+);base64,(.+)$/);
       if (dataUriMatch) {
-        parts.push({ type: 'image', image: dataUriMatch[2], mimeType: dataUriMatch[1] });
+        parts.push({
+          type: 'image',
+          image: dataUriMatch[2],
+          mimeType: dataUriMatch[1],
+        });
       } else {
         parts.push({ type: 'image', image: img.src });
       }

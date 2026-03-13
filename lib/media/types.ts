@@ -69,15 +69,11 @@
  * Add new image providers here as union members.
  * Keep in sync with IMAGE_PROVIDERS registry in constants.ts
  */
-export type ImageProviderId =
-  | 'seedream'
-  | 'qwen-image'
-  | 'nano-banana'
-  // Add new image providers below (uncomment and modify):
-  // | 'dall-e'
-  // | 'midjourney'
-  // | 'stable-diffusion'
-  ;
+export type ImageProviderId = 'seedream' | 'qwen-image' | 'nano-banana';
+// Add new image providers below (uncomment and modify):
+// | 'dall-e'
+// | 'midjourney'
+// | 'stable-diffusion'
 
 /**
  * Image Provider Configuration
@@ -182,15 +178,10 @@ export interface ImageGenerationResult {
  * Add new video providers here as union members.
  * Keep in sync with VIDEO_PROVIDERS registry in constants.ts
  */
-export type VideoProviderId =
-  | 'seedance'
-  | 'kling'
-  | 'veo'
-  | 'sora'
-  // Add new video providers below (uncomment and modify):
-  // | 'runway'
-  // | 'pika'
-  ;
+export type VideoProviderId = 'seedance' | 'kling' | 'veo' | 'sora';
+// Add new video providers below (uncomment and modify):
+// | 'runway'
+// | 'pika'
 
 /**
  * Video Provider Configuration

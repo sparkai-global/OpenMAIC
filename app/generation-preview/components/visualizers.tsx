@@ -18,7 +18,11 @@ import { cn } from '@/lib/utils';
 import type { SceneOutline } from '@/lib/types/generation';
 
 // Step-specific visualizers
-export function StepVisualizer({ stepId, outlines, webSearchSources }: {
+export function StepVisualizer({
+  stepId,
+  outlines,
+  webSearchSources,
+}: {
   stepId: string;
   outlines?: SceneOutline[] | null;
   webSearchSources?: Array<{ title: string; url: string }>;
@@ -88,7 +92,7 @@ function WebSearchVisualizer({ sources }: { sources: Array<{ title: string; url:
   useEffect(() => {
     if (sources.length === 0) return;
     const timer = setInterval(() => {
-      setActiveResult(prev => (prev + 1) % Math.min(sources.length, 4));
+      setActiveResult((prev) => (prev + 1) % Math.min(sources.length, 4));
     }, 1400);
     return () => clearInterval(timer);
   }, [sources.length]);
@@ -139,53 +143,69 @@ function WebSearchVisualizer({ sources }: { sources: Array<{ title: string; url:
             />
           )}
 
-          {sources.length === 0 ? (
-            // Skeleton: pulsing result placeholders
-            skeletonResults.map((item, i) => (
-              <motion.div
-                key={i}
-                className="px-2 py-1.5 space-y-1"
-                animate={{ opacity: [0.3, 0.7, 0.3] }}
-                transition={{ duration: 1.4, repeat: Infinity, delay: i * 0.15 }}
-              >
-                <div className="h-1.5 bg-teal-200/40 dark:bg-teal-800/30 rounded" style={{ width: `${item.titleW}%` }} />
-                <div className="h-1 bg-slate-100 dark:bg-slate-700 rounded" style={{ width: `${item.urlW}%` }} />
-                <div className="flex gap-1">
-                  {item.snippetW.map((w, j) => (
-                    <div key={j} className="h-1 bg-slate-100 dark:bg-slate-700 rounded" style={{ width: `${w * 0.5}%` }} />
-                  ))}
-                </div>
-              </motion.div>
-            ))
-          ) : (
-            // Live results
-            sources.slice(0, 4).map((source, i) => {
-              const isActive = i === activeResult;
-              return (
+          {sources.length === 0
+            ? // Skeleton: pulsing result placeholders
+              skeletonResults.map((item, i) => (
                 <motion.div
-                  key={source.url}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.08, duration: 0.25 }}
-                  className="relative px-2 py-1.5 space-y-0.5"
+                  key={i}
+                  className="px-2 py-1.5 space-y-1"
+                  animate={{ opacity: [0.3, 0.7, 0.3] }}
+                  transition={{
+                    duration: 1.4,
+                    repeat: Infinity,
+                    delay: i * 0.15,
+                  }}
                 >
-                  <div className={cn(
-                    "text-[8px] font-semibold truncate transition-colors duration-300 leading-tight",
-                    isActive ? "text-teal-600 dark:text-teal-400" : "text-slate-600 dark:text-slate-400"
-                  )}>
-                    {source.title}
-                  </div>
-                  <div className="text-[6px] text-teal-500/50 truncate leading-tight">
-                    {source.url.replace(/^https?:\/\/(www\.)?/, '').slice(0, 32)}
-                  </div>
+                  <div
+                    className="h-1.5 bg-teal-200/40 dark:bg-teal-800/30 rounded"
+                    style={{ width: `${item.titleW}%` }}
+                  />
+                  <div
+                    className="h-1 bg-slate-100 dark:bg-slate-700 rounded"
+                    style={{ width: `${item.urlW}%` }}
+                  />
                   <div className="flex gap-1">
-                    <div className="h-0.5 flex-1 bg-slate-100 dark:bg-slate-700 rounded-full" />
-                    <div className="h-0.5 w-1/3 bg-slate-100 dark:bg-slate-700 rounded-full" />
+                    {item.snippetW.map((w, j) => (
+                      <div
+                        key={j}
+                        className="h-1 bg-slate-100 dark:bg-slate-700 rounded"
+                        style={{ width: `${w * 0.5}%` }}
+                      />
+                    ))}
                   </div>
                 </motion.div>
-              );
-            })
-          )}
+              ))
+            : // Live results
+              sources.slice(0, 4).map((source, i) => {
+                const isActive = i === activeResult;
+                return (
+                  <motion.div
+                    key={source.url}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.08, duration: 0.25 }}
+                    className="relative px-2 py-1.5 space-y-0.5"
+                  >
+                    <div
+                      className={cn(
+                        'text-[8px] font-semibold truncate transition-colors duration-300 leading-tight',
+                        isActive
+                          ? 'text-teal-600 dark:text-teal-400'
+                          : 'text-slate-600 dark:text-slate-400',
+                      )}
+                    >
+                      {source.title}
+                    </div>
+                    <div className="text-[6px] text-teal-500/50 truncate leading-tight">
+                      {source.url.replace(/^https?:\/\/(www\.)?/, '').slice(0, 32)}
+                    </div>
+                    <div className="flex gap-1">
+                      <div className="h-0.5 flex-1 bg-slate-100 dark:bg-slate-700 rounded-full" />
+                      <div className="h-0.5 w-1/3 bg-slate-100 dark:bg-slate-700 rounded-full" />
+                    </div>
+                  </motion.div>
+                );
+              })}
         </div>
 
         {/* Scanning beam */}
@@ -193,7 +213,12 @@ function WebSearchVisualizer({ sources }: { sources: Array<{ title: string; url:
           className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 dark:via-white/5 to-transparent -skew-x-12 pointer-events-none"
           initial={{ left: '-150%' }}
           animate={{ left: '200%' }}
-          transition={{ duration: 2, repeat: Infinity, repeatDelay: 2, ease: 'linear' }}
+          transition={{
+            duration: 2,
+            repeat: Infinity,
+            repeatDelay: 2,
+            ease: 'linear',
+          }}
         />
       </div>
 
@@ -219,7 +244,7 @@ function StreamingOutlineVisualizer({ outlines }: { outlines: SceneOutline[] }) 
   const allLines: string[] = [];
   outlines.forEach((outline, i) => {
     allLines.push(`${i + 1}. ${outline.title}`);
-    outline.keyPoints?.slice(0, 2).forEach(kp => {
+    outline.keyPoints?.slice(0, 2).forEach((kp) => {
       const text = kp.length > 18 ? kp.substring(0, 18) + '...' : kp;
       allLines.push(`   • ${text}`);
     });
@@ -250,10 +275,10 @@ function StreamingOutlineVisualizer({ outlines }: { outlines: SceneOutline[] }) 
               initial={{ opacity: 0, x: -8 }}
               animate={{ opacity: 1, x: 0 }}
               className={cn(
-                "truncate",
-                !line.startsWith("   ")
-                  ? "text-blue-600 dark:text-blue-400 font-semibold text-[9px]"
-                  : "pl-1 opacity-80"
+                'truncate',
+                !line.startsWith('   ')
+                  ? 'text-blue-600 dark:text-blue-400 font-semibold text-[9px]'
+                  : 'pl-1 opacity-80',
               )}
             >
               {line}
@@ -275,14 +300,21 @@ function AgentGenerationVisualizer() {
   return (
     <div className="w-60 h-40 mx-auto flex items-center justify-center">
       <div className="flex gap-3">
-        {[0, 1, 2].map(i => (
+        {[0, 1, 2].map((i) => (
           <motion.div
             key={i}
             className="w-14 h-20 rounded-lg bg-gradient-to-br from-purple-400 to-blue-500 dark:from-purple-600 dark:to-blue-700 shadow-lg"
             animate={{ y: [0, -8, 0], rotateZ: [0, 3, -3, 0] }}
-            transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.3, ease: 'easeInOut' }}
+            transition={{
+              duration: 1.5,
+              repeat: Infinity,
+              delay: i * 0.3,
+              ease: 'easeInOut',
+            }}
           >
-            <div className="w-full h-full flex items-center justify-center text-white/80 text-lg font-bold">?</div>
+            <div className="w-full h-full flex items-center justify-center text-white/80 text-lg font-bold">
+              ?
+            </div>
           </motion.div>
         ))}
       </div>
@@ -314,27 +346,36 @@ function ContentVisualizer() {
 
   const getTheme = (idx: number) => {
     switch (idx) {
-      case 0: return {
-        color: 'blue',
-        label: 'SLIDE',
-        badge: 'bg-blue-100 text-blue-600 border-blue-200 dark:bg-blue-900/40 dark:text-blue-300 dark:border-blue-800'
-      };
-      case 1: return {
-        color: 'purple',
-        label: 'QUIZ',
-        badge: 'bg-purple-100 text-purple-600 border-purple-200 dark:bg-purple-900/40 dark:text-purple-300 dark:border-purple-800'
-      };
-      case 2: return {
-        color: 'amber',
-        label: 'PBL',
-        badge: 'bg-amber-100 text-amber-600 border-amber-200 dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-800'
-      };
-      case 3: return {
-        color: 'emerald',
-        label: 'WEB',
-        badge: 'bg-emerald-100 text-emerald-600 border-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-300 dark:border-emerald-800'
-      };
-      default: return { color: 'blue', label: '', badge: '' };
+      case 0:
+        return {
+          color: 'blue',
+          label: 'SLIDE',
+          badge:
+            'bg-blue-100 text-blue-600 border-blue-200 dark:bg-blue-900/40 dark:text-blue-300 dark:border-blue-800',
+        };
+      case 1:
+        return {
+          color: 'purple',
+          label: 'QUIZ',
+          badge:
+            'bg-purple-100 text-purple-600 border-purple-200 dark:bg-purple-900/40 dark:text-purple-300 dark:border-purple-800',
+        };
+      case 2:
+        return {
+          color: 'amber',
+          label: 'PBL',
+          badge:
+            'bg-amber-100 text-amber-600 border-amber-200 dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-800',
+        };
+      case 3:
+        return {
+          color: 'emerald',
+          label: 'WEB',
+          badge:
+            'bg-emerald-100 text-emerald-600 border-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-300 dark:border-emerald-800',
+        };
+      default:
+        return { color: 'blue', label: '', badge: '' };
     }
   };
 
@@ -346,11 +387,11 @@ function ContentVisualizer() {
       <motion.div
         key={`glow-${index}`}
         className={cn(
-          "absolute inset-0 blur-3xl rounded-full transition-colors duration-1000",
-          theme.color === 'blue' && "bg-blue-500/10",
-          theme.color === 'purple' && "bg-purple-500/10",
-          theme.color === 'amber' && "bg-amber-500/10",
-          theme.color === 'emerald' && "bg-emerald-500/10"
+          'absolute inset-0 blur-3xl rounded-full transition-colors duration-1000',
+          theme.color === 'blue' && 'bg-blue-500/10',
+          theme.color === 'purple' && 'bg-purple-500/10',
+          theme.color === 'amber' && 'bg-amber-500/10',
+          theme.color === 'emerald' && 'bg-emerald-500/10',
         )}
         animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
         transition={{ duration: 4, repeat: Infinity }}
@@ -361,21 +402,21 @@ function ContentVisualizer() {
         <motion.div
           key={i}
           className={cn(
-             "absolute border rounded-full transition-colors duration-1000",
-             theme.color === 'blue' && "border-blue-500/10",
-             theme.color === 'purple' && "border-purple-500/10",
-             theme.color === 'amber' && "border-amber-500/10",
-             theme.color === 'emerald' && "border-emerald-500/10"
+            'absolute border rounded-full transition-colors duration-1000',
+            theme.color === 'blue' && 'border-blue-500/10',
+            theme.color === 'purple' && 'border-purple-500/10',
+            theme.color === 'amber' && 'border-amber-500/10',
+            theme.color === 'emerald' && 'border-emerald-500/10',
           )}
           style={{
             width: 180 + i * 50,
             height: 180 + i * 50,
-            borderStyle: "dashed",
+            borderStyle: 'dashed',
           }}
           animate={{ rotate: 360 }}
           transition={{
             duration: 40 + i * 15,
-            ease: "linear",
+            ease: 'linear',
             repeat: Infinity,
             delay: i * -5,
           }}
@@ -391,13 +432,13 @@ function ContentVisualizer() {
             initial="enter"
             animate="center"
             exit="exit"
-            transition={{ type: "spring", stiffness: 80, damping: 16 }}
+            transition={{ type: 'spring', stiffness: 80, damping: 16 }}
             className={cn(
-              "absolute inset-0 bg-white dark:bg-slate-800 rounded-xl border shadow-xl overflow-hidden flex flex-col p-3 origin-center",
-              theme.color === 'blue' && "border-blue-200 dark:border-blue-900/30",
-              theme.color === 'purple' && "border-purple-200 dark:border-purple-900/30",
-              theme.color === 'amber' && "border-amber-200 dark:border-amber-900/30",
-              theme.color === 'emerald' && "border-emerald-200 dark:border-emerald-900/30",
+              'absolute inset-0 bg-white dark:bg-slate-800 rounded-xl border shadow-xl overflow-hidden flex flex-col p-3 origin-center',
+              theme.color === 'blue' && 'border-blue-200 dark:border-blue-900/30',
+              theme.color === 'purple' && 'border-purple-200 dark:border-purple-900/30',
+              theme.color === 'amber' && 'border-amber-200 dark:border-amber-900/30',
+              theme.color === 'emerald' && 'border-emerald-200 dark:border-emerald-900/30',
             )}
           >
             {/* Consistent Badge - Now outside content logic */}
@@ -406,8 +447,8 @@ function ContentVisualizer() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.1 }}
               className={cn(
-                "absolute top-1.5 right-1.5 z-20 px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider border backdrop-blur-md shadow-sm",
-                theme.badge
+                'absolute top-1.5 right-1.5 z-20 px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider border backdrop-blur-md shadow-sm',
+                theme.badge,
               )}
             >
               {theme.label}
@@ -417,31 +458,31 @@ function ContentVisualizer() {
             {index === 0 && (
               <div className="flex flex-col h-full pt-1">
                 <motion.div
-                  initial={{ width: "0%" }}
-                  animate={{ width: "55%" }}
+                  initial={{ width: '0%' }}
+                  animate={{ width: '55%' }}
                   transition={{ delay: 0.2 }}
                   className="h-2 bg-blue-500/20 rounded-full mb-3 shrink-0"
                 />
                 <div className="flex gap-2 flex-1">
-                   <div className="flex-1 space-y-2">
-                      {[0.8, 0.9, 0.6, 0.7].map((w, i) => (
-                        <motion.div
-                          key={i}
-                          initial={{ width: 0 }}
-                          animate={{ width: `${w * 100}%` }}
-                          transition={{ delay: 0.3 + i * 0.1 }}
-                          className="h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full"
-                        />
-                      ))}
-                   </div>
-                   <motion.div
-                      initial={{ scale: 0.8, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      transition={{ delay: 0.4 }}
-                      className="w-12 h-12 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center shrink-0"
-                   >
-                      <BarChart3 className="size-6 text-blue-500/60" />
-                   </motion.div>
+                  <div className="flex-1 space-y-2">
+                    {[0.8, 0.9, 0.6, 0.7].map((w, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ width: 0 }}
+                        animate={{ width: `${w * 100}%` }}
+                        transition={{ delay: 0.3 + i * 0.1 }}
+                        className="h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full"
+                      />
+                    ))}
+                  </div>
+                  <motion.div
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ delay: 0.4 }}
+                    className="w-12 h-12 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center shrink-0"
+                  >
+                    <BarChart3 className="size-6 text-blue-500/60" />
+                  </motion.div>
                 </div>
               </div>
             )}
@@ -449,107 +490,132 @@ function ContentVisualizer() {
             {/* --- QUIZ TYPE --- */}
             {index === 1 && (
               <div className="flex flex-col h-full justify-center space-y-2 pt-2">
-                 <motion.div
-                    initial={{ y: -5, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.2 }}
-                    className="flex justify-center mb-1"
-                 >
-                    <div className="h-2 w-3/4 bg-purple-500/20 rounded-full" />
-                 </motion.div>
+                <motion.div
+                  initial={{ y: -5, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.2 }}
+                  className="flex justify-center mb-1"
+                >
+                  <div className="h-2 w-3/4 bg-purple-500/20 rounded-full" />
+                </motion.div>
 
-                 <div className="grid grid-cols-2 gap-2">
-                    {[0, 1, 2, 3].map((i) => (
-                       <motion.div
-                          key={i}
-                          initial={{ scale: 0.8, opacity: 0 }}
-                          animate={{ scale: 1, opacity: 1 }}
-                          transition={{ delay: 0.3 + i * 0.1 }}
-                          className={cn(
-                            "h-6 rounded border flex items-center px-2",
-                            i === 1 ? "bg-purple-500 text-white border-purple-500" : "bg-slate-50 dark:bg-slate-700/50 border-slate-100 dark:border-slate-700"
-                          )}
-                       >
-                          <div className={cn("size-1.5 rounded-full mr-2", i === 1 ? "bg-white" : "bg-slate-300")} />
-                          <div className={cn("h-1 w-8 rounded-full", i === 1 ? "bg-white/50" : "bg-slate-200 dark:bg-slate-600")} />
-                       </motion.div>
-                    ))}
-                 </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {[0, 1, 2, 3].map((i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ delay: 0.3 + i * 0.1 }}
+                      className={cn(
+                        'h-6 rounded border flex items-center px-2',
+                        i === 1
+                          ? 'bg-purple-500 text-white border-purple-500'
+                          : 'bg-slate-50 dark:bg-slate-700/50 border-slate-100 dark:border-slate-700',
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          'size-1.5 rounded-full mr-2',
+                          i === 1 ? 'bg-white' : 'bg-slate-300',
+                        )}
+                      />
+                      <div
+                        className={cn(
+                          'h-1 w-8 rounded-full',
+                          i === 1 ? 'bg-white/50' : 'bg-slate-200 dark:bg-slate-600',
+                        )}
+                      />
+                    </motion.div>
+                  ))}
+                </div>
               </div>
             )}
 
             {/* --- PBL TYPE --- */}
             {index === 2 && (
               <div className="flex flex-col h-full pt-1">
-                 <div className="flex items-center gap-2 mb-2">
-                    <Puzzle className="size-3 text-amber-500 shrink-0" />
+                <div className="flex items-center gap-2 mb-2">
+                  <Puzzle className="size-3 text-amber-500 shrink-0" />
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: '40%' }}
+                    className="h-2 bg-amber-500/20 rounded-full"
+                  />
+                </div>
+                <div className="flex-1 flex gap-2 overflow-hidden">
+                  {[0, 1, 2].map((col) => (
                     <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: "40%" }}
-                      className="h-2 bg-amber-500/20 rounded-full"
-                    />
-                 </div>
-                 <div className="flex-1 flex gap-2 overflow-hidden">
-                    {[0, 1, 2].map((col) => (
-                       <motion.div
-                          key={col}
-                          initial={{ y: 20, opacity: 0 }}
-                          animate={{ y: 0, opacity: 1 }}
-                          transition={{ delay: 0.2 + col * 0.15 }}
-                          className="flex-1 bg-slate-50 dark:bg-slate-700/30 rounded flex flex-col gap-1 p-1"
-                       >
-                          <div className="h-1 w-6 bg-slate-200 dark:bg-slate-600 rounded mb-1" />
-                          {[0, 1].map((card) => (
-                             <div key={card} className="h-3 w-full bg-white dark:bg-slate-600 rounded border border-slate-100 dark:border-slate-500 shadow-sm" />
-                          ))}
-                       </motion.div>
-                    ))}
-                 </div>
+                      key={col}
+                      initial={{ y: 20, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ delay: 0.2 + col * 0.15 }}
+                      className="flex-1 bg-slate-50 dark:bg-slate-700/30 rounded flex flex-col gap-1 p-1"
+                    >
+                      <div className="h-1 w-6 bg-slate-200 dark:bg-slate-600 rounded mb-1" />
+                      {[0, 1].map((card) => (
+                        <div
+                          key={card}
+                          className="h-3 w-full bg-white dark:bg-slate-600 rounded border border-slate-100 dark:border-slate-500 shadow-sm"
+                        />
+                      ))}
+                    </motion.div>
+                  ))}
+                </div>
               </div>
             )}
 
             {/* --- INTERACTIVE TYPE --- */}
             {index === 3 && (
               <div className="flex flex-col h-full relative pt-1">
-                 {/* Browser Chrome - Padded right to avoid badge */}
-                 <div className="flex items-center gap-1 mb-2 border-b border-slate-100 dark:border-slate-700 pb-1 pr-10">
-                    <div className="flex gap-0.5">
-                       <div className="size-1.5 rounded-full bg-red-400" />
-                       <div className="size-1.5 rounded-full bg-amber-400" />
-                       <div className="size-1.5 rounded-full bg-green-400" />
-                    </div>
-                    <div className="h-1.5 flex-1 bg-slate-100 dark:bg-slate-700 rounded-full ml-1" />
-                 </div>
+                {/* Browser Chrome - Padded right to avoid badge */}
+                <div className="flex items-center gap-1 mb-2 border-b border-slate-100 dark:border-slate-700 pb-1 pr-10">
+                  <div className="flex gap-0.5">
+                    <div className="size-1.5 rounded-full bg-red-400" />
+                    <div className="size-1.5 rounded-full bg-amber-400" />
+                    <div className="size-1.5 rounded-full bg-green-400" />
+                  </div>
+                  <div className="h-1.5 flex-1 bg-slate-100 dark:bg-slate-700 rounded-full ml-1" />
+                </div>
 
-                 <div className="flex-1 flex gap-2 relative">
+                <div className="flex-1 flex gap-2 relative">
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.3 }}
+                    className="w-1/3 bg-slate-50 dark:bg-slate-700/30 rounded p-1 space-y-1"
+                  >
+                    {[1, 2, 3].map((i) => (
+                      <div
+                        key={i}
+                        className="h-1 w-full bg-slate-200 dark:bg-slate-600 rounded-full"
+                      />
+                    ))}
+                  </motion.div>
+                  <div className="flex-1 bg-emerald-50 dark:bg-emerald-900/10 rounded border border-emerald-100 dark:border-emerald-900/30 relative overflow-hidden flex items-center justify-center">
+                    <Globe className="size-8 text-emerald-200 dark:text-emerald-800" />
                     <motion.div
-                       initial={{ opacity: 0 }}
-                       animate={{ opacity: 1 }}
-                       transition={{ delay: 0.3 }}
-                       className="w-1/3 bg-slate-50 dark:bg-slate-700/30 rounded p-1 space-y-1"
+                      className="absolute"
+                      animate={{ x: [20, -10, 15, 0], y: [10, -15, 5, 0] }}
+                      transition={{ duration: 3, ease: 'easeInOut' }}
                     >
-                       {[1,2,3].map(i => <div key={i} className="h-1 w-full bg-slate-200 dark:bg-slate-600 rounded-full" />)}
+                      <MousePointer2 className="size-3 text-emerald-600 fill-emerald-600" />
                     </motion.div>
-                    <div className="flex-1 bg-emerald-50 dark:bg-emerald-900/10 rounded border border-emerald-100 dark:border-emerald-900/30 relative overflow-hidden flex items-center justify-center">
-                       <Globe className="size-8 text-emerald-200 dark:text-emerald-800" />
-                       <motion.div
-                          className="absolute"
-                          animate={{ x: [20, -10, 15, 0], y: [10, -15, 5, 0] }}
-                          transition={{ duration: 3, ease: "easeInOut" }}
-                       >
-                          <MousePointer2 className="size-3 text-emerald-600 fill-emerald-600" />
-                       </motion.div>
-                    </div>
-                 </div>
+                  </div>
+                </div>
               </div>
             )}
 
             {/* Scanning beam (shared) */}
             <motion.div
-               className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/30 dark:via-white/10 to-transparent -skew-x-12 pointer-events-none"
-               initial={{ left: "-150%" }}
-               animate={{ left: "200%" }}
-               transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 1, ease: "linear" }}
+              className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/30 dark:via-white/10 to-transparent -skew-x-12 pointer-events-none"
+              initial={{ left: '-150%' }}
+              animate={{ left: '200%' }}
+              transition={{
+                duration: 1.5,
+                repeat: Infinity,
+                repeatDelay: 1,
+                ease: 'linear',
+              }}
             />
           </motion.div>
         </AnimatePresence>
@@ -563,11 +629,41 @@ function ActionsVisualizer() {
   const [activeIdx, setActiveIdx] = useState(0);
 
   const actionItems = [
-    { icon: MessageSquare, label: 'Speech', color: 'text-violet-500', activeBg: 'bg-violet-500/10', activeBorder: 'border-violet-200 dark:border-violet-800' },
-    { icon: Focus, label: 'Spotlight', color: 'text-amber-500', activeBg: 'bg-amber-500/10', activeBorder: 'border-amber-200 dark:border-amber-800' },
-    { icon: MessageSquare, label: 'Speech', color: 'text-violet-500', activeBg: 'bg-violet-500/10', activeBorder: 'border-violet-200 dark:border-violet-800' },
-    { icon: Play, label: 'Interact', color: 'text-emerald-500', activeBg: 'bg-emerald-500/10', activeBorder: 'border-emerald-200 dark:border-emerald-800' },
-    { icon: MessageSquare, label: 'Speech', color: 'text-violet-500', activeBg: 'bg-violet-500/10', activeBorder: 'border-violet-200 dark:border-violet-800' },
+    {
+      icon: MessageSquare,
+      label: 'Speech',
+      color: 'text-violet-500',
+      activeBg: 'bg-violet-500/10',
+      activeBorder: 'border-violet-200 dark:border-violet-800',
+    },
+    {
+      icon: Focus,
+      label: 'Spotlight',
+      color: 'text-amber-500',
+      activeBg: 'bg-amber-500/10',
+      activeBorder: 'border-amber-200 dark:border-amber-800',
+    },
+    {
+      icon: MessageSquare,
+      label: 'Speech',
+      color: 'text-violet-500',
+      activeBg: 'bg-violet-500/10',
+      activeBorder: 'border-violet-200 dark:border-violet-800',
+    },
+    {
+      icon: Play,
+      label: 'Interact',
+      color: 'text-emerald-500',
+      activeBg: 'bg-emerald-500/10',
+      activeBorder: 'border-emerald-200 dark:border-emerald-800',
+    },
+    {
+      icon: MessageSquare,
+      label: 'Speech',
+      color: 'text-violet-500',
+      activeBg: 'bg-violet-500/10',
+      activeBorder: 'border-violet-200 dark:border-violet-800',
+    },
   ];
 
   // Row height (py-1.5 = 6px×2 padding + icon ~16px) + gap 6px ≈ 34px per row
@@ -575,10 +671,10 @@ function ActionsVisualizer() {
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setActiveIdx(prev => (prev + 1) % actionItems.length);
+      setActiveIdx((prev) => (prev + 1) % actionItems.length);
     }, 1600);
     return () => clearInterval(timer);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -625,23 +721,29 @@ function ActionsVisualizer() {
                 transition={{ delay: 0.1 + i * 0.08, duration: 0.3 }}
                 className="relative flex items-center gap-2 px-2 py-1.5 rounded-lg"
               >
-                <div className={cn(
-                  "size-4 rounded flex items-center justify-center shrink-0 transition-colors duration-300",
-                  isActive ? item.color : "text-slate-300 dark:text-slate-600"
-                )}>
+                <div
+                  className={cn(
+                    'size-4 rounded flex items-center justify-center shrink-0 transition-colors duration-300',
+                    isActive ? item.color : 'text-slate-300 dark:text-slate-600',
+                  )}
+                >
                   <Icon className="size-3" />
                 </div>
                 <div className="flex-1 flex items-center gap-1.5">
-                  <span className={cn(
-                    "text-[8px] font-semibold uppercase tracking-wider transition-colors duration-300",
-                    isActive ? item.color : "text-slate-400 dark:text-slate-500"
-                  )}>
+                  <span
+                    className={cn(
+                      'text-[8px] font-semibold uppercase tracking-wider transition-colors duration-300',
+                      isActive ? item.color : 'text-slate-400 dark:text-slate-500',
+                    )}
+                  >
                     {item.label}
                   </span>
-                  <div className={cn(
-                    "h-1 flex-1 rounded-full transition-colors duration-300",
-                    isActive ? "bg-current opacity-20" : "bg-slate-100 dark:bg-slate-700"
-                  )} />
+                  <div
+                    className={cn(
+                      'h-1 flex-1 rounded-full transition-colors duration-300',
+                      isActive ? 'bg-current opacity-20' : 'bg-slate-100 dark:bg-slate-700',
+                    )}
+                  />
                 </div>
                 {/* Pulsing dot — always rendered, opacity-controlled, no layout shift */}
                 <motion.div
@@ -653,7 +755,6 @@ function ActionsVisualizer() {
             );
           })}
         </div>
-
       </div>
     </div>
   );

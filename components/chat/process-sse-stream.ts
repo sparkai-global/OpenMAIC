@@ -49,12 +49,21 @@ export async function processSSEStream(
             case 'agent_start': {
               const { messageId, agentId, agentName, agentAvatar, agentColor } = event.data;
               currentMessageId = messageId;
-              buffer.pushAgentStart({ messageId, agentId, agentName, avatar: agentAvatar, color: agentColor });
+              buffer.pushAgentStart({
+                messageId,
+                agentId,
+                agentName,
+                avatar: agentAvatar,
+                color: agentColor,
+              });
               break;
             }
 
             case 'agent_end': {
-              buffer.pushAgentEnd({ messageId: event.data.messageId, agentId: event.data.agentId });
+              buffer.pushAgentEnd({
+                messageId: event.data.messageId,
+                agentId: event.data.agentId,
+              });
               break;
             }
 

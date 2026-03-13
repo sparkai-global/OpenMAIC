@@ -104,8 +104,12 @@ export function LineElement({ elementInfo, selectElement }: LineElementProps) {
             strokeWidth={elementInfo.width}
             strokeDasharray={lineDashArray}
             fill="none"
-            markerStart={elementInfo.points[0] ? `url(#${elementInfo.id}-${elementInfo.points[0]}-start)` : ''}
-            markerEnd={elementInfo.points[1] ? `url(#${elementInfo.id}-${elementInfo.points[1]}-end)` : ''}
+            markerStart={
+              elementInfo.points[0] ? `url(#${elementInfo.id}-${elementInfo.points[0]}-start)` : ''
+            }
+            markerEnd={
+              elementInfo.points[1] ? `url(#${elementInfo.id}-${elementInfo.points[1]}-end)` : ''
+            }
           />
           {/* Invisible wider path for easier clicking */}
           <path

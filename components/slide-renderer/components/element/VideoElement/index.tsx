@@ -61,11 +61,7 @@ export function VideoElement({ elementInfo, selectElement }: VideoElementProps) 
           {/* Play icon overlay */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="w-12 h-12 rounded-full bg-black/50 flex items-center justify-center">
-              <svg
-                className="w-6 h-6 text-white ml-0.5"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-              >
+              <svg className="w-6 h-6 text-white ml-0.5" viewBox="0 0 24 24" fill="currentColor">
                 <polygon points="5 3 19 12 5 21 5 3" />
               </svg>
             </div>

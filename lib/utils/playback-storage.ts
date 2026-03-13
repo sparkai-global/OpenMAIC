@@ -11,15 +11,17 @@ export interface PlaybackSnapshot {
   sceneIndex: number;
   actionIndex: number;
   consumedDiscussions: string[];
-  sceneId?: string;  // Scene this snapshot belongs to; discard on mismatch
+  sceneId?: string; // Scene this snapshot belongs to; discard on mismatch
 }
 
 /**
  * Save playback state for a stage.
  * Each stage has at most one playback state record.
  */
-export async function savePlaybackState(stageId: string, snapshot: PlaybackSnapshot): Promise<void> {
-
+export async function savePlaybackState(
+  stageId: string,
+  snapshot: PlaybackSnapshot,
+): Promise<void> {
   await db.playbackState.put({
     stageId,
     sceneIndex: snapshot.sceneIndex,

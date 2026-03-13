@@ -36,7 +36,14 @@ import {
 import type { PPTElement, Slide, SlideBackground, SlideTheme } from '@/lib/types/slides';
 import type { QuizQuestion } from '@/lib/types/stage';
 import type { Action } from '@/lib/types/action';
-import type { AgentInfo, SceneGenerationContext, GeneratedSlideData, AICallFn, GenerationResult, GenerationCallbacks } from './pipeline-types';
+import type {
+  AgentInfo,
+  SceneGenerationContext,
+  GeneratedSlideData,
+  AICallFn,
+  GenerationResult,
+  GenerationCallbacks,
+} from './pipeline-types';
 import { createLogger } from '@/lib/logger';
 const log = createLogger('Generation');
 
@@ -55,7 +62,7 @@ export async function generateFullScenes(
   sceneOutlines: SceneOutline[],
   store: StageStore,
   aiCall: AICallFn,
-  callbacks?: GenerationCallbacks
+  callbacks?: GenerationCallbacks,
 ): Promise<GenerationResult<string[]>> {
   const api = createStageAPI(store);
   const totalScenes = sceneOutlines.length;
@@ -93,16 +100,17 @@ export async function generateFullScenes(
         callbacks?.onError?.(`Failed to generate scene ${outline.title}: ${error}`);
         return { success: false, sceneId: null, index };
       }
-    })
+    }),
   );
 
   // Collect successful sceneIds in original order
   const sceneIds = results
-    .filter((r): r is { success: true; sceneId: string; index: number } =>
-      r.success && r.sceneId !== null
+    .filter(
+      (r): r is { success: true; sceneId: string; index: number } =>
+        r.success && r.sceneId !== null,
     )
     .sort((a, b) => a.index - b.index)
-    .map(r => r.sceneId);
+    .map((r) => r.sceneId);
 
   return { success: true, data: sceneIds };
 }
@@ -116,7 +124,7 @@ export async function generateFullScenes(
 async function generateSingleScene(
   outline: SceneOutline,
   api: ReturnType<typeof createStageAPI>,
-  aiCall: AICallFn
+  aiCall: AICallFn,
 ): Promise<string | null> {
   // Step 3.1: Generate content
   log.info(`Step 3.1: Generating content for: ${outline.title}`);
@@ -146,18 +154,42 @@ export async function generateSceneContent(
   languageModel?: LanguageModel,
   visionEnabled?: boolean,
   generatedMediaMapping?: ImageMapping,
-  agents?: AgentInfo[]
-): Promise<GeneratedSlideContent | GeneratedQuizContent | GeneratedInteractiveContent | GeneratedPBLContent | null> {
+  agents?: AgentInfo[],
+): Promise<
+  | GeneratedSlideContent
+  | GeneratedQuizContent
+  | GeneratedInteractiveContent
+  | GeneratedPBLContent
+  | null
+> {
   // If outline is interactive but missing interactiveConfig, fall back to slide
   if (outline.type === 'interactive' && !outline.interactiveConfig) {
-    log.warn(`Interactive outline "${outline.title}" missing interactiveConfig, falling back to slide`);
+    log.warn(
+      `Interactive outline "${outline.title}" missing interactiveConfig, falling back to slide`,
+    );
     const fallbackOutline = { ...outline, type: 'slide' as const };
-    return generateSlideContent(fallbackOutline, aiCall, assignedImages, imageMapping, visionEnabled, generatedMediaMapping, agents);
+    return generateSlideContent(
+      fallbackOutline,
+      aiCall,
+      assignedImages,
+      imageMapping,
+      visionEnabled,
+      generatedMediaMapping,
+      agents,
+    );
   }
 
   switch (outline.type) {
     case 'slide':
-      return generateSlideContent(outline, aiCall, assignedImages, imageMapping, visionEnabled, generatedMediaMapping, agents);
+      return generateSlideContent(
+        outline,
+        aiCall,
+        assignedImages,
+        imageMapping,
+        visionEnabled,
+        generatedMediaMapping,
+        agents,
+      );
     case 'quiz':
       return generateQuizContent(outline, aiCall);
     case 'interactive':
@@ -213,10 +245,10 @@ function isGeneratedImageId(value: string): boolean {
 function resolveImageIds(
   elements: GeneratedSlideData['elements'],
   imageMapping?: ImageMapping,
-  generatedMediaMapping?: ImageMapping
+  generatedMediaMapping?: ImageMapping,
 ): GeneratedSlideData['elements'] {
   return elements
-    .map(el => {
+    .map((el) => {
       if (el.type === 'image') {
         if (!('src' in el)) {
           log.warn(`Image element missing src, removing element`);
@@ -274,9 +306,9 @@ function resolveImageIds(
  */
 function fixElementDefaults(
   elements: GeneratedSlideData['elements'],
-  assignedImages?: PdfImage[]
+  assignedImages?: PdfImage[],
 ): GeneratedSlideData['elements'] {
-  return elements.map(el => {
+  return elements.map((el) => {
     // Fix line elements
     if (el.type === 'line') {
       const lineEl = el as Record<string, unknown>;
@@ -335,7 +367,7 @@ function fixElementDefaults(
 
       // Correct dimensions using known aspect ratio (src is still img_id at this point)
       if (assignedImages && typeof imageEl.src === 'string') {
-        const imgMeta = assignedImages.find(img => img.id === imageEl.src);
+        const imgMeta = assignedImages.find((img) => img.id === imageEl.src);
         if (imgMeta?.width && imgMeta?.height) {
           const knownRatio = imgMeta.width / imgMeta.height;
           const curW = (el.width || 400) as number;
@@ -343,7 +375,8 @@ function fixElementDefaults(
           if (Math.abs(curW / curH - knownRatio) / knownRatio > 0.1) {
             // Keep width, correct height
             const newH = Math.round(curW / knownRatio);
-            if (newH > 462) { // canvas 562.5 - margins 50×2
+            if (newH > 462) {
+              // canvas 562.5 - margins 50×2
               const newW = Math.round(462 * knownRatio);
               imageEl.width = newW;
               imageEl.height = 462;
@@ -390,10 +423,10 @@ function fixElementDefaults(
  * Elements that fail conversion are removed.
  */
 function processLatexElements(
-  elements: GeneratedSlideData['elements']
+  elements: GeneratedSlideData['elements'],
 ): GeneratedSlideData['elements'] {
   return elements
-    .map(el => {
+    .map((el) => {
       if (el.type !== 'latex') return el;
 
       const latexStr = el.latex as string | undefined;
@@ -432,7 +465,7 @@ async function generateSlideContent(
   imageMapping?: ImageMapping,
   visionEnabled?: boolean,
   generatedMediaMapping?: ImageMapping,
-  agents?: AgentInfo[]
+  agents?: AgentInfo[],
 ): Promise<GeneratedSlideContent | null> {
   const lang = outline.language || 'zh-CN';
 
@@ -443,32 +476,39 @@ async function generateSlideContent(
   if (assignedImages && assignedImages.length > 0) {
     if (visionEnabled && imageMapping) {
       // Vision mode: split into vision images and text-only
-      const withSrc = assignedImages.filter(img => imageMapping[img.id]);
+      const withSrc = assignedImages.filter((img) => imageMapping[img.id]);
       const visionSlice = withSrc.slice(0, MAX_VISION_IMAGES);
       const textOnlySlice = withSrc.slice(MAX_VISION_IMAGES);
-      const noSrcImages = assignedImages.filter(img => !imageMapping[img.id]);
+      const noSrcImages = assignedImages.filter((img) => !imageMapping[img.id]);
 
-      const visionDescriptions = visionSlice.map(img => formatImagePlaceholder(img, lang));
-      const textDescriptions = [...textOnlySlice, ...noSrcImages].map(img => formatImageDescription(img, lang));
+      const visionDescriptions = visionSlice.map((img) => formatImagePlaceholder(img, lang));
+      const textDescriptions = [...textOnlySlice, ...noSrcImages].map((img) =>
+        formatImageDescription(img, lang),
+      );
       assignedImagesText = [...visionDescriptions, ...textDescriptions].join('\n');
 
-      visionImages = visionSlice.map(img => ({ id: img.id, src: imageMapping[img.id], width: img.width, height: img.height }));
+      visionImages = visionSlice.map((img) => ({
+        id: img.id,
+        src: imageMapping[img.id],
+        width: img.width,
+        height: img.height,
+      }));
     } else {
-      assignedImagesText = assignedImages.map(img =>
-        formatImageDescription(img, lang)
-      ).join('\n');
+      assignedImagesText = assignedImages
+        .map((img) => formatImageDescription(img, lang))
+        .join('\n');
     }
   }
 
   // Add generated media placeholders info (images + videos)
   if (outline.mediaGenerations && outline.mediaGenerations.length > 0) {
     const genImgDescs = outline.mediaGenerations
-      .filter(mg => mg.type === 'image')
-      .map(mg => `- ${mg.elementId}: "${mg.prompt}" (aspect ratio: ${mg.aspectRatio || '16:9'})`)
+      .filter((mg) => mg.type === 'image')
+      .map((mg) => `- ${mg.elementId}: "${mg.prompt}" (aspect ratio: ${mg.aspectRatio || '16:9'})`)
       .join('\n');
     const genVidDescs = outline.mediaGenerations
-      .filter(mg => mg.type === 'video')
-      .map(mg => `- ${mg.elementId}: "${mg.prompt}" (aspect ratio: ${mg.aspectRatio || '16:9'})`)
+      .filter((mg) => mg.type === 'video')
+      .map((mg) => `- ${mg.elementId}: "${mg.prompt}" (aspect ratio: ${mg.aspectRatio || '16:9'})`)
       .join('\n');
 
     const mediaParts: string[] = [];
@@ -512,10 +552,10 @@ async function generateSlideContent(
 
   log.debug(`Generating slide content for: ${outline.title}`);
   if (assignedImages && assignedImages.length > 0) {
-    log.debug(`Assigned images: ${assignedImages.map(img => img.id).join(', ')}`);
+    log.debug(`Assigned images: ${assignedImages.map((img) => img.id).join(', ')}`);
   }
   if (visionImages && visionImages.length > 0) {
-    log.debug(`Vision images: ${visionImages.map(img => img.id).join(', ')}`);
+    log.debug(`Vision images: ${visionImages.map((img) => img.id).join(', ')}`);
   }
 
   const response = await aiCall(prompts.system, prompts.user, visionImages);
@@ -529,10 +569,17 @@ async function generateSlideContent(
   log.debug(`Got ${generatedData.elements.length} elements for: ${outline.title}`);
 
   // Debug: Log image elements before resolution
-  const imageElements = generatedData.elements.filter(el => el.type === 'image');
+  const imageElements = generatedData.elements.filter((el) => el.type === 'image');
   if (imageElements.length > 0) {
-    log.debug(`Image elements before resolution:`,
-      imageElements.map(el => ({ type: el.type, src: (el as Record<string, unknown>).src && String((el as Record<string, unknown>).src).substring(0, 50) })));
+    log.debug(
+      `Image elements before resolution:`,
+      imageElements.map((el) => ({
+        type: el.type,
+        src:
+          (el as Record<string, unknown>).src &&
+          String((el as Record<string, unknown>).src).substring(0, 50),
+      })),
+    );
     log.debug(`imageMapping keys:`, imageMapping ? Object.keys(imageMapping).length : '0 keys');
   }
 
@@ -545,7 +592,11 @@ async function generateSlideContent(
   log.debug(`After LaTeX processing: ${latexProcessedElements.length} elements`);
 
   // Resolve image_id references to actual URLs
-  const resolvedElements = resolveImageIds(latexProcessedElements, imageMapping, generatedMediaMapping);
+  const resolvedElements = resolveImageIds(
+    latexProcessedElements,
+    imageMapping,
+    generatedMediaMapping,
+  );
   log.debug(`After image resolution: ${resolvedElements.length} elements`);
 
   // Process elements, assign unique IDs
@@ -561,7 +612,10 @@ async function generateSlideContent(
     if (generatedData.background.type === 'solid' && generatedData.background.color) {
       background = { type: 'solid', color: generatedData.background.color };
     } else if (generatedData.background.type === 'gradient' && generatedData.background.gradient) {
-      background = { type: 'gradient', gradient: generatedData.background.gradient };
+      background = {
+        type: 'gradient',
+        gradient: generatedData.background.gradient,
+      };
     }
   }
 
@@ -577,7 +631,7 @@ async function generateSlideContent(
  */
 async function generateQuizContent(
   outline: SceneOutline,
-  aiCall: AICallFn
+  aiCall: AICallFn,
 ): Promise<GeneratedQuizContent | null> {
   const quizConfig = outline.quizConfig || {
     questionCount: 3,
@@ -630,7 +684,7 @@ async function generateQuizContent(
  * This normalizes to QuizOption[] format: { value: "A", label: "OptionA" }
  */
 function normalizeQuizOptions(
-  options: unknown[] | undefined
+  options: unknown[] | undefined,
 ): { value: string; label: string }[] | undefined {
   if (!options || !Array.isArray(options)) return undefined;
 
@@ -658,11 +712,12 @@ function normalizeQuizOptions(
  * AI may generate correctAnswer as string or string[], under various field names.
  * This normalizes to string[] format matching option values.
  */
-function normalizeQuizAnswer(
-  question: Record<string, unknown>
-): string[] | undefined {
+function normalizeQuizAnswer(question: Record<string, unknown>): string[] | undefined {
   // AI might use "correctAnswer", "answer", or "correct_answer"
-  const raw = question.answer ?? question.correctAnswer ?? (question as Record<string, unknown>).correct_answer;
+  const raw =
+    question.answer ??
+    question.correctAnswer ??
+    (question as Record<string, unknown>).correct_answer;
   if (!raw) return undefined;
 
   if (Array.isArray(raw)) {
@@ -680,7 +735,7 @@ function normalizeQuizAnswer(
 async function generateInteractiveContent(
   outline: SceneOutline,
   aiCall: AICallFn,
-  language: 'zh-CN' | 'en-US' = 'zh-CN'
+  language: 'zh-CN' | 'en-US' = 'zh-CN',
 ): Promise<GeneratedInteractiveContent | null> {
   const config = outline.interactiveConfig!;
 
@@ -701,7 +756,9 @@ async function generateInteractiveContent(
       const parsed = parseJsonResponse<ScientificModel>(modelResponse);
       if (parsed && parsed.core_formulas) {
         scientificModel = parsed;
-        log.info(`Scientific model: ${parsed.core_formulas.length} formulas, ${parsed.constraints?.length || 0} constraints`);
+        log.info(
+          `Scientific model: ${parsed.core_formulas.length} formulas, ${parsed.constraints?.length || 0} constraints`,
+        );
       }
     }
   } catch (error) {
@@ -768,7 +825,7 @@ async function generateInteractiveContent(
  */
 async function generatePBLSceneContent(
   outline: SceneOutline,
-  languageModel?: LanguageModel
+  languageModel?: LanguageModel,
 ): Promise<GeneratedPBLContent | null> {
   if (!languageModel) {
     log.error('LanguageModel required for PBL generation');
@@ -797,7 +854,9 @@ async function generatePBLSceneContent(
         onProgress: (msg) => log.info(`${msg}`),
       },
     );
-    log.info(`PBL generated: ${projectConfig.agents.length} agents, ${projectConfig.issueboard.issues.length} issues`);
+    log.info(
+      `PBL generated: ${projectConfig.agents.length} agents, ${projectConfig.issueboard.issues.length} issues`,
+    );
 
     return { projectConfig };
   } catch (error) {
@@ -848,7 +907,11 @@ function extractHtml(response: string): string | null {
  */
 export async function generateSceneActions(
   outline: SceneOutline,
-  content: GeneratedSlideContent | GeneratedQuizContent | GeneratedInteractiveContent | GeneratedPBLContent,
+  content:
+    | GeneratedSlideContent
+    | GeneratedQuizContent
+    | GeneratedInteractiveContent
+    | GeneratedPBLContent,
   aiCall: AICallFn,
   ctx?: SceneGenerationContext,
   agents?: AgentInfo[],
@@ -987,47 +1050,51 @@ function generateDefaultPBLActions(_outline: SceneOutline): Action[] {
  * Format element list for AI to select elementId
  */
 function formatElementsForPrompt(elements: PPTElement[]): string {
-  return elements.map((el) => {
-    let summary = '';
-    if (el.type === 'text' && 'content' in el) {
-      // Extract text content summary (strip HTML tags)
-      const textContent = (el.content as string || '').replace(/<[^>]*>/g, '').substring(0, 50);
-      summary = `Content summary: "${textContent}${textContent.length >= 50 ? '...' : ''}"`;
-    } else if (el.type === 'chart' && 'chartType' in el) {
-      summary = `Chart type: ${el.chartType}`;
-    } else if (el.type === 'image') {
-      summary = 'Image element';
-    } else if (el.type === 'shape' && 'shapeName' in el) {
-      summary = `Shape: ${el.shapeName || 'unknown'}`;
-    } else if (el.type === 'latex' && 'latex' in el) {
-      summary = `Formula: ${(el.latex as string || '').substring(0, 30)}`;
-    } else {
-      summary = `${el.type} element`;
-    }
-    return `- id: "${el.id}", type: "${el.type}", ${summary}`;
-  }).join('\n');
+  return elements
+    .map((el) => {
+      let summary = '';
+      if (el.type === 'text' && 'content' in el) {
+        // Extract text content summary (strip HTML tags)
+        const textContent = ((el.content as string) || '').replace(/<[^>]*>/g, '').substring(0, 50);
+        summary = `Content summary: "${textContent}${textContent.length >= 50 ? '...' : ''}"`;
+      } else if (el.type === 'chart' && 'chartType' in el) {
+        summary = `Chart type: ${el.chartType}`;
+      } else if (el.type === 'image') {
+        summary = 'Image element';
+      } else if (el.type === 'shape' && 'shapeName' in el) {
+        summary = `Shape: ${el.shapeName || 'unknown'}`;
+      } else if (el.type === 'latex' && 'latex' in el) {
+        summary = `Formula: ${((el.latex as string) || '').substring(0, 30)}`;
+      } else {
+        summary = `${el.type} element`;
+      }
+      return `- id: "${el.id}", type: "${el.type}", ${summary}`;
+    })
+    .join('\n');
 }
 
 /**
  * Format question list for AI reference
  */
 function formatQuestionsForPrompt(questions: QuizQuestion[]): string {
-  return questions.map((q, i) => {
-    const optionsText = q.options ? `Options: ${q.options.join(', ')}` : '';
-    return `Q${i + 1} (${q.type}): ${q.question}\n${optionsText}`;
-  }).join('\n\n');
+  return questions
+    .map((q, i) => {
+      const optionsText = q.options ? `Options: ${q.options.join(', ')}` : '';
+      return `Q${i + 1} (${q.type}): ${q.question}\n${optionsText}`;
+    })
+    .join('\n\n');
 }
 
 /**
  * Process and validate Actions
  */
 function processActions(actions: Action[], elements: PPTElement[], agents?: AgentInfo[]): Action[] {
-  const elementIds = new Set(elements.map(el => el.id));
-  const agentIds = new Set(agents?.map(a => a.id) || []);
-  const studentAgents = agents?.filter(a => a.role === 'student') || [];
-  const nonTeacherAgents = agents?.filter(a => a.role !== 'teacher') || [];
+  const elementIds = new Set(elements.map((el) => el.id));
+  const agentIds = new Set(agents?.map((a) => a.id) || []);
+  const studentAgents = agents?.filter((a) => a.role === 'student') || [];
+  const nonTeacherAgents = agents?.filter((a) => a.role !== 'teacher') || [];
 
-  return actions.map(action => {
+  return actions.map((action) => {
     // Ensure each action has an ID
     const processedAction: Action = {
       ...action,
@@ -1041,7 +1108,9 @@ function processActions(actions: Action[], elements: PPTElement[], agents?: Agen
         // If elementId is invalid, try selecting the first element
         if (elements.length > 0) {
           spotlightAction.elementId = elements[0].id;
-          log.warn(`Invalid elementId, falling back to first element: ${spotlightAction.elementId}`);
+          log.warn(
+            `Invalid elementId, falling back to first element: ${spotlightAction.elementId}`,
+          );
         }
       }
     }
@@ -1055,7 +1124,9 @@ function processActions(actions: Action[], elements: PPTElement[], agents?: Agen
         const pool = studentAgents.length > 0 ? studentAgents : nonTeacherAgents;
         if (pool.length > 0) {
           const picked = pool[Math.floor(Math.random() * pool.length)];
-          log.warn(`Discussion agentId "${processedAction.agentId || '(none)'}" invalid, assigned: ${picked.id} (${picked.name})`);
+          log.warn(
+            `Discussion agentId "${processedAction.agentId || '(none)'}" invalid, assigned: ${picked.id} (${picked.name})`,
+          );
           processedAction.agentId = picked.id;
         }
       }
@@ -1072,7 +1143,7 @@ function generateDefaultSlideActions(outline: SceneOutline, elements: PPTElement
   const actions: Action[] = [];
 
   // Add spotlight for text elements
-  const textElements = elements.filter(el => el.type === 'text');
+  const textElements = elements.filter((el) => el.type === 'text');
   if (textElements.length > 0) {
     actions.push({
       id: `action_${nanoid(8)}`,
@@ -1129,9 +1200,13 @@ function generateDefaultInteractiveActions(_outline: SceneOutline): Action[] {
  */
 export function createSceneWithActions(
   outline: SceneOutline,
-  content: GeneratedSlideContent | GeneratedQuizContent | GeneratedInteractiveContent | GeneratedPBLContent,
+  content:
+    | GeneratedSlideContent
+    | GeneratedQuizContent
+    | GeneratedInteractiveContent
+    | GeneratedPBLContent,
   actions: Action[],
-  api: ReturnType<typeof createStageAPI>
+  api: ReturnType<typeof createStageAPI>,
 ): string | null {
   if (outline.type === 'slide' && 'elements' in content) {
     // Build complete Slide object
@@ -1164,7 +1239,7 @@ export function createSceneWithActions(
       actions,
     });
 
-    return sceneResult.success ? sceneResult.data ?? null : null;
+    return sceneResult.success ? (sceneResult.data ?? null) : null;
   }
 
   if (outline.type === 'quiz' && 'questions' in content) {
@@ -1179,7 +1254,7 @@ export function createSceneWithActions(
       actions,
     });
 
-    return sceneResult.success ? sceneResult.data ?? null : null;
+    return sceneResult.success ? (sceneResult.data ?? null) : null;
   }
 
   if (outline.type === 'interactive' && 'html' in content) {
@@ -1195,7 +1270,7 @@ export function createSceneWithActions(
       actions,
     });
 
-    return sceneResult.success ? sceneResult.data ?? null : null;
+    return sceneResult.success ? (sceneResult.data ?? null) : null;
   }
 
   if (outline.type === 'pbl' && 'projectConfig' in content) {
@@ -1210,7 +1285,7 @@ export function createSceneWithActions(
       actions,
     });
 
-    return sceneResult.success ? sceneResult.data ?? null : null;
+    return sceneResult.success ? (sceneResult.data ?? null) : null;
   }
 
   return null;

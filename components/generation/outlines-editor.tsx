@@ -135,7 +135,9 @@ export function OutlinesEditor({
                 <Select
                   value={outline.type}
                   onValueChange={(value) =>
-                    updateOutline(index, { type: value as SceneOutline['type'] })
+                    updateOutline(index, {
+                      type: value as SceneOutline['type'],
+                    })
                   }
                   disabled={isLoading}
                 >

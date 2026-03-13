@@ -82,13 +82,12 @@ export type TTSProviderId =
   | 'azure-tts'
   | 'glm-tts'
   | 'qwen-tts'
-  | 'browser-native-tts'
-  // Add new TTS providers below (uncomment and modify):
-  // | 'elevenlabs-tts'
-  // | 'fish-audio-tts'
-  // | 'cartesia-tts'
-  // | 'playht-tts'
-  ;
+  | 'browser-native-tts';
+// Add new TTS providers below (uncomment and modify):
+// | 'elevenlabs-tts'
+// | 'fish-audio-tts'
+// | 'cartesia-tts'
+// | 'playht-tts'
 
 /**
  * Voice information for TTS
@@ -142,16 +141,12 @@ export interface TTSModelConfig {
  * Add new ASR providers here as union members.
  * Keep in sync with ASR_PROVIDERS registry in constants.ts
  */
-export type ASRProviderId =
-  | 'openai-whisper'
-  | 'browser-native'
-  | 'qwen-asr'
-  // Add new ASR providers below (uncomment and modify):
-  // | 'elevenlabs-asr'
-  // | 'assemblyai-asr'
-  // | 'deepgram-asr'
-  // | 'azure-asr'
-  ;
+export type ASRProviderId = 'openai-whisper' | 'browser-native' | 'qwen-asr';
+// Add new ASR providers below (uncomment and modify):
+// | 'elevenlabs-asr'
+// | 'assemblyai-asr'
+// | 'deepgram-asr'
+// | 'azure-asr'
 
 /**
  * ASR Provider Configuration

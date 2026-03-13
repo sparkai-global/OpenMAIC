@@ -17,7 +17,11 @@ export { BaseShapeElement } from './BaseShapeElement';
 
 export interface ShapeElementProps {
   elementInfo: PPTShapeElement;
-  selectElement?: (e: React.MouseEvent | React.TouchEvent, element: PPTShapeElement, canMove?: boolean) => void;
+  selectElement?: (
+    e: React.MouseEvent | React.TouchEvent,
+    element: PPTShapeElement,
+    canMove?: boolean,
+  ) => void;
 }
 
 /**
@@ -63,15 +67,18 @@ export function ShapeElement({ elementInfo, selectElement }: ShapeElementProps) 
   }, [elementInfo.text]);
 
   // Update text content
-  const updateText = useCallback((content: string, ignore = false) => {
-    const _text = { ...text, content };
-    updateElement({
-      id: elementInfo.id,
-      props: { text: _text },
-    });
+  const updateText = useCallback(
+    (content: string, ignore = false) => {
+      const _text = { ...text, content };
+      updateElement({
+        id: elementInfo.id,
+        props: { text: _text },
+      });
 
-    if (!ignore) addHistorySnapshot();
-  }, [elementInfo.id, text, updateElement, addHistorySnapshot]);
+      if (!ignore) addHistorySnapshot();
+    },
+    [elementInfo.id, text, updateElement, addHistorySnapshot],
+  );
 
   // Check and remove empty text
   const checkEmptyText = useCallback(() => {
@@ -125,10 +132,7 @@ export function ShapeElement({ elementInfo, selectElement }: ShapeElementProps) 
           >
             <defs>
               {elementInfo.pattern && (
-                <PatternDefs
-                  id={`editable-pattern-${elementInfo.id}`}
-                  src={elementInfo.pattern}
-                />
+                <PatternDefs id={`editable-pattern-${elementInfo.id}`} src={elementInfo.pattern} />
               )}
               {elementInfo.gradient && !elementInfo.pattern && (
                 <GradientDefs
@@ -165,8 +169,8 @@ export function ShapeElement({ elementInfo, selectElement }: ShapeElementProps) 
               text.align === 'top'
                 ? 'justify-start'
                 : text.align === 'bottom'
-                ? 'justify-end'
-                : 'justify-center'
+                  ? 'justify-end'
+                  : 'justify-center'
             }`}
             style={{
               lineHeight: text.lineHeight,

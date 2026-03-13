@@ -53,7 +53,24 @@ const MIN_WIDTH = 240;
 const MAX_WIDTH = 560;
 
 export const ChatArea = forwardRef<ChatAreaRef, ChatAreaProps>(
-  ({ className, width = DEFAULT_WIDTH, onWidthChange, collapsed = false, onCollapseChange, activeBubbleId, onActiveBubble, onLiveSpeech, onSpeechProgress, onThinking, onCueUser, onStopSession, currentSceneId }, ref) => {
+  (
+    {
+      className,
+      width = DEFAULT_WIDTH,
+      onWidthChange,
+      collapsed = false,
+      onCollapseChange,
+      activeBubbleId,
+      onActiveBubble,
+      onLiveSpeech,
+      onSpeechProgress,
+      onThinking,
+      onCueUser,
+      onStopSession,
+      currentSceneId,
+    },
+    ref,
+  ) => {
     const { t } = useI18n();
     const scenes = useStageStore((s) => s.scenes);
     const {
@@ -74,7 +91,14 @@ export const ChatArea = forwardRef<ChatAreaRef, ChatAreaProps>(
       getLectureMessageId,
       pauseBuffer,
       resumeBuffer,
-    } = useChatSessions({ onLiveSpeech, onSpeechProgress, onThinking, onCueUser, onActiveBubble, onStopSession });
+    } = useChatSessions({
+      onLiveSpeech,
+      onSpeechProgress,
+      onThinking,
+      onCueUser,
+      onActiveBubble,
+      onStopSession,
+    });
 
     const [activeTab, setActiveTab] = useState<'lecture' | 'chat'>('lecture');
     const isDraggingRef = useRef(false);
@@ -84,47 +108,58 @@ export const ChatArea = forwardRef<ChatAreaRef, ChatAreaProps>(
     // Derive lecture notes directly from scenes — updates reactively as scenes stream in
     // Preserves action order so spotlight/laser badges appear inline between speech texts
     const lectureNotes: LectureNoteEntry[] = useMemo(
-      () => scenes
-        .filter(scene => scene.actions && scene.actions.length > 0)
-        .map(scene => ({
-          sceneId: scene.id,
-          sceneTitle: scene.title,
-          sceneOrder: scene.order,
-          items: scene.actions!
-            .filter(a => a.type === 'speech' || a.type === 'spotlight' || a.type === 'laser' || a.type === 'play_video' || a.type === 'discussion')
-            .map(a => {
-              if (a.type === 'speech') {
-                return { kind: 'speech' as const, text: (a as SpeechAction).text };
-              }
-              return {
-                kind: 'action' as const,
-                type: a.type,
-                label: a.type === 'discussion' ? (a as DiscussionAction).topic : undefined,
-              };
-            }),
-          completedAt: scene.updatedAt || scene.createdAt || 0,
-        }))
-        .sort((a, b) => a.sceneOrder - b.sceneOrder),
-      [scenes]
+      () =>
+        scenes
+          .filter((scene) => scene.actions && scene.actions.length > 0)
+          .map((scene) => ({
+            sceneId: scene.id,
+            sceneTitle: scene.title,
+            sceneOrder: scene.order,
+            items: scene
+              .actions!.filter(
+                (a) =>
+                  a.type === 'speech' ||
+                  a.type === 'spotlight' ||
+                  a.type === 'laser' ||
+                  a.type === 'play_video' ||
+                  a.type === 'discussion',
+              )
+              .map((a) => {
+                if (a.type === 'speech') {
+                  return {
+                    kind: 'speech' as const,
+                    text: (a as SpeechAction).text,
+                  };
+                }
+                return {
+                  kind: 'action' as const,
+                  type: a.type,
+                  label: a.type === 'discussion' ? (a as DiscussionAction).topic : undefined,
+                };
+              }),
+            completedAt: scene.updatedAt || scene.createdAt || 0,
+          }))
+          .sort((a, b) => a.sceneOrder - b.sceneOrder),
+      [scenes],
     );
 
     // Filter out lecture sessions for the Chat tab
-    const chatSessions = useMemo(
-      () => sessions.filter(s => s.type !== 'lecture'),
-      [sessions]
-    );
+    const chatSessions = useMemo(() => sessions.filter((s) => s.type !== 'lecture'), [sessions]);
 
     // Whether there's an active discussion/QA session (for amber dot on Chat tab)
     const hasActiveChatSession = useMemo(
-      () => chatSessions.some(s => s.status === 'active'),
-      [chatSessions]
+      () => chatSessions.some((s) => s.status === 'active'),
+      [chatSessions],
     );
 
     // Wrap endSession for QA/Discussion: also notify parent for engine cleanup
-    const handleEndSession = useCallback(async (sessionId: string) => {
-      await endSession(sessionId);
-      onStopSession?.();
-    }, [endSession, onStopSession]);
+    const handleEndSession = useCallback(
+      async (sessionId: string) => {
+        await endSession(sessionId);
+        onStopSession?.();
+      },
+      [endSession, onStopSession],
+    );
 
     const switchToTab = useCallback((tab: 'lecture' | 'chat') => {
       setActiveTab(tab);
@@ -177,7 +212,7 @@ export const ChatArea = forwardRef<ChatAreaRef, ChatAreaProps>(
         document.addEventListener('mousemove', handleMouseMove);
         document.addEventListener('mouseup', handleMouseUp);
       },
-      [width, onWidthChange]
+      [width, onWidthChange],
     );
 
     const displayWidth = collapsed ? 0 : width;
@@ -190,7 +225,7 @@ export const ChatArea = forwardRef<ChatAreaRef, ChatAreaProps>(
         }}
         className={cn(
           'bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-l border-gray-100 dark:border-gray-800 shadow-[-2px_0_24px_rgba(0,0,0,0.02)] flex flex-col shrink-0 z-20 relative overflow-visible',
-          className
+          className,
         )}
       >
         {/* Drag handle */}
@@ -252,7 +287,9 @@ export const ChatArea = forwardRef<ChatAreaRef, ChatAreaProps>(
                     <div className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-3 text-gray-300 dark:text-gray-600">
                       <MessageSquare className="w-6 h-6" />
                     </div>
-                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400">{t('chat.noConversations')}</p>
+                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                      {t('chat.noConversations')}
+                    </p>
                     <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1">
                       {t('chat.startConversation')}
                     </p>
@@ -274,10 +311,9 @@ export const ChatArea = forwardRef<ChatAreaRef, ChatAreaProps>(
             </TabsContent>
           </Tabs>
         </div>
-
       </div>
     );
-  }
+  },
 );
 
 ChatArea.displayName = 'ChatArea';

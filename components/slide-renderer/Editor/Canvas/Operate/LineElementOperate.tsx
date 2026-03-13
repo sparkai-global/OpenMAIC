@@ -7,14 +7,28 @@ import { ResizeHandler } from './ResizeHandler';
 interface LineElementOperateProps {
   readonly elementInfo: PPTLineElement;
   readonly handlerVisible: boolean;
-  readonly dragLineElement: (e: React.MouseEvent, element: PPTLineElement, command: OperateLineHandlers) => void;
+  readonly dragLineElement: (
+    e: React.MouseEvent,
+    element: PPTLineElement,
+    command: OperateLineHandlers,
+  ) => void;
 }
 
-export function LineElementOperate({ elementInfo, handlerVisible, dragLineElement }: LineElementOperateProps) {
+export function LineElementOperate({
+  elementInfo,
+  handlerVisible,
+  dragLineElement,
+}: LineElementOperateProps) {
   const canvasScale = useCanvasStore.use.canvasScale();
 
-  const svgWidth = useMemo(() => Math.max(elementInfo.start[0], elementInfo.end[0]), [elementInfo.start, elementInfo.end]);
-  const svgHeight = useMemo(() => Math.max(elementInfo.start[1], elementInfo.end[1]), [elementInfo.start, elementInfo.end]);
+  const svgWidth = useMemo(
+    () => Math.max(elementInfo.start[0], elementInfo.end[0]),
+    [elementInfo.start, elementInfo.end],
+  );
+  const svgHeight = useMemo(
+    () => Math.max(elementInfo.start[1], elementInfo.end[1]),
+    [elementInfo.start, elementInfo.end],
+  );
 
   const resizeHandlers = useMemo(() => {
     const handlers = [
@@ -35,7 +49,10 @@ export function LineElementOperate({ elementInfo, handlerVisible, dragLineElemen
     ];
 
     if (elementInfo.curve || elementInfo.broken || elementInfo.broken2) {
-      const ctrlHandler = (elementInfo.curve || elementInfo.broken || elementInfo.broken2) as [number, number];
+      const ctrlHandler = (elementInfo.curve || elementInfo.broken || elementInfo.broken2) as [
+        number,
+        number,
+      ];
 
       handlers.push({
         handler: OperateLineHandlers.C,

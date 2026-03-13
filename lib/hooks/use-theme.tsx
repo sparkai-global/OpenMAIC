@@ -25,9 +25,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     if (stored && ['light', 'dark', 'system'].includes(stored)) {
       setThemeState(stored);
     }
-    setSystemTheme(
-      window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-    );
+    setSystemTheme(window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
   }, []);
   /* eslint-enable react-hooks/set-state-in-effect */
 
@@ -58,9 +56,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <ThemeContext.Provider
-      value={{ theme, setTheme: handleSetTheme, resolvedTheme }}
-    >
+    <ThemeContext.Provider value={{ theme, setTheme: handleSetTheme, resolvedTheme }}>
       {children}
     </ThemeContext.Provider>
   );

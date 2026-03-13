@@ -49,11 +49,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     return (typeof value === 'string' ? value : undefined) ?? key;
   };
 
-  return (
-    <I18nContext.Provider value={{ locale, setLocale, t }}>
-      {children}
-    </I18nContext.Provider>
-  );
+  return <I18nContext.Provider value={{ locale, setLocale, t }}>{children}</I18nContext.Provider>;
 }
 
 export function useI18n() {

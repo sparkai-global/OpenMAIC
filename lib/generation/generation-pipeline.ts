@@ -6,10 +6,24 @@
  */
 
 // Types
-export type { AgentInfo, SceneGenerationContext, GeneratedSlideData, GenerationResult, GenerationCallbacks, AICallFn } from './pipeline-types';
+export type {
+  AgentInfo,
+  SceneGenerationContext,
+  GeneratedSlideData,
+  GenerationResult,
+  GenerationCallbacks,
+  AICallFn,
+} from './pipeline-types';
 
 // Prompt formatters
-export { buildCourseContext, formatAgentsForPrompt, formatTeacherPersonaForPrompt, formatImageDescription, formatImagePlaceholder, buildVisionUserContent } from './prompt-formatters';
+export {
+  buildCourseContext,
+  formatAgentsForPrompt,
+  formatTeacherPersonaForPrompt,
+  formatImageDescription,
+  formatImagePlaceholder,
+  buildVisionUserContent,
+} from './prompt-formatters';
 
 // JSON repair
 export { parseJsonResponse, tryParseJson } from './json-repair';
@@ -18,10 +32,19 @@ export { parseJsonResponse, tryParseJson } from './json-repair';
 export { generateSceneOutlinesFromRequirements, applyOutlineFallbacks } from './outline-generator';
 
 // Scene generator (Stage 2)
-export { generateFullScenes, generateSceneContent, generateSceneActions, createSceneWithActions } from './scene-generator';
+export {
+  generateFullScenes,
+  generateSceneContent,
+  generateSceneActions,
+  createSceneWithActions,
+} from './scene-generator';
 
 // Scene builder (standalone)
-export { buildSceneFromOutline, buildCompleteScene, uniquifyMediaElementIds } from './scene-builder';
+export {
+  buildSceneFromOutline,
+  buildCompleteScene,
+  uniquifyMediaElementIds,
+} from './scene-builder';
 
 // Pipeline runner
 export { createGenerationSession, runGenerationPipeline } from './pipeline-runner';

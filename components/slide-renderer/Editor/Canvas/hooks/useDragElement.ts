@@ -16,7 +16,7 @@ import { useCanvasOperations } from '@/lib/hooks/use-canvas-operations';
 export function useDragElement(
   elementListRef: React.RefObject<PPTElement[]>,
   setElementList: React.Dispatch<React.SetStateAction<PPTElement[]>>,
-  setAlignmentLines: React.Dispatch<React.SetStateAction<AlignmentLineProps[]>>
+  setAlignmentLines: React.Dispatch<React.SetStateAction<AlignmentLineProps[]>>,
 ) {
   const activeElementIdList = useCanvasStore.use.activeElementIdList();
   const activeGroupElementId = useCanvasStore.use.activeGroupElementId();
@@ -45,7 +45,9 @@ export function useDragElement(
 
       // Save original element list for computing multi-select offsets
       const originElementList: PPTElement[] = JSON.parse(JSON.stringify(elementListRef.current));
-      const originActiveElementList = originElementList.filter((el) => activeElementIdList.includes(el.id));
+      const originActiveElementList = originElementList.filter((el) =>
+        activeElementIdList.includes(el.id),
+      );
 
       const elOriginLeft = element.left;
       const elOriginTop = element.top;
@@ -98,10 +100,16 @@ export function useDragElement(
 
         const topLine: AlignLine = { value: top, range: [left, right] };
         const bottomLine: AlignLine = { value: bottom, range: [left, right] };
-        const horizontalCenterLine: AlignLine = { value: centerX, range: [left, right] };
+        const horizontalCenterLine: AlignLine = {
+          value: centerX,
+          range: [left, right],
+        };
         const leftLine: AlignLine = { value: left, range: [top, bottom] };
         const rightLine: AlignLine = { value: right, range: [top, bottom] };
-        const verticalCenterLine: AlignLine = { value: centerY, range: [top, bottom] };
+        const verticalCenterLine: AlignLine = {
+          value: centerY,
+          range: [top, bottom],
+        };
 
         horizontalLines.push(topLine, bottomLine, horizontalCenterLine);
         verticalLines.push(leftLine, rightLine, verticalCenterLine);
@@ -109,11 +117,23 @@ export function useDragElement(
 
       // Canvas viewport edges: four boundaries, horizontal center, vertical center
       const edgeTopLine: AlignLine = { value: 0, range: [0, edgeWidth] };
-      const edgeBottomLine: AlignLine = { value: edgeHeight, range: [0, edgeWidth] };
-      const edgeHorizontalCenterLine: AlignLine = { value: edgeHeight / 2, range: [0, edgeWidth] };
+      const edgeBottomLine: AlignLine = {
+        value: edgeHeight,
+        range: [0, edgeWidth],
+      };
+      const edgeHorizontalCenterLine: AlignLine = {
+        value: edgeHeight / 2,
+        range: [0, edgeWidth],
+      };
       const edgeLeftLine: AlignLine = { value: 0, range: [0, edgeHeight] };
-      const edgeRightLine: AlignLine = { value: edgeWidth, range: [0, edgeHeight] };
-      const edgeVerticalCenterLine: AlignLine = { value: edgeWidth / 2, range: [0, edgeHeight] };
+      const edgeRightLine: AlignLine = {
+        value: edgeWidth,
+        range: [0, edgeHeight],
+      };
+      const edgeVerticalCenterLine: AlignLine = {
+        value: edgeWidth / 2,
+        range: [0, edgeHeight],
+      };
 
       horizontalLines.push(edgeTopLine, edgeBottomLine, edgeHorizontalCenterLine);
       verticalLines.push(edgeLeftLine, edgeRightLine, edgeVerticalCenterLine);
@@ -130,7 +150,8 @@ export function useDragElement(
         // null = first move, need to check; true = still in misoperation range; false = moved beyond range
         if (isMisoperation !== false) {
           isMisoperation =
-            Math.abs(startPageX - currentPageX) < sorptionRange && Math.abs(startPageY - currentPageY) < sorptionRange;
+            Math.abs(startPageX - currentPageX) < sorptionRange &&
+            Math.abs(startPageY - currentPageY) < sorptionRange;
         }
         if (!isMouseDown || isMisoperation) return;
 
@@ -190,7 +211,13 @@ export function useDragElement(
             const rotate = 'rotate' in element && element.rotate ? element.rotate : 0;
 
             if ('rotate' in element && element.rotate) {
-              const { xRange, yRange } = getRectRotatedRange({ left, top, width, height, rotate });
+              const { xRange, yRange } = getRectRotatedRange({
+                left,
+                top,
+                width,
+                height,
+                rotate,
+              });
               leftValues.push(xRange[0]);
               topValues.push(yRange[0]);
               rightValues.push(xRange[1]);
@@ -231,17 +258,29 @@ export function useDragElement(
           if (Math.abs(targetMinY - value) < sorptionRange && !isHorizontalAdsorbed) {
             targetTop = targetTop - (targetMinY - value);
             isHorizontalAdsorbed = true;
-            _alignmentLines.push({ type: 'horizontal', axis: { x: min - 50, y: value }, length: max - min + 100 });
+            _alignmentLines.push({
+              type: 'horizontal',
+              axis: { x: min - 50, y: value },
+              length: max - min + 100,
+            });
           }
           if (Math.abs(targetMaxY - value) < sorptionRange && !isHorizontalAdsorbed) {
             targetTop = targetTop - (targetMaxY - value);
             isHorizontalAdsorbed = true;
-            _alignmentLines.push({ type: 'horizontal', axis: { x: min - 50, y: value }, length: max - min + 100 });
+            _alignmentLines.push({
+              type: 'horizontal',
+              axis: { x: min - 50, y: value },
+              length: max - min + 100,
+            });
           }
           if (Math.abs(targetCenterY - value) < sorptionRange && !isHorizontalAdsorbed) {
             targetTop = targetTop - (targetCenterY - value);
             isHorizontalAdsorbed = true;
-            _alignmentLines.push({ type: 'horizontal', axis: { x: min - 50, y: value }, length: max - min + 100 });
+            _alignmentLines.push({
+              type: 'horizontal',
+              axis: { x: min - 50, y: value },
+              length: max - min + 100,
+            });
           }
         }
 
@@ -253,17 +292,29 @@ export function useDragElement(
           if (Math.abs(targetMinX - value) < sorptionRange && !isVerticalAdsorbed) {
             targetLeft = targetLeft - (targetMinX - value);
             isVerticalAdsorbed = true;
-            _alignmentLines.push({ type: 'vertical', axis: { x: value, y: min - 50 }, length: max - min + 100 });
+            _alignmentLines.push({
+              type: 'vertical',
+              axis: { x: value, y: min - 50 },
+              length: max - min + 100,
+            });
           }
           if (Math.abs(targetMaxX - value) < sorptionRange && !isVerticalAdsorbed) {
             targetLeft = targetLeft - (targetMaxX - value);
             isVerticalAdsorbed = true;
-            _alignmentLines.push({ type: 'vertical', axis: { x: value, y: min - 50 }, length: max - min + 100 });
+            _alignmentLines.push({
+              type: 'vertical',
+              axis: { x: value, y: min - 50 },
+              length: max - min + 100,
+            });
           }
           if (Math.abs(targetCenterX - value) < sorptionRange && !isVerticalAdsorbed) {
             targetLeft = targetLeft - (targetCenterX - value);
             isVerticalAdsorbed = true;
-            _alignmentLines.push({ type: 'vertical', axis: { x: value, y: min - 50 }, length: max - min + 100 });
+            _alignmentLines.push({
+              type: 'vertical',
+              axis: { x: value, y: min - 50 },
+              length: max - min + 100,
+            });
           }
         }
 
@@ -344,7 +395,7 @@ export function useDragElement(
       addHistorySnapshot,
       viewportRatio,
       viewportSize,
-    ]
+    ],
   );
 
   return {

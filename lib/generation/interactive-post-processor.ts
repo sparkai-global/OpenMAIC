@@ -37,13 +37,10 @@ function convertLatexDelimiters(html: string): string {
   const scriptBlocks: string[] = [];
 
   // Protect script tags by replacing them with placeholders
-  let processed = html.replace(
-    /<script[^>]*>[\s\S]*?<\/script>/gi,
-    (match) => {
-      scriptBlocks.push(match);
-      return `__SCRIPT_BLOCK_${scriptBlocks.length - 1}__`;
-    }
-  );
+  let processed = html.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, (match) => {
+    scriptBlocks.push(match);
+    return `__SCRIPT_BLOCK_${scriptBlocks.length - 1}__`;
+  });
 
   // Convert display math: $$...$$ -> \[...\]
   processed = processed.replace(/\$\$([^$]+)\$\$/g, '\\[$1\\]');
@@ -59,7 +56,10 @@ function convertLatexDelimiters(html: string): string {
     const placeholder = `__SCRIPT_BLOCK_${i}__`;
     const idx = processed.indexOf(placeholder);
     if (idx !== -1) {
-      processed = processed.substring(0, idx) + scriptBlocks[i] + processed.substring(idx + placeholder.length);
+      processed =
+        processed.substring(0, idx) +
+        scriptBlocks[i] +
+        processed.substring(idx + placeholder.length);
     }
   }
 
@@ -136,13 +136,23 @@ document.addEventListener("DOMContentLoaded", function() {
   // interpret as special substitution patterns ($$ → $, $' → post-match text).
   const headCloseIdx = html.indexOf('</head>');
   if (headCloseIdx !== -1) {
-    return html.substring(0, headCloseIdx) + katexInjection + '\n</head>' + html.substring(headCloseIdx + 7);
+    return (
+      html.substring(0, headCloseIdx) +
+      katexInjection +
+      '\n</head>' +
+      html.substring(headCloseIdx + 7)
+    );
   }
 
   // Fallback: inject before </body> if </head> is missing
   const bodyCloseIdx = html.indexOf('</body>');
   if (bodyCloseIdx !== -1) {
-    return html.substring(0, bodyCloseIdx) + katexInjection + '\n</body>' + html.substring(bodyCloseIdx + 7);
+    return (
+      html.substring(0, bodyCloseIdx) +
+      katexInjection +
+      '\n</body>' +
+      html.substring(bodyCloseIdx + 7)
+    );
   }
 
   // Last resort: append at end

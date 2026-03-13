@@ -8,11 +8,15 @@ import type { PPTTextElement } from '@/lib/types/slides';
 import { useElementShadow } from '../hooks/useElementShadow';
 import { ElementOutline } from '../ElementOutline';
 import { ProsemirrorEditor } from '../ProsemirrorEditor';
-import {useCanvasOperations} from "@/lib/hooks/use-canvas-operations";
+import { useCanvasOperations } from '@/lib/hooks/use-canvas-operations';
 
 export interface TextElementProps {
   elementInfo: PPTTextElement;
-  selectElement?: (e: React.MouseEvent | React.TouchEvent, element: PPTTextElement, canMove?: boolean) => void;
+  selectElement?: (
+    e: React.MouseEvent | React.TouchEvent,
+    element: PPTTextElement,
+    canMove?: boolean,
+  ) => void;
 }
 
 /**
@@ -22,7 +26,7 @@ export interface TextElementProps {
 export function TextElement({ elementInfo, selectElement }: TextElementProps) {
   const handleElementId = useCanvasStore.use.handleElementId();
   const isScaling = useCanvasStore.use.isScaling();
-  const {updateElement, deleteElement} = useCanvasOperations();
+  const { updateElement, deleteElement } = useCanvasOperations();
   const { addHistorySnapshot } = useHistorySnapshot();
 
   const { shadowStyle } = useElementShadow(elementInfo.shadow);
@@ -58,41 +62,59 @@ export function TextElement({ elementInfo, selectElement }: TextElementProps) {
           id: elementInfo.id,
           props: { width: realWidthCache },
         });
-         
+
         setRealWidthCache(-1);
       }
     }
-  }, [isScaling, handleElementId, elementInfo.id, elementInfo.vertical, realHeightCache, realWidthCache, updateElement]);
+  }, [
+    isScaling,
+    handleElementId,
+    elementInfo.id,
+    elementInfo.vertical,
+    realHeightCache,
+    realWidthCache,
+    updateElement,
+  ]);
 
   // Monitor text element size changes
-  const updateTextElementHeight = useCallback((entries: ResizeObserverEntry[]) => {
-    const contentRect = entries[0].contentRect;
-    if (!elementRef.current) return;
+  const updateTextElementHeight = useCallback(
+    (entries: ResizeObserverEntry[]) => {
+      const contentRect = entries[0].contentRect;
+      if (!elementRef.current) return;
 
-    const realHeight = contentRect.height + 20;
-    const realWidth = contentRect.width + 20;
+      const realHeight = contentRect.height + 20;
+      const realWidth = contentRect.width + 20;
 
-    if (!elementInfo.vertical && elementInfo.height !== realHeight) {
-      if (!isScaling) {
-        updateElement({
-          id: elementInfo.id,
-          props: { height: realHeight },
-        });
-      } else {
-        setRealHeightCache(realHeight);
+      if (!elementInfo.vertical && elementInfo.height !== realHeight) {
+        if (!isScaling) {
+          updateElement({
+            id: elementInfo.id,
+            props: { height: realHeight },
+          });
+        } else {
+          setRealHeightCache(realHeight);
+        }
       }
-    }
-    if (elementInfo.vertical && elementInfo.width !== realWidth) {
-      if (!isScaling) {
-        updateElement({
-          id: elementInfo.id,
-          props: { width: realWidth },
-        });
-      } else {
-        setRealWidthCache(realWidth);
+      if (elementInfo.vertical && elementInfo.width !== realWidth) {
+        if (!isScaling) {
+          updateElement({
+            id: elementInfo.id,
+            props: { width: realWidth },
+          });
+        } else {
+          setRealWidthCache(realWidth);
+        }
       }
-    }
-  }, [elementInfo.vertical, elementInfo.height, elementInfo.width, elementInfo.id, isScaling, updateElement]);
+    },
+    [
+      elementInfo.vertical,
+      elementInfo.height,
+      elementInfo.width,
+      elementInfo.id,
+      isScaling,
+      updateElement,
+    ],
+  );
 
   // ResizeObserver setup
   useEffect(() => {
@@ -109,21 +131,28 @@ export function TextElement({ elementInfo, selectElement }: TextElementProps) {
   }, [updateTextElementHeight]);
 
   // Update content
-  const updateContent = useCallback((content: string, ignore = false) => {
-    updateElement({
-      id: elementInfo.id,
-      props: { content },
-    });
+  const updateContent = useCallback(
+    (content: string, ignore = false) => {
+      updateElement({
+        id: elementInfo.id,
+        props: { content },
+      });
 
-    if (!ignore) addHistorySnapshot();
-  }, [elementInfo.id, updateElement, addHistorySnapshot]);
+      if (!ignore) addHistorySnapshot();
+    },
+    [elementInfo.id, updateElement, addHistorySnapshot],
+  );
 
   // Check and delete empty text
   const checkEmptyText = useCallback(() => {
-    const debouncedCheck = debounce(() => {
-      const pureText = elementInfo.content.replace(/<[^>]+>/g, '');
-      if (!pureText) deleteElement(elementInfo.id);
-    }, 300, { trailing: true });
+    const debouncedCheck = debounce(
+      () => {
+        const pureText = elementInfo.content.replace(/<[^>]+>/g, '');
+        if (!pureText) deleteElement(elementInfo.id);
+      },
+      300,
+      { trailing: true },
+    );
     debouncedCheck();
   }, [elementInfo.content, elementInfo.id, deleteElement]);
 

@@ -22,8 +22,14 @@ export const VIDEO_PROVIDERS: Record<VideoProviderId, VideoProviderConfig> = {
     models: [
       { id: 'doubao-seedance-1-5-pro-251215', name: 'Seedance 1.5 Pro' },
       { id: 'doubao-seedance-1-0-pro-250528', name: 'Seedance 1.0 Pro' },
-      { id: 'doubao-seedance-1-0-pro-fast-251015', name: 'Seedance 1.0 Pro Fast' },
-      { id: 'doubao-seedance-1-0-lite-t2v-250428', name: 'Seedance 1.0 Lite T2V' },
+      {
+        id: 'doubao-seedance-1-0-pro-fast-251015',
+        name: 'Seedance 1.0 Pro Fast',
+      },
+      {
+        id: 'doubao-seedance-1-0-lite-t2v-250428',
+        name: 'Seedance 1.0 Lite T2V',
+      },
     ],
     supportedAspectRatios: ['16:9', '4:3', '1:1', '9:16', '3:4', '21:9'],
     supportedDurations: [5, 10],
@@ -71,7 +77,7 @@ export const VIDEO_PROVIDERS: Record<VideoProviderId, VideoProviderConfig> = {
 };
 
 export async function testVideoConnectivity(
-  config: VideoGenerationConfig
+  config: VideoGenerationConfig,
 ): Promise<{ success: boolean; message: string }> {
   switch (config.providerId) {
     case 'seedance':
@@ -81,7 +87,10 @@ export async function testVideoConnectivity(
     case 'veo':
       return testVeoConnectivity(config);
     default:
-      return { success: false, message: `Unsupported video provider: ${config.providerId}` };
+      return {
+        success: false,
+        message: `Unsupported video provider: ${config.providerId}`,
+      };
   }
 }
 
@@ -108,10 +117,14 @@ export function normalizeVideoOptions(
 
   // Aspect ratio: use first supported value if unset or unsupported
   if (provider.supportedAspectRatios && provider.supportedAspectRatios.length > 0) {
-    if (!normalized.aspectRatio || !provider.supportedAspectRatios.includes(normalized.aspectRatio)) {
-      normalized.aspectRatio = normalized.aspectRatio && provider.supportedAspectRatios.includes(normalized.aspectRatio)
-        ? normalized.aspectRatio
-        : provider.supportedAspectRatios[0] as VideoGenerationOptions['aspectRatio'];
+    if (
+      !normalized.aspectRatio ||
+      !provider.supportedAspectRatios.includes(normalized.aspectRatio)
+    ) {
+      normalized.aspectRatio =
+        normalized.aspectRatio && provider.supportedAspectRatios.includes(normalized.aspectRatio)
+          ? normalized.aspectRatio
+          : (provider.supportedAspectRatios[0] as VideoGenerationOptions['aspectRatio']);
     }
   }
 
@@ -127,7 +140,7 @@ export function normalizeVideoOptions(
 
 export async function generateVideo(
   config: VideoGenerationConfig,
-  options: VideoGenerationOptions
+  options: VideoGenerationOptions,
 ): Promise<VideoGenerationResult> {
   switch (config.providerId) {
     case 'seedance':

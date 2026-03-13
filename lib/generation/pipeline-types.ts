@@ -18,9 +18,9 @@ export interface AgentInfo {
 
 /** Cross-page context for maintaining speech coherence across scenes */
 export interface SceneGenerationContext {
-  pageIndex: number;          // Current page (1-based)
-  totalPages: number;         // Total number of pages
-  allTitles: string[];        // All page titles in order
+  pageIndex: number; // Current page (1-based)
+  totalPages: number; // Total number of pages
+  allTitles: string[]; // All page titles in order
   previousSpeeches: string[]; // Speech texts from the previous page only
 }
 
@@ -68,5 +68,5 @@ export interface GenerationCallbacks {
 export type AICallFn = (
   systemPrompt: string,
   userPrompt: string,
-  images?: Array<{ id: string; src: string }>
+  images?: Array<{ id: string; src: string }>,
 ) => Promise<string>;

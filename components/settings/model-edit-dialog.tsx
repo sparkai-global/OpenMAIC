@@ -1,28 +1,16 @@
-"use client";
+'use client';
 
-import { useState, useCallback, useEffect } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Sparkles,
-  Wrench,
-  Zap,
-  Loader2,
-  CheckCircle,
-  XCircle,
-} from "lucide-react";
-import { useI18n } from "@/lib/hooks/use-i18n";
-import type { EditingModel } from "@/lib/types/settings";
-import type { ProviderId } from "@/lib/ai/providers";
-import { cn } from "@/lib/utils";
+import { useState, useCallback, useEffect } from 'react';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Sparkles, Wrench, Zap, Loader2, CheckCircle, XCircle } from 'lucide-react';
+import { useI18n } from '@/lib/hooks/use-i18n';
+import type { EditingModel } from '@/lib/types/settings';
+import type { ProviderId } from '@/lib/ai/providers';
+import { cn } from '@/lib/utils';
 
 interface ModelEditDialogProps {
   open: boolean;
@@ -52,18 +40,16 @@ export function ModelEditDialog({
   requiresApiKey,
 }: ModelEditDialogProps) {
   const { t } = useI18n();
-  const [testStatus, setTestStatus] = useState<
-    "idle" | "testing" | "success" | "error"
-  >("idle");
-  const [testMessage, setTestMessage] = useState("");
+  const [testStatus, setTestStatus] = useState<'idle' | 'testing' | 'success' | 'error'>('idle');
+  const [testMessage, setTestMessage] = useState('');
 
   // Reset test status when dialog closes
   useEffect(() => {
     if (!open) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- Reset state when dialog closes
-      setTestStatus("idle");
-       
-      setTestMessage("");
+      setTestStatus('idle');
+
+      setTestMessage('');
     }
   }, [open]);
 
@@ -74,18 +60,18 @@ export function ModelEditDialog({
 
   const handleTestModel = useCallback(async () => {
     if (!editingModel || !apiKey) {
-      setTestStatus("error");
-      setTestMessage(t("settings.apiKeyRequired") || "API Key is required");
+      setTestStatus('error');
+      setTestMessage(t('settings.apiKeyRequired') || 'API Key is required');
       return;
     }
 
-    setTestStatus("testing");
-    setTestMessage("");
+    setTestStatus('testing');
+    setTestMessage('');
 
     try {
-      const response = await fetch("/api/verify-model", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('/api/verify-model', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           apiKey,
           baseUrl,
@@ -98,15 +84,15 @@ export function ModelEditDialog({
       const data = await response.json();
 
       if (data.success) {
-        setTestStatus("success");
-        setTestMessage(t("settings.connectionSuccess"));
+        setTestStatus('success');
+        setTestMessage(t('settings.connectionSuccess'));
       } else {
-        setTestStatus("error");
-        setTestMessage(data.error || t("settings.connectionFailed"));
+        setTestStatus('error');
+        setTestMessage(data.error || t('settings.connectionFailed'));
       }
     } catch (_error) {
-      setTestStatus("error");
-      setTestMessage(t("settings.connectionFailed"));
+      setTestStatus('error');
+      setTestMessage(t('settings.connectionFailed'));
     }
   }, [editingModel, apiKey, baseUrl, providerId, providerType, requiresApiKey, t]);
 
@@ -116,29 +102,27 @@ export function ModelEditDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogTitle className="sr-only">
-          {editingModel.modelIndex === null
-            ? t("settings.addNewModel")
-            : t("settings.editModel")}
+          {editingModel.modelIndex === null ? t('settings.addNewModel') : t('settings.editModel')}
         </DialogTitle>
         <DialogDescription className="sr-only">
           {editingModel.modelIndex === null
-            ? t("settings.addNewModelDescription")
-            : t("settings.editModelDescription")}
+            ? t('settings.addNewModelDescription')
+            : t('settings.editModelDescription')}
         </DialogDescription>
         <div className="space-y-4">
           <div className="pb-3 border-b">
             <h2 className="text-lg font-semibold">
               {editingModel.modelIndex === null
-                ? t("settings.addNewModel")
-                : t("settings.editModel")}
+                ? t('settings.addNewModel')
+                : t('settings.editModel')}
             </h2>
           </div>
 
           {/* Model ID */}
           <div className="space-y-2">
-            <Label>{t("settings.modelId")}</Label>
+            <Label>{t('settings.modelId')}</Label>
             <Input
-              placeholder={t("settings.modelIdPlaceholder")}
+              placeholder={t('settings.modelIdPlaceholder')}
               value={editingModel.model.id}
               onChange={(e) => {
                 const newId = e.target.value;
@@ -146,8 +130,7 @@ export function ModelEditDialog({
                 const currentId = editingModel.model.id;
 
                 // Auto-sync name if it's empty or matches the old ID
-                const shouldSyncName =
-                  !currentName || currentName === currentId;
+                const shouldSyncName = !currentName || currentName === currentId;
 
                 setEditingModel({
                   ...editingModel,
@@ -159,8 +142,8 @@ export function ModelEditDialog({
                 });
 
                 // Reset test status when model ID changes
-                setTestStatus("idle");
-                setTestMessage("");
+                setTestStatus('idle');
+                setTestMessage('');
               }}
               onBlur={() => onAutoSave?.()}
             />
@@ -168,9 +151,9 @@ export function ModelEditDialog({
 
           {/* Display Name */}
           <div className="space-y-2">
-            <Label>{t("settings.modelName")}</Label>
+            <Label>{t('settings.modelName')}</Label>
             <Input
-              placeholder={t("settings.modelNamePlaceholder")}
+              placeholder={t('settings.modelNamePlaceholder')}
               value={editingModel.model.name}
               onChange={(e) =>
                 setEditingModel({
@@ -184,7 +167,7 @@ export function ModelEditDialog({
 
           {/* Capabilities */}
           <div className="space-y-2">
-            <Label>{t("settings.modelCapabilities")}</Label>
+            <Label>{t('settings.modelCapabilities')}</Label>
             <div className="flex gap-4">
               <div className="flex items-center space-x-2">
                 <Checkbox
@@ -209,7 +192,7 @@ export function ModelEditDialog({
                   className="text-sm flex items-center gap-1.5 cursor-pointer"
                 >
                   <Sparkles className="h-3.5 w-3.5" />
-                  {t("settings.capabilities.vision")}
+                  {t('settings.capabilities.vision')}
                 </label>
               </div>
 
@@ -236,7 +219,7 @@ export function ModelEditDialog({
                   className="text-sm flex items-center gap-1.5 cursor-pointer"
                 >
                   <Wrench className="h-3.5 w-3.5" />
-                  {t("settings.capabilities.tools")}
+                  {t('settings.capabilities.tools')}
                 </label>
               </div>
 
@@ -263,7 +246,7 @@ export function ModelEditDialog({
                   className="text-sm flex items-center gap-1.5 cursor-pointer"
                 >
                   <Zap className="h-3.5 w-3.5" />
-                  {t("settings.capabilities.streaming")}
+                  {t('settings.capabilities.streaming')}
                 </label>
               </div>
             </div>
@@ -271,27 +254,21 @@ export function ModelEditDialog({
 
           {/* Advanced Settings */}
           <div className="space-y-3 pt-3 border-t">
-            <Label className="text-base">
-              {t("settings.advancedSettings")}
-            </Label>
+            <Label className="text-base">{t('settings.advancedSettings')}</Label>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label className="text-sm">
-                  {t("settings.contextWindowLabel")}
-                </Label>
+                <Label className="text-sm">{t('settings.contextWindowLabel')}</Label>
                 <Input
                   type="number"
-                  placeholder={t("settings.contextWindowPlaceholder")}
-                  value={editingModel.model.contextWindow || ""}
+                  placeholder={t('settings.contextWindowPlaceholder')}
+                  value={editingModel.model.contextWindow || ''}
                   onChange={(e) =>
                     setEditingModel({
                       ...editingModel,
                       model: {
                         ...editingModel.model,
-                        contextWindow: e.target.value
-                          ? parseInt(e.target.value)
-                          : undefined,
+                        contextWindow: e.target.value ? parseInt(e.target.value) : undefined,
                       },
                     })
                   }
@@ -300,21 +277,17 @@ export function ModelEditDialog({
               </div>
 
               <div className="space-y-2">
-                <Label className="text-sm">
-                  {t("settings.outputWindowLabel")}
-                </Label>
+                <Label className="text-sm">{t('settings.outputWindowLabel')}</Label>
                 <Input
                   type="number"
-                  placeholder={t("settings.outputWindowPlaceholder")}
-                  value={editingModel.model.outputWindow || ""}
+                  placeholder={t('settings.outputWindowPlaceholder')}
+                  value={editingModel.model.outputWindow || ''}
                   onChange={(e) =>
                     setEditingModel({
                       ...editingModel,
                       model: {
                         ...editingModel.model,
-                        outputWindow: e.target.value
-                          ? parseInt(e.target.value)
-                          : undefined,
+                        outputWindow: e.target.value ? parseInt(e.target.value) : undefined,
                       },
                     })
                   }
@@ -327,48 +300,34 @@ export function ModelEditDialog({
           {/* Test Model */}
           <div className="space-y-3 pt-3 border-t">
             <div className="flex items-center justify-between">
-              <Label className="text-base">{t("settings.testModel")}</Label>
+              <Label className="text-base">{t('settings.testModel')}</Label>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleTestModel}
-                disabled={!editingModel.model.id || testStatus === "testing"}
+                disabled={!editingModel.model.id || testStatus === 'testing'}
                 className={cn(
-                  testStatus === "success" &&
-                    "border-green-600 text-green-600 hover:bg-green-50",
-                  testStatus === "error" &&
-                    "border-red-600 text-red-600 hover:bg-red-50"
+                  testStatus === 'success' && 'border-green-600 text-green-600 hover:bg-green-50',
+                  testStatus === 'error' && 'border-red-600 text-red-600 hover:bg-red-50',
                 )}
               >
-                {testStatus === "testing" && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
-                {testStatus === "success" && (
-                  <CheckCircle className="mr-2 h-4 w-4" />
-                )}
-                {testStatus === "error" && <XCircle className="mr-2 h-4 w-4" />}
-                {testStatus === "testing"
-                  ? t("settings.testing")
-                  : t("settings.testConnection")}
+                {testStatus === 'testing' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {testStatus === 'success' && <CheckCircle className="mr-2 h-4 w-4" />}
+                {testStatus === 'error' && <XCircle className="mr-2 h-4 w-4" />}
+                {testStatus === 'testing' ? t('settings.testing') : t('settings.testConnection')}
               </Button>
             </div>
             {testMessage && (
               <div
                 className={cn(
-                  "rounded-lg p-3 text-sm",
-                  testStatus === "success" &&
-                    "bg-green-50 text-green-700 border border-green-200",
-                  testStatus === "error" &&
-                    "bg-red-50 text-red-700 border border-red-200"
+                  'rounded-lg p-3 text-sm',
+                  testStatus === 'success' && 'bg-green-50 text-green-700 border border-green-200',
+                  testStatus === 'error' && 'bg-red-50 text-red-700 border border-red-200',
                 )}
               >
                 <div className="flex items-start gap-2 flex-wrap">
-                  {testStatus === "success" && (
-                    <CheckCircle className="h-4 w-4 mt-0.5 shrink-0" />
-                  )}
-                  {testStatus === "error" && (
-                    <XCircle className="h-4 w-4 mt-0.5 shrink-0" />
-                  )}
+                  {testStatus === 'success' && <CheckCircle className="h-4 w-4 mt-0.5 shrink-0" />}
+                  {testStatus === 'error' && <XCircle className="h-4 w-4 mt-0.5 shrink-0" />}
                   <p className="flex-1 break-words">{testMessage}</p>
                 </div>
               </div>
@@ -378,10 +337,10 @@ export function ModelEditDialog({
           {/* Footer */}
           <div className="flex items-center justify-end gap-2 pt-3 border-t">
             <Button variant="outline" size="sm" onClick={handleClose}>
-              {t("settings.cancelEdit")}
+              {t('settings.cancelEdit')}
             </Button>
             <Button size="sm" onClick={onSave}>
-              {t("settings.saveModel")}
+              {t('settings.saveModel')}
             </Button>
           </div>
         </div>

@@ -2,7 +2,16 @@
 
 import { useState, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { PanelLeftClose, PieChart, Cpu, MousePointer2, BookOpen, Globe, AlertCircle, RefreshCw } from 'lucide-react';
+import {
+  PanelLeftClose,
+  PieChart,
+  Cpu,
+  MousePointer2,
+  BookOpen,
+  Globe,
+  AlertCircle,
+  RefreshCw,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ThumbnailSlide } from '@/components/slide-renderer/components/ThumbnailSlide';
 import { useStageStore, useCanvasStore } from '@/lib/store';
@@ -21,11 +30,16 @@ const DEFAULT_WIDTH = 220;
 const MIN_WIDTH = 170;
 const MAX_WIDTH = 400;
 
-export function SceneSidebar({ collapsed, onCollapseChange, onSceneSelect, onRetryOutline }: SceneSidebarProps) {
-
+export function SceneSidebar({
+  collapsed,
+  onCollapseChange,
+  onSceneSelect,
+  onRetryOutline,
+}: SceneSidebarProps) {
   const { t } = useI18n();
   const router = useRouter();
-  const { scenes, currentSceneId, setCurrentSceneId, generatingOutlines, generationStatus } = useStageStore();
+  const { scenes, currentSceneId, setCurrentSceneId, generatingOutlines, generationStatus } =
+    useStageStore();
   const failedOutlines = useStageStore.use.failedOutlines();
   const viewportSize = useCanvasStore.use.viewportSize();
   const viewportRatio = useCanvasStore.use.viewportRatio();
@@ -71,7 +85,7 @@ export function SceneSidebar({ collapsed, onCollapseChange, onSceneSelect, onRet
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
     },
-    [sidebarWidth]
+    [sidebarWidth],
   );
 
   const getSceneTypeIcon = (type: SceneType) => {
@@ -133,12 +147,18 @@ export function SceneSidebar({ collapsed, onCollapseChange, onSceneSelect, onRet
             return (
               <div
                 key={scene.id}
-                onClick={() => { if (onSceneSelect) { onSceneSelect(scene.id); } else { setCurrentSceneId(scene.id); } }}
+                onClick={() => {
+                  if (onSceneSelect) {
+                    onSceneSelect(scene.id);
+                  } else {
+                    setCurrentSceneId(scene.id);
+                  }
+                }}
                 className={cn(
                   'group relative rounded-lg transition-all duration-200 cursor-pointer flex flex-col gap-1 p-1.5',
                   isActive
                     ? 'bg-purple-50 dark:bg-purple-900/20 ring-1 ring-purple-200 dark:ring-purple-700'
-                    : 'hover:bg-gray-50/80 dark:hover:bg-gray-800/50'
+                    : 'hover:bg-gray-50/80 dark:hover:bg-gray-800/50',
                 )}
               >
                 {/* Scene Header */}
@@ -149,7 +169,7 @@ export function SceneSidebar({ collapsed, onCollapseChange, onSceneSelect, onRet
                         'text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center shrink-0',
                         isActive
                           ? 'bg-purple-600 dark:bg-purple-500 text-white shadow-sm shadow-purple-500/30'
-                          : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
+                          : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400',
                       )}
                     >
                       {index + 1}
@@ -159,7 +179,7 @@ export function SceneSidebar({ collapsed, onCollapseChange, onSceneSelect, onRet
                         'text-xs font-bold truncate transition-colors',
                         isActive
                           ? 'text-purple-700 dark:text-purple-300'
-                          : 'text-gray-600 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-gray-100'
+                          : 'text-gray-600 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-gray-100',
                       )}
                     >
                       {scene.title}
@@ -189,17 +209,25 @@ export function SceneSidebar({ collapsed, onCollapseChange, onSceneSelect, onRet
                                 'rounded flex items-center gap-1 px-1',
                                 i === 1
                                   ? 'bg-orange-400/20 dark:bg-orange-500/20 border border-orange-300/50 dark:border-orange-600/30'
-                                  : 'bg-white/60 dark:bg-white/5 border border-orange-100/60 dark:border-orange-800/20'
+                                  : 'bg-white/60 dark:bg-white/5 border border-orange-100/60 dark:border-orange-800/20',
                               )}
                             >
-                              <div className={cn(
-                                'w-1.5 h-1.5 rounded-full shrink-0',
-                                i === 1 ? 'bg-orange-400 dark:bg-orange-500' : 'bg-orange-200 dark:bg-orange-700/50'
-                              )} />
-                              <div className={cn(
-                                'h-1 rounded-full flex-1',
-                                i === 1 ? 'bg-orange-300/60 dark:bg-orange-600/40' : 'bg-orange-100/80 dark:bg-orange-800/30'
-                              )} />
+                              <div
+                                className={cn(
+                                  'w-1.5 h-1.5 rounded-full shrink-0',
+                                  i === 1
+                                    ? 'bg-orange-400 dark:bg-orange-500'
+                                    : 'bg-orange-200 dark:bg-orange-700/50',
+                                )}
+                              />
+                              <div
+                                className={cn(
+                                  'h-1 rounded-full flex-1',
+                                  i === 1
+                                    ? 'bg-orange-300/60 dark:bg-orange-600/40'
+                                    : 'bg-orange-100/80 dark:bg-orange-800/30',
+                                )}
+                              />
                             </div>
                           ))}
                         </div>
@@ -217,8 +245,11 @@ export function SceneSidebar({ collapsed, onCollapseChange, onSceneSelect, onRet
                         </div>
                         <div className="flex-1 flex gap-1">
                           <div className="w-1/4 space-y-1 pt-0.5">
-                            {[1, 2, 3].map(i => (
-                              <div key={i} className="h-0.5 w-full bg-emerald-200/60 dark:bg-emerald-700/30 rounded-full" />
+                            {[1, 2, 3].map((i) => (
+                              <div
+                                key={i}
+                                className="h-0.5 w-full bg-emerald-200/60 dark:bg-emerald-700/30 rounded-full"
+                              />
                             ))}
                           </div>
                           <div className="flex-1 bg-emerald-100/40 dark:bg-emerald-800/20 rounded flex items-center justify-center border border-emerald-200/40 dark:border-emerald-700/20">
@@ -235,13 +266,27 @@ export function SceneSidebar({ collapsed, onCollapseChange, onSceneSelect, onRet
                         </div>
                         <div className="flex-1 flex gap-1 overflow-hidden">
                           {[0, 1, 2].map((col) => (
-                            <div key={col} className="flex-1 bg-white/50 dark:bg-white/5 rounded p-0.5 flex flex-col gap-0.5">
-                              <div className={cn(
-                                'h-0.5 w-3 rounded-full mb-0.5',
-                                col === 0 ? 'bg-blue-300/70' : col === 1 ? 'bg-amber-300/70' : 'bg-green-300/70'
-                              )} />
-                              {Array.from({ length: col === 0 ? 3 : col === 1 ? 2 : 1 }).map((_, i) => (
-                                <div key={i} className="h-2 w-full bg-blue-100/60 dark:bg-blue-800/20 rounded border border-blue-200/30 dark:border-blue-700/20" />
+                            <div
+                              key={col}
+                              className="flex-1 bg-white/50 dark:bg-white/5 rounded p-0.5 flex flex-col gap-0.5"
+                            >
+                              <div
+                                className={cn(
+                                  'h-0.5 w-3 rounded-full mb-0.5',
+                                  col === 0
+                                    ? 'bg-blue-300/70'
+                                    : col === 1
+                                      ? 'bg-amber-300/70'
+                                      : 'bg-green-300/70',
+                                )}
+                              />
+                              {Array.from({
+                                length: col === 0 ? 3 : col === 1 ? 2 : 1,
+                              }).map((_, i) => (
+                                <div
+                                  key={i}
+                                  className="h-2 w-full bg-blue-100/60 dark:bg-blue-800/20 rounded border border-blue-200/30 dark:border-blue-700/20"
+                                />
                               ))}
                             </div>
                           ))}
@@ -263,7 +308,7 @@ export function SceneSidebar({ collapsed, onCollapseChange, onSceneSelect, onRet
                           'absolute inset-0 bg-purple-500/0 transition-colors',
                           isActive
                             ? 'bg-purple-500/0'
-                            : 'group-hover:bg-black/5 dark:group-hover:bg-white/5'
+                            : 'group-hover:bg-black/5 dark:group-hover:bg-white/5',
                         )}
                       />
                     )}
@@ -274,104 +319,131 @@ export function SceneSidebar({ collapsed, onCollapseChange, onSceneSelect, onRet
           })}
 
           {/* Single placeholder for the next generating page (clickable) */}
-          {generatingOutlines.length > 0 && (() => {
-            const outline = generatingOutlines[0];
-            const isFailed = failedOutlines.some(f => f.id === outline.id);
-            const isRetrying = retryingOutlineId === outline.id;
-            const isPaused = generationStatus === 'paused';
-            const isActive = currentSceneId === PENDING_SCENE_ID;
+          {generatingOutlines.length > 0 &&
+            (() => {
+              const outline = generatingOutlines[0];
+              const isFailed = failedOutlines.some((f) => f.id === outline.id);
+              const isRetrying = retryingOutlineId === outline.id;
+              const isPaused = generationStatus === 'paused';
+              const isActive = currentSceneId === PENDING_SCENE_ID;
 
-            return (
-              <div
-                key={`generating-${outline.id}`}
-                onClick={() => {
-                  if (isFailed) return;
-                  if (onSceneSelect) {
-                    onSceneSelect(PENDING_SCENE_ID);
-                  } else {
-                    setCurrentSceneId(PENDING_SCENE_ID);
-                  }
-                }}
-                className={cn(
-                  'group relative rounded-lg flex flex-col gap-1 p-1.5 transition-all duration-200',
-                  isFailed
-                    ? 'opacity-100 cursor-default'
-                    : 'cursor-pointer hover:bg-gray-50/80 dark:hover:bg-gray-800/50',
-                  !isFailed && !isActive && 'opacity-60',
-                  isActive && !isFailed && 'bg-purple-50 dark:bg-purple-900/20 ring-1 ring-purple-200 dark:ring-purple-700 opacity-100',
-                )}
-              >
-                {/* Scene Header */}
-                <div className="flex justify-between items-center px-2 pt-0.5">
-                  <div className="flex items-center gap-2 max-w-full">
-                    <span className={cn(
-                      'text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center shrink-0',
-                      isActive && !isFailed
-                        ? 'bg-purple-600 dark:bg-purple-500 text-white shadow-sm shadow-purple-500/30'
-                        : 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500'
-                    )}>
-                      {scenes.length + 1}
-                    </span>
-                    <span className={cn(
-                      'text-xs font-bold truncate transition-colors',
-                      isActive && !isFailed
-                        ? 'text-purple-700 dark:text-purple-300'
-                        : isFailed
-                          ? 'text-gray-700 dark:text-gray-200'
-                          : 'text-gray-400 dark:text-gray-500'
-                    )}>
-                      {outline.title}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Skeleton Thumbnail */}
-                <div className={cn(
-                  'relative aspect-video w-full rounded overflow-hidden ring-1',
-                  isFailed
-                    ? 'bg-red-50/30 dark:bg-red-950/10 ring-red-100 dark:ring-red-900/20'
-                    : 'bg-gray-100 dark:bg-gray-800 ring-black/5 dark:ring-white/5'
-                )}>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5">
-                    {isFailed ? (
-                      <div className="flex items-center gap-1 text-xs font-medium text-red-500/90 dark:text-red-400">
-                        {onRetryOutline ? (
-                          <button
-                            onClick={(e) => { e.stopPropagation(); handleRetryOutline(outline.id); }}
-                            disabled={isRetrying}
-                            className="p-1 -ml-1 rounded-md hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors active:scale-95 disabled:opacity-50 disabled:active:scale-100"
-                            title={t('generation.retryScene')}
-                          >
-                            <RefreshCw className={cn('w-3.5 h-3.5', isRetrying && 'animate-spin')} />
-                          </button>
-                        ) : (
-                          <AlertCircle className="w-3.5 h-3.5" />
+              return (
+                <div
+                  key={`generating-${outline.id}`}
+                  onClick={() => {
+                    if (isFailed) return;
+                    if (onSceneSelect) {
+                      onSceneSelect(PENDING_SCENE_ID);
+                    } else {
+                      setCurrentSceneId(PENDING_SCENE_ID);
+                    }
+                  }}
+                  className={cn(
+                    'group relative rounded-lg flex flex-col gap-1 p-1.5 transition-all duration-200',
+                    isFailed
+                      ? 'opacity-100 cursor-default'
+                      : 'cursor-pointer hover:bg-gray-50/80 dark:hover:bg-gray-800/50',
+                    !isFailed && !isActive && 'opacity-60',
+                    isActive &&
+                      !isFailed &&
+                      'bg-purple-50 dark:bg-purple-900/20 ring-1 ring-purple-200 dark:ring-purple-700 opacity-100',
+                  )}
+                >
+                  {/* Scene Header */}
+                  <div className="flex justify-between items-center px-2 pt-0.5">
+                    <div className="flex items-center gap-2 max-w-full">
+                      <span
+                        className={cn(
+                          'text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center shrink-0',
+                          isActive && !isFailed
+                            ? 'bg-purple-600 dark:bg-purple-500 text-white shadow-sm shadow-purple-500/30'
+                            : 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500',
                         )}
-                        <span>{isRetrying ? t('generation.retryingScene') : t('stage.generationFailed')}</span>
-                      </div>
-                    ) : (
-                      <>
-                        <div className={cn('h-2 w-3/5 bg-gray-200 dark:bg-gray-700 rounded', !isPaused && 'animate-pulse')} />
-                        <div className={cn('h-1.5 w-2/5 bg-gray-200 dark:bg-gray-700 rounded', !isPaused && 'animate-pulse')} />
-                        <span className="text-[9px] font-medium text-gray-400 dark:text-gray-500 mt-0.5">
-                          {isPaused ? t('stage.paused') : t('stage.generating')}
-                        </span>
-                      </>
+                      >
+                        {scenes.length + 1}
+                      </span>
+                      <span
+                        className={cn(
+                          'text-xs font-bold truncate transition-colors',
+                          isActive && !isFailed
+                            ? 'text-purple-700 dark:text-purple-300'
+                            : isFailed
+                              ? 'text-gray-700 dark:text-gray-200'
+                              : 'text-gray-400 dark:text-gray-500',
+                        )}
+                      >
+                        {outline.title}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Skeleton Thumbnail */}
+                  <div
+                    className={cn(
+                      'relative aspect-video w-full rounded overflow-hidden ring-1',
+                      isFailed
+                        ? 'bg-red-50/30 dark:bg-red-950/10 ring-red-100 dark:ring-red-900/20'
+                        : 'bg-gray-100 dark:bg-gray-800 ring-black/5 dark:ring-white/5',
+                    )}
+                  >
+                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5">
+                      {isFailed ? (
+                        <div className="flex items-center gap-1 text-xs font-medium text-red-500/90 dark:text-red-400">
+                          {onRetryOutline ? (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleRetryOutline(outline.id);
+                              }}
+                              disabled={isRetrying}
+                              className="p-1 -ml-1 rounded-md hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors active:scale-95 disabled:opacity-50 disabled:active:scale-100"
+                              title={t('generation.retryScene')}
+                            >
+                              <RefreshCw
+                                className={cn('w-3.5 h-3.5', isRetrying && 'animate-spin')}
+                              />
+                            </button>
+                          ) : (
+                            <AlertCircle className="w-3.5 h-3.5" />
+                          )}
+                          <span>
+                            {isRetrying
+                              ? t('generation.retryingScene')
+                              : t('stage.generationFailed')}
+                          </span>
+                        </div>
+                      ) : (
+                        <>
+                          <div
+                            className={cn(
+                              'h-2 w-3/5 bg-gray-200 dark:bg-gray-700 rounded',
+                              !isPaused && 'animate-pulse',
+                            )}
+                          />
+                          <div
+                            className={cn(
+                              'h-1.5 w-2/5 bg-gray-200 dark:bg-gray-700 rounded',
+                              !isPaused && 'animate-pulse',
+                            )}
+                          />
+                          <span className="text-[9px] font-medium text-gray-400 dark:text-gray-500 mt-0.5">
+                            {isPaused ? t('stage.paused') : t('stage.generating')}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                    {!isFailed && !isPaused && (
+                      <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/40 dark:via-white/10 to-transparent" />
                     )}
                   </div>
-                  {!isFailed && !isPaused && (
-                    <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/40 dark:via-white/10 to-transparent" />
-                  )}
                 </div>
-              </div>
-            );
-          })()}
+              );
+            })()}
         </div>
 
         {/* Spacer to push toggle button area */}
         <div className="mt-auto" />
       </div>
-
     </div>
   );
 }

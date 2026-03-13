@@ -25,6 +25,10 @@ export async function GET() {
     });
   } catch (error) {
     log.error('Error fetching server providers:', error);
-    return apiError('INTERNAL_ERROR', 500, error instanceof Error ? error.message : 'Unknown error');
+    return apiError(
+      'INTERNAL_ERROR',
+      500,
+      error instanceof Error ? error.message : 'Unknown error',
+    );
   }
 }

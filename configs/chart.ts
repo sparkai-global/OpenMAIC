@@ -1,58 +1,76 @@
-import type { ChartData } from '@/lib/types/slides'
+import type { ChartData } from '@/lib/types/slides';
 
 export const CHART_TYPE_MAP: Record<string, string> = {
-  'bar': '柱状图',
-  'column': '条形图',
-  'line': '折线图',
-  'area': '面积图',
-  'scatter': '散点图',
-  'pie': '饼图',
-  'ring': '环形图',
-  'radar': '雷达图',
-}
+  bar: '柱状图',
+  column: '条形图',
+  line: '折线图',
+  area: '面积图',
+  scatter: '散点图',
+  pie: '饼图',
+  ring: '环形图',
+  radar: '雷达图',
+};
 
 export const CHART_DEFAULT_DATA: Record<string, ChartData> = {
-  'bar': {
+  bar: {
     labels: ['类别1', '类别2', '类别3', '类别4', '类别5'],
     legends: ['系列1', '系列2'],
-    series: [[12, 19, 5, 2, 18], [7, 11, 13, 21, 9]],
+    series: [
+      [12, 19, 5, 2, 18],
+      [7, 11, 13, 21, 9],
+    ],
   },
-  'column': {
+  column: {
     labels: ['类别1', '类别2', '类别3', '类别4', '类别5'],
     legends: ['系列1', '系列2'],
-    series: [[12, 19, 5, 2, 18], [7, 11, 13, 21, 9]],
+    series: [
+      [12, 19, 5, 2, 18],
+      [7, 11, 13, 21, 9],
+    ],
   },
-  'line': {
+  line: {
     labels: ['类别1', '类别2', '类别3', '类别4', '类别5'],
     legends: ['系列1', '系列2'],
-    series: [[12, 19, 5, 2, 18], [7, 11, 13, 21, 9]],
+    series: [
+      [12, 19, 5, 2, 18],
+      [7, 11, 13, 21, 9],
+    ],
   },
-  'pie': {
+  pie: {
     labels: ['类别1', '类别2', '类别3', '类别4', '类别5'],
     legends: ['值'],
     series: [[12, 19, 5, 2, 18]],
   },
-  'ring': {
+  ring: {
     labels: ['类别1', '类别2', '类别3', '类别4', '类别5'],
     legends: ['值'],
     series: [[12, 19, 5, 2, 18]],
   },
-  'area': {
+  area: {
     labels: ['类别1', '类别2', '类别3', '类别4', '类别5'],
     legends: ['系列1', '系列2'],
-    series: [[12, 19, 5, 2, 18], [7, 11, 13, 21, 9]],
+    series: [
+      [12, 19, 5, 2, 18],
+      [7, 11, 13, 21, 9],
+    ],
   },
-  'radar': {
+  radar: {
     labels: ['类别1', '类别2', '类别3', '类别4', '类别5'],
     legends: ['系列1', '系列2'],
-    series: [[12, 19, 5, 2, 18], [7, 11, 13, 21, 9]],
+    series: [
+      [12, 19, 5, 2, 18],
+      [7, 11, 13, 21, 9],
+    ],
   },
-  'scatter': {
+  scatter: {
     labels: ['坐标1', '坐标2', '坐标3', '坐标4', '坐标5'],
     legends: ['X', 'Y'],
-    series: [[12, 19, 5, 2, 18], [7, 11, 13, 21, 9]],
+    series: [
+      [12, 19, 5, 2, 18],
+      [7, 11, 13, 21, 9],
+    ],
   },
-}
+};
 
 export const CHART_PRESET_THEMES = [
   ['#d87c7c', '#919e8b', '#d7ab82', '#6e7074', '#61a0a8', '#efa18d'],
@@ -67,4 +85,4 @@ export const CHART_PRESET_THEMES = [
   ['#e01f54', '#001852', '#f5e8c8', '#b8d2c7', '#c6b38e', '#a4d8c2'],
   ['#c12e34', '#e6b600', '#0098d9', '#2b821d', '#005eaa', '#339ca8'],
   ['#8a7ca8', '#e098c7', '#8fd3e8', '#71669e', '#cc70af', '#7cb4cc'],
-]
+];

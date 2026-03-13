@@ -10,12 +10,14 @@ interface RulerProps {
 }
 
 export function Ruler({ viewportStyles, elementList }: RulerProps) {
-  const canvasScale = useCanvasStore.use.canvasScale()
+  const canvasScale = useCanvasStore.use.canvasScale();
   const activeElementIdList = useCanvasStore.use.activeElementIdList();
   const viewportRatio = useCanvasStore.use.viewportRatio();
   const viewportSize = useCanvasStore.use.viewportSize();
 
-  const [elementListRange, setElementListRange] = useState<ReturnType<typeof getElementListRange> | null>(null);
+  const [elementListRange, setElementListRange] = useState<ReturnType<
+    typeof getElementListRange
+  > | null>(null);
 
   useEffect(() => {
     const els = elementList.filter((el) => activeElementIdList.includes(el.id));
@@ -23,7 +25,6 @@ export function Ruler({ viewportStyles, elementList }: RulerProps) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- DOM measurement requires effect
       setElementListRange(null);
     } else {
-       
       setElementListRange(getElementListRange(els));
     }
   }, [elementList, activeElementIdList]);

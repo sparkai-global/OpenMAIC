@@ -67,7 +67,17 @@ const ALIGN_MAP = {
   right: 'flex-end',
 } as const;
 
-function KatexContent({ html, width, height, align = 'center' }: { html: string; width: number; height: number; align?: 'left' | 'center' | 'right' }) {
+function KatexContent({
+  html,
+  width,
+  height,
+  align = 'center',
+}: {
+  html: string;
+  width: number;
+  height: number;
+  align?: 'left' | 'center' | 'right';
+}) {
   const innerRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
 
@@ -81,10 +91,20 @@ function KatexContent({ html, width, height, align = 'center' }: { html: string;
   }, [html, width, height]);
 
   const justify = ALIGN_MAP[align];
-  const origin = align === 'left' ? 'left center' : align === 'right' ? 'right center' : 'center center';
+  const origin =
+    align === 'left' ? 'left center' : align === 'right' ? 'right center' : 'center center';
 
   return (
-    <div style={{ width, height, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: justify }}>
+    <div
+      style={{
+        width,
+        height,
+        overflow: 'hidden',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: justify,
+      }}
+    >
       <div
         ref={innerRef}
         className="[&_.katex-display]:!m-0"

@@ -6,29 +6,32 @@
  * Vercel AI SDK, supporting all providers (OpenAI, Anthropic, Google, etc.).
  */
 
-import { BaseChatModel } from "@langchain/core/language_models/chat_models";
-import {
-  BaseMessage,
-  HumanMessage,
-  AIMessage,
-  SystemMessage,
-} from "@langchain/core/messages";
-import { CallbackManagerForLLMRun } from "@langchain/core/callbacks/manager";
-import { ChatResult } from "@langchain/core/outputs";
-import type { LanguageModel } from "ai";
+import { BaseChatModel } from '@langchain/core/language_models/chat_models';
+import { BaseMessage, HumanMessage, AIMessage, SystemMessage } from '@langchain/core/messages';
+import { CallbackManagerForLLMRun } from '@langchain/core/callbacks/manager';
+import { ChatResult } from '@langchain/core/outputs';
+import type { LanguageModel } from 'ai';
 
-import { callLLM, streamLLM } from "@/lib/ai/llm";
-import type { ThinkingConfig } from "@/lib/types/provider";
-import { createLogger } from "@/lib/logger";
+import { callLLM, streamLLM } from '@/lib/ai/llm';
+import type { ThinkingConfig } from '@/lib/types/provider';
+import { createLogger } from '@/lib/logger';
 
-const log = createLogger("AISdkAdapter");
+const log = createLogger('AISdkAdapter');
 
 /**
  * Stream chunk types for streaming generation
  */
 export type StreamChunk =
   | { type: 'delta'; content: string }
-  | { type: 'tool_calls'; toolCalls: { id: string; index: number; type: 'function'; function: { name: string; arguments: string } }[] }
+  | {
+      type: 'tool_calls';
+      toolCalls: {
+        id: string;
+        index: number;
+        type: 'function';
+        function: { name: string; arguments: string };
+      }[];
+    }
   | { type: 'done'; content: string };
 
 /**
@@ -48,7 +51,7 @@ export class AISdkLangGraphAdapter extends BaseChatModel {
   }
 
   _llmType(): string {
-    return "ai-sdk";
+    return 'ai-sdk';
   }
 
   _combineLLMOutput() {
@@ -58,24 +61,26 @@ export class AISdkLangGraphAdapter extends BaseChatModel {
   /**
    * Convert LangChain messages to AI SDK message format
    */
-  private convertMessages(messages: BaseMessage[]): { role: 'system' | 'user' | 'assistant'; content: string }[] {
+  private convertMessages(
+    messages: BaseMessage[],
+  ): { role: 'system' | 'user' | 'assistant'; content: string }[] {
     return messages.map((msg) => {
       if (msg instanceof HumanMessage) {
-        return { role: "user" as const, content: msg.content as string };
+        return { role: 'user' as const, content: msg.content as string };
       } else if (msg instanceof AIMessage) {
-        return { role: "assistant" as const, content: msg.content as string };
+        return { role: 'assistant' as const, content: msg.content as string };
       } else if (msg instanceof SystemMessage) {
-        return { role: "system" as const, content: msg.content as string };
+        return { role: 'system' as const, content: msg.content as string };
       } else {
-        return { role: "user" as const, content: msg.content as string };
+        return { role: 'user' as const, content: msg.content as string };
       }
     });
   }
 
   async _generate(
     messages: BaseMessage[],
-    _options?: this["ParsedCallOptions"],
-    _runManager?: CallbackManagerForLLMRun
+    _options?: this['ParsedCallOptions'],
+    _runManager?: CallbackManagerForLLMRun,
   ): Promise<ChatResult> {
     const aiMessages = this.convertMessages(messages);
 
@@ -90,9 +95,9 @@ export class AISdkLangGraphAdapter extends BaseChatModel {
         this.thinking,
       );
 
-      const content = result.text || "";
+      const content = result.text || '';
 
-      log.info("[AI SDK Adapter] Response:", {
+      log.info('[AI SDK Adapter] Response:', {
         textLength: content.length,
       });
 
@@ -109,7 +114,7 @@ export class AISdkLangGraphAdapter extends BaseChatModel {
         llmOutput: {},
       };
     } catch (error) {
-      log.error("[AI SDK Adapter Error]", error);
+      log.error('[AI SDK Adapter Error]', error);
       throw error;
     }
   }
@@ -122,7 +127,7 @@ export class AISdkLangGraphAdapter extends BaseChatModel {
    */
   async *streamGenerate(
     messages: BaseMessage[],
-    options?: { tools?: Record<string, unknown>; signal?: AbortSignal }
+    options?: { tools?: Record<string, unknown>; signal?: AbortSignal },
   ): AsyncGenerator<StreamChunk> {
     const aiMessages = this.convertMessages(messages);
 
@@ -136,7 +141,7 @@ export class AISdkLangGraphAdapter extends BaseChatModel {
       this.thinking,
     );
 
-    let fullContent = "";
+    let fullContent = '';
 
     for await (const chunk of result.textStream) {
       if (chunk) {

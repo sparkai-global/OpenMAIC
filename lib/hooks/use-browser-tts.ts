@@ -4,7 +4,7 @@
  * Completely free, no API key required
  */
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect } from 'react';
 
 // Note: Window.SpeechSynthesis declaration is already in the global scope
 
@@ -26,7 +26,7 @@ export function useBrowserTTS(options: UseBrowserTTSOptions = {}) {
     rate = 1.0,
     pitch = 1.0,
     volume = 1.0,
-    lang = "zh-CN",
+    lang = 'zh-CN',
   } = options;
 
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -36,7 +36,7 @@ export function useBrowserTTS(options: UseBrowserTTSOptions = {}) {
 
   // Load available voices
   useEffect(() => {
-    if (typeof window === "undefined" || !window.speechSynthesis) {
+    if (typeof window === 'undefined' || !window.speechSynthesis) {
       return;
     }
 
@@ -61,8 +61,8 @@ export function useBrowserTTS(options: UseBrowserTTSOptions = {}) {
 
   const speak = useCallback(
     (text: string, voiceURI?: string) => {
-      if (typeof window === "undefined" || !window.speechSynthesis) {
-        onError?.("浏览器不支持 Web Speech API");
+      if (typeof window === 'undefined' || !window.speechSynthesis) {
+        onError?.('浏览器不支持 Web Speech API');
         return;
       }
 
@@ -114,23 +114,23 @@ export function useBrowserTTS(options: UseBrowserTTSOptions = {}) {
       utteranceRef.current = utterance;
       window.speechSynthesis.speak(utterance);
     },
-    [rate, pitch, volume, lang, availableVoices, onStart, onEnd, onError]
+    [rate, pitch, volume, lang, availableVoices, onStart, onEnd, onError],
   );
 
   const pause = useCallback(() => {
-    if (typeof window !== "undefined" && window.speechSynthesis) {
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
       window.speechSynthesis.pause();
     }
   }, []);
 
   const resume = useCallback(() => {
-    if (typeof window !== "undefined" && window.speechSynthesis) {
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
       window.speechSynthesis.resume();
     }
   }, []);
 
   const cancel = useCallback(() => {
-    if (typeof window !== "undefined" && window.speechSynthesis) {
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
       window.speechSynthesis.cancel();
       setIsSpeaking(false);
       setIsPaused(false);

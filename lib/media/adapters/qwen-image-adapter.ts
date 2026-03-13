@@ -34,7 +34,9 @@ function resolveDashScopeSize(options: ImageGenerationOptions): string {
  * Lightweight connectivity test — validates API key by making a minimal
  * request. 401/403 means key invalid; other errors mean key is valid.
  */
-export async function testQwenImageConnectivity(config: ImageGenerationConfig): Promise<{ success: boolean; message: string }> {
+export async function testQwenImageConnectivity(
+  config: ImageGenerationConfig,
+): Promise<{ success: boolean; message: string }> {
   const baseUrl = config.baseUrl || DEFAULT_BASE_URL;
   try {
     const response = await fetch(
@@ -50,11 +52,14 @@ export async function testQwenImageConnectivity(config: ImageGenerationConfig): 
           input: { messages: [{ role: 'user', content: [{ text: '' }] }] },
           parameters: { size: '1*1' },
         }),
-      }
+      },
     );
     if (response.status === 401 || response.status === 403) {
       const text = await response.text();
-      return { success: false, message: `Qwen Image auth failed (${response.status}): ${text}` };
+      return {
+        success: false,
+        message: `Qwen Image auth failed (${response.status}): ${text}`,
+      };
     }
     return { success: true, message: 'Connected to Qwen Image' };
   } catch (err) {
@@ -64,41 +69,38 @@ export async function testQwenImageConnectivity(config: ImageGenerationConfig): 
 
 export async function generateWithQwenImage(
   config: ImageGenerationConfig,
-  options: ImageGenerationOptions
+  options: ImageGenerationOptions,
 ): Promise<ImageGenerationResult> {
   const baseUrl = config.baseUrl || DEFAULT_BASE_URL;
 
-  const response = await fetch(
-    `${baseUrl}/api/v1/services/aigc/multimodal-generation/generation`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${config.apiKey}`,
+  const response = await fetch(`${baseUrl}/api/v1/services/aigc/multimodal-generation/generation`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${config.apiKey}`,
+    },
+    body: JSON.stringify({
+      model: config.model || DEFAULT_MODEL,
+      input: {
+        messages: [
+          {
+            role: 'user',
+            content: [
+              {
+                text: options.prompt,
+              },
+            ],
+          },
+        ],
       },
-      body: JSON.stringify({
-        model: config.model || DEFAULT_MODEL,
-        input: {
-          messages: [
-            {
-              role: 'user',
-              content: [
-                {
-                  text: options.prompt,
-                },
-              ],
-            },
-          ],
-        },
-        parameters: {
-          negative_prompt: options.negativePrompt || undefined,
-          prompt_extend: true,
-          watermark: false,
-          size: resolveDashScopeSize(options),
-        },
-      }),
-    }
-  );
+      parameters: {
+        negative_prompt: options.negativePrompt || undefined,
+        prompt_extend: true,
+        watermark: false,
+        size: resolveDashScopeSize(options),
+      },
+    }),
+  });
 
   if (!response.ok) {
     const text = await response.text();

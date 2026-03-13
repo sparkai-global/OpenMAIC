@@ -17,7 +17,9 @@ export function AlignmentLine({ type, axis, length, canvasScale }: AlignmentLine
 
   // Alignment line length
   const sizeStyle =
-    type === 'vertical' ? { height: `${length * canvasScale}px` } : { width: `${length * canvasScale}px` };
+    type === 'vertical'
+      ? { height: `${length * canvasScale}px` }
+      : { width: `${length * canvasScale}px` };
 
   return (
     <div

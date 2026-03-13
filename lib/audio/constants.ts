@@ -526,7 +526,6 @@ export const TTS_PROVIDERS: Record<TTSProviderId, TTSProviderConfig> = {
       },
     ],
     supportedFormats: ["mp3", "wav", "pcm"],
-    speedRange: { min: 0.5, max: 2.0, default: 1.0 },
   },
 
   "browser-native-tts": {

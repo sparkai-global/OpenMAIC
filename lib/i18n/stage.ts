@@ -58,6 +58,10 @@ export const stageZhCN = {
     qaEnded: '问答已结束',
     thinking: '思考中',
     yourTurn: '轮到你发言了',
+    stopDiscussion: '结束讨论',
+    autoPlay: '自动播放',
+    autoPlayOff: '关闭自动播放',
+    speed: '倍速',
   },
   pbl: {
     legacyFormat: '此PBL场景使用旧格式，请重新生成课程',
@@ -190,6 +194,10 @@ export const stageEnUS = {
     qaEnded: 'Q&A ended',
     thinking: 'Thinking',
     yourTurn: 'Your turn',
+    stopDiscussion: 'Stop Discussion',
+    autoPlay: 'Auto-play',
+    autoPlayOff: 'Stop auto-play',
+    speed: 'Speed',
   },
   pbl: {
     legacyFormat: 'This PBL scene uses a legacy format. Please regenerate the course.',

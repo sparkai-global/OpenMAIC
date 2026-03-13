@@ -220,6 +220,12 @@ export function Stage({
     resetLiveState();
   }, [chatSessionType, resetLiveState]);
 
+  // Shared stop-discussion handler (used by both Roundtable and Canvas toolbar)
+  const handleStopDiscussion = useCallback(async () => {
+    await chatAreaRef.current?.endActiveSession();
+    doSessionCleanup();
+  }, [doSessionCleanup]);
+
   // Initialize playback engine when scene changes
   useEffect(() => {
     // Bump epoch so any stale SSE callbacks from the previous scene are discarded
@@ -590,11 +596,40 @@ export function Stage({
     }
   };
 
+  // previous scene (gated)
+  const handlePreviousScene = () => {
+    if (isPendingScene) {
+      // From pending page → go to last real scene
+      if (scenes.length > 0) {
+        gatedSceneSwitch(scenes[scenes.length - 1].id);
+      }
+      return;
+    }
+    const currentIndex = scenes.findIndex((s) => s.id === currentSceneId);
+    if (currentIndex > 0) {
+      gatedSceneSwitch(scenes[currentIndex - 1].id);
+    }
+  };
+
+  // next scene (gated)
+  const handleNextScene = () => {
+    if (isPendingScene) return; // Already on pending, nowhere to go
+    const currentIndex = scenes.findIndex((s) => s.id === currentSceneId);
+    if (currentIndex < scenes.length - 1) {
+      gatedSceneSwitch(scenes[currentIndex + 1].id);
+    } else if (hasNextPending) {
+      // On last real scene → advance to pending page
+      setCurrentSceneId(PENDING_SCENE_ID);
+    }
+  };
+
   // get scene information
   const isPendingScene = currentSceneId === PENDING_SCENE_ID;
+  const hasNextPending = generatingOutlines.length > 0;
   const currentSceneIndex = isPendingScene
     ? scenes.length
     : scenes.findIndex((s) => s.id === currentSceneId);
+  const totalScenesCount = scenes.length + (hasNextPending ? 1 : 0);
 
   // get action information
   const totalActions = currentScene?.actions?.length || 0;
@@ -663,14 +698,27 @@ export function Stage({
           <CanvasArea
             currentScene={currentScene}
             currentSceneIndex={currentSceneIndex}
+            scenesCount={totalScenesCount}
             mode={mode}
             engineState={canvasEngineState}
             isLiveSession={
               chatIsStreaming || isTopicPending || engineMode === 'live' || !!chatSessionType
             }
             whiteboardOpen={whiteboardOpen}
+            sidebarCollapsed={sidebarCollapsed}
+            chatCollapsed={chatAreaCollapsed}
+            onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
+            onToggleChat={() => setChatAreaCollapsed(!chatAreaCollapsed)}
+            onPrevSlide={handlePreviousScene}
+            onNextSlide={handleNextScene}
             onPlayPause={handlePlayPause}
             onWhiteboardClose={handleWhiteboardToggle}
+            showStopDiscussion={
+              engineMode === 'live' ||
+              (chatIsStreaming && (chatSessionType === 'qa' || chatSessionType === 'discussion'))
+            }
+            onStopDiscussion={handleStopDiscussion}
+            hideToolbar={mode === 'playback'}
             isPendingScene={isPendingScene}
             isGenerationFailed={
               isPendingScene && failedOutlines.some((f) => f.id === generatingOutlines[0]?.id)
@@ -750,6 +798,7 @@ export function Stage({
               // User clicks "Skip" on ProactiveCard
               engineRef.current?.skipDiscussion();
             }}
+            onStopDiscussion={handleStopDiscussion}
             onInputActivate={async () => {
               // Soft-pause QA/Discussion if streaming (opening input = implicit pause)
               if (chatIsStreaming) {
@@ -764,6 +813,17 @@ export function Stage({
             onResumeTopic={doResumeTopic}
             onPlayPause={handlePlayPause}
             totalActions={totalActions}
+            currentActionIndex={0}
+            currentSceneIndex={currentSceneIndex}
+            scenesCount={totalScenesCount}
+            whiteboardOpen={whiteboardOpen}
+            sidebarCollapsed={sidebarCollapsed}
+            chatCollapsed={chatAreaCollapsed}
+            onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
+            onToggleChat={() => setChatAreaCollapsed(!chatAreaCollapsed)}
+            onPrevSlide={handlePreviousScene}
+            onNextSlide={handleNextScene}
+            onWhiteboardClose={handleWhiteboardToggle}
           />
         )}
       </div>

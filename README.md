@@ -263,20 +263,23 @@ OpenMAIC ships with an [OpenClaw](https://github.com/anthropics/openclaw) plugin
 
 ```bash
 # In your OpenClaw project, install the plugin from the openclaw/ directory:
-openclaw plugin add /path/to/OpenMAIC/openclaw
+openclaw plugins install /path/to/OpenMAIC/openclaw
 ```
 
 ### Configuration
 
-Add the plugin config to your OpenClaw project's `openclaw.config.json`:
+Update the plugin config to your OpenClaw project's `~/.openclaw/openclaw.json`:
 
 ```jsonc
 {
   "plugins": {
-    "openmaic": {
-      "url": "http://localhost:3000",       // OpenMAIC server URL
-      "projectDir": "/path/to/OpenMAIC"     // Project directory (for start/stop/install)
+    "entries": {
+        "openmaic": {
+        "url": "http://localhost:3000",       // OpenMAIC server URL
+        "projectDir": "/path/to/OpenMAIC"     // Project directory (for start/stop/install)
+      }
     }
+    
   }
 }
 ```

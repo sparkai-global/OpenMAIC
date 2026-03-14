@@ -2,6 +2,8 @@
 
 # dependencies
 /node_modules
+/openclaw/node_modules
+/openclaw/package-lock.json
 /.pnp
 .pnp.*
 .yarn/*

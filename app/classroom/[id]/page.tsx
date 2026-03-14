@@ -36,24 +36,24 @@ export default function ClassroomDetailPage() {
       await loadFromStorage(classroomId);
 
       // If IndexedDB had no data, try server-side storage (API-generated classrooms)
-      const state = useStageStore.getState();
-      if (!state.stage) {
+      if (!useStageStore.getState().stage) {
         log.info('No IndexedDB data, trying server-side storage for:', classroomId);
-        const res = await fetch(`/api/classroom?id=${encodeURIComponent(classroomId)}`);
-        if (res.ok) {
-          const json = await res.json();
-          if (json.success && json.classroom) {
-            const { stage, scenes } = json.classroom;
-            useStageStore.setState({
-              stage,
-              scenes,
-              currentSceneId: scenes[0]?.id ?? null,
-              chats: [],
-              outlines: [],
-              generatingOutlines: [],
-            });
-            log.info('Loaded from server-side storage:', classroomId);
+        try {
+          const res = await fetch(`/api/classroom?id=${encodeURIComponent(classroomId)}`);
+          if (res.ok) {
+            const json = await res.json();
+            if (json.success && json.classroom) {
+              const { stage, scenes } = json.classroom;
+              useStageStore.getState().setStage(stage);
+              useStageStore.setState({
+                scenes,
+                currentSceneId: scenes[0]?.id ?? null,
+              });
+              log.info('Loaded from server-side storage:', classroomId);
+            }
           }
+        } catch (fetchErr) {
+          log.warn('Server-side storage fetch failed:', fetchErr);
         }
       }
 

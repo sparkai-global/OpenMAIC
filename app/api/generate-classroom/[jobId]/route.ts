@@ -8,10 +8,7 @@ import { buildRequestOrigin } from '@/lib/server/classroom-storage';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(
-  req: NextRequest,
-  context: { params: Promise<{ jobId: string }> },
-) {
+export async function GET(req: NextRequest, context: { params: Promise<{ jobId: string }> }) {
   try {
     const { jobId } = await context.params;
 

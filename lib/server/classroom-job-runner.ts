@@ -1,8 +1,5 @@
 import { createLogger } from '@/lib/logger';
-import {
-  generateClassroom,
-  type GenerateClassroomInput,
-} from '@/lib/server/classroom-generation';
+import { generateClassroom, type GenerateClassroomInput } from '@/lib/server/classroom-generation';
 import {
   markClassroomGenerationJobFailed,
   markClassroomGenerationJobRunning,
@@ -29,7 +26,9 @@ export function runClassroomGenerationJob(
 
       const result = await generateClassroom(input, {
         baseUrl,
-        onProgress: (progress) => updateClassroomGenerationJobProgress(jobId, progress),
+        onProgress: async (progress) => {
+          await updateClassroomGenerationJobProgress(jobId, progress);
+        },
       });
 
       await markClassroomGenerationJobSucceeded(jobId, result);

@@ -13,6 +13,8 @@ import {
 } from '@/lib/generation/scene-generator';
 import type { AICallFn } from '@/lib/generation/pipeline-types';
 import { createLogger } from '@/lib/logger';
+import { parseModelString } from '@/lib/ai/providers';
+import { resolveApiKey } from '@/lib/server/provider-config';
 import { resolveModel } from '@/lib/server/resolve-model';
 import { persistClassroom } from '@/lib/server/classroom-storage';
 import type { UserRequirements } from '@/lib/types/generation';
@@ -85,9 +87,7 @@ export async function generateClassroom(
   input: GenerateClassroomInput,
   options: {
     baseUrl: string;
-    onProgress?: (
-      progress: ClassroomGenerationProgress,
-    ) => Promise<void> | void;
+    onProgress?: (progress: ClassroomGenerationProgress) => Promise<void> | void;
   },
 ): Promise<GenerateClassroomResult> {
   const { requirement, pdfContent } = input;
@@ -101,6 +101,16 @@ export async function generateClassroom(
 
   const { model: languageModel, modelInfo, modelString } = resolveModel({});
   log.info(`Using server-configured model: ${modelString}`);
+
+  // Fail fast if the resolved provider has no API key configured
+  const { providerId } = parseModelString(modelString);
+  const apiKey = resolveApiKey(providerId);
+  if (!apiKey) {
+    throw new Error(
+      `No API key configured for provider "${providerId}". ` +
+        `Set the appropriate key in .env.local or server-providers.yml (e.g. ${providerId.toUpperCase()}_API_KEY).`,
+    );
+  }
 
   const aiCall: AICallFn = async (systemPrompt, userPrompt, _images) => {
     const result = await callLLM(

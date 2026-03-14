@@ -12,11 +12,7 @@ import {
   writeJsonFileAtomic,
 } from '@/lib/server/classroom-storage';
 
-export type ClassroomGenerationJobStatus =
-  | 'queued'
-  | 'running'
-  | 'succeeded'
-  | 'failed';
+export type ClassroomGenerationJobStatus = 'queued' | 'running' | 'succeeded' | 'failed';
 
 export interface ClassroomGenerationJob {
   id: string;
@@ -52,14 +48,51 @@ function jobFilePath(jobId: string) {
 function buildInputSummary(input: GenerateClassroomInput): ClassroomGenerationJob['inputSummary'] {
   return {
     requirementPreview:
-      input.requirement.length > 200
-        ? `${input.requirement.slice(0, 197)}...`
-        : input.requirement,
+      input.requirement.length > 200 ? `${input.requirement.slice(0, 197)}...` : input.requirement,
     language: input.language || 'zh-CN',
     hasPdf: !!input.pdfContent,
     pdfTextLength: input.pdfContent?.text.length || 0,
     pdfImageCount: input.pdfContent?.images.length || 0,
   };
+}
+
+/** Simple per-job mutex to serialize read-modify-write on the same job file. */
+const jobLocks = new Map<string, Promise<void>>();
+
+async function withJobLock<T>(jobId: string, fn: () => Promise<T>): Promise<T> {
+  const prev = jobLocks.get(jobId) ?? Promise.resolve();
+  let resolve: () => void;
+  const next = new Promise<void>((r) => {
+    resolve = r;
+  });
+  jobLocks.set(jobId, next);
+  try {
+    await prev;
+    return await fn();
+  } finally {
+    resolve!();
+    if (jobLocks.get(jobId) === next) jobLocks.delete(jobId);
+  }
+}
+
+/** Max age (ms) before a "running" job without an active runner is considered stale. */
+const STALE_JOB_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
+
+function markStaleIfNeeded(job: ClassroomGenerationJob): ClassroomGenerationJob {
+  if (job.status !== 'running') return job;
+  const updatedAt = new Date(job.updatedAt).getTime();
+  if (Date.now() - updatedAt > STALE_JOB_TIMEOUT_MS) {
+    return {
+      ...job,
+      status: 'failed',
+      step: 'failed',
+      message: 'Job appears stale (no progress update for 30 minutes)',
+      error: 'Stale job: process may have restarted during generation',
+      completedAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+  }
+  return job;
 }
 
 export function isValidClassroomJobId(jobId: string): boolean {
@@ -93,7 +126,8 @@ export async function readClassroomGenerationJob(
 ): Promise<ClassroomGenerationJob | null> {
   try {
     const content = await fs.readFile(jobFilePath(jobId), 'utf-8');
-    return JSON.parse(content) as ClassroomGenerationJob;
+    const job = JSON.parse(content) as ClassroomGenerationJob;
+    return markStaleIfNeeded(job);
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
       return null;
@@ -106,33 +140,42 @@ export async function updateClassroomGenerationJob(
   jobId: string,
   patch: Partial<ClassroomGenerationJob>,
 ): Promise<ClassroomGenerationJob> {
-  const existing = await readClassroomGenerationJob(jobId);
-  if (!existing) {
-    throw new Error(`Classroom generation job not found: ${jobId}`);
-  }
+  return withJobLock(jobId, async () => {
+    const existing = await readClassroomGenerationJob(jobId);
+    if (!existing) {
+      throw new Error(`Classroom generation job not found: ${jobId}`);
+    }
 
-  const updated: ClassroomGenerationJob = {
-    ...existing,
-    ...patch,
-    updatedAt: new Date().toISOString(),
-  };
+    const updated: ClassroomGenerationJob = {
+      ...existing,
+      ...patch,
+      updatedAt: new Date().toISOString(),
+    };
 
-  await writeJsonFileAtomic(jobFilePath(jobId), updated);
-  return updated;
+    await writeJsonFileAtomic(jobFilePath(jobId), updated);
+    return updated;
+  });
 }
 
 export async function markClassroomGenerationJobRunning(
   jobId: string,
 ): Promise<ClassroomGenerationJob> {
-  const existing = await readClassroomGenerationJob(jobId);
-  if (!existing) {
-    throw new Error(`Classroom generation job not found: ${jobId}`);
-  }
+  return withJobLock(jobId, async () => {
+    const existing = await readClassroomGenerationJob(jobId);
+    if (!existing) {
+      throw new Error(`Classroom generation job not found: ${jobId}`);
+    }
 
-  return updateClassroomGenerationJob(jobId, {
-    status: 'running',
-    startedAt: existing.startedAt || new Date().toISOString(),
-    message: 'Classroom generation started',
+    const updated: ClassroomGenerationJob = {
+      ...existing,
+      status: 'running',
+      startedAt: existing.startedAt || new Date().toISOString(),
+      message: 'Classroom generation started',
+      updatedAt: new Date().toISOString(),
+    };
+
+    await writeJsonFileAtomic(jobFilePath(jobId), updated);
+    return updated;
   });
 }
 

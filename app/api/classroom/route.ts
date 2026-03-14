@@ -1,14 +1,12 @@
-import { NextRequest } from 'next/server';
+import { type NextRequest } from 'next/server';
 import { randomUUID } from 'crypto';
-import { promises as fs } from 'fs';
-import path from 'path';
 import { apiSuccess, apiError, API_ERROR_CODES } from '@/lib/server/api-response';
-
-const DATA_DIR = path.join(process.cwd(), 'data', 'classrooms');
-
-async function ensureDataDir() {
-  await fs.mkdir(DATA_DIR, { recursive: true });
-}
+import {
+  buildRequestOrigin,
+  isValidClassroomId,
+  persistClassroom,
+  readClassroom,
+} from '@/lib/server/classroom-storage';
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,22 +22,11 @@ export async function POST(request: NextRequest) {
     }
 
     const id = stage.id || randomUUID();
-    const data = {
-      id,
-      stage: { ...stage, id },
-      scenes,
-      createdAt: new Date().toISOString(),
-    };
+    const baseUrl = buildRequestOrigin(request);
 
-    await ensureDataDir();
-    const filePath = path.join(DATA_DIR, `${id}.json`);
-    await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8');
+    const persisted = await persistClassroom({ id, stage: { ...stage, id }, scenes }, baseUrl);
 
-    const baseUrl = request.headers.get('x-forwarded-host')
-      ? `${request.headers.get('x-forwarded-proto') || 'http'}://${request.headers.get('x-forwarded-host')}`
-      : request.nextUrl.origin;
-
-    return apiSuccess({ id, url: `${baseUrl}/classroom/${id}` }, 201);
+    return apiSuccess({ id: persisted.id, url: persisted.url }, 201);
   } catch (error) {
     return apiError(
       API_ERROR_CODES.INTERNAL_ERROR,
@@ -62,20 +49,16 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Validate id to prevent path traversal
-    if (!/^[a-zA-Z0-9_-]+$/.test(id)) {
+    if (!isValidClassroomId(id)) {
       return apiError(API_ERROR_CODES.INVALID_REQUEST, 400, 'Invalid classroom id');
     }
 
-    const filePath = path.join(DATA_DIR, `${id}.json`);
-
-    try {
-      const content = await fs.readFile(filePath, 'utf-8');
-      const data = JSON.parse(content);
-      return apiSuccess({ classroom: data });
-    } catch {
+    const classroom = await readClassroom(id);
+    if (!classroom) {
       return apiError(API_ERROR_CODES.INVALID_REQUEST, 404, 'Classroom not found');
     }
+
+    return apiSuccess({ classroom });
   } catch (error) {
     return apiError(
       API_ERROR_CODES.INTERNAL_ERROR,

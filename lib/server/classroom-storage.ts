@@ -41,6 +41,23 @@ export interface PersistedClassroomData {
   createdAt: string;
 }
 
+export function isValidClassroomId(id: string): boolean {
+  return /^[a-zA-Z0-9_-]+$/.test(id);
+}
+
+export async function readClassroom(id: string): Promise<PersistedClassroomData | null> {
+  const filePath = path.join(CLASSROOMS_DIR, `${id}.json`);
+  try {
+    const content = await fs.readFile(filePath, 'utf-8');
+    return JSON.parse(content) as PersistedClassroomData;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      return null;
+    }
+    throw error;
+  }
+}
+
 export async function persistClassroom(
   data: {
     id: string;

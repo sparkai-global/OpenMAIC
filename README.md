@@ -259,7 +259,7 @@ Choose a role and collaborate with AI agents on structured projects with milesto
 
 ## 🤖 OpenClaw Skill
 
-OpenMAIC ships with an [OpenClaw](https://github.com/anthropics/openclaw) skill that guides the user through a confirmation-heavy SOP for cloning the repo, choosing a startup mode, choosing whether to enable web search, configuring provider keys, and generating classrooms.
+OpenMAIC ships with an [OpenClaw](https://github.com/openclaw/openclaw) skill that guides the user through a confirmation-heavy SOP for cloning the repo, choosing a startup mode, configuring provider keys, and generating classrooms.
 
 ### Installation
 
@@ -297,9 +297,8 @@ The skill still asks the user to confirm before any state-changing step. It uses
 |------|-------------|
 | Clone | Detect an existing checkout or ask before cloning/installing |
 | Startup | Ask the user to choose `pnpm dev`, `pnpm build && pnpm start`, or Docker |
-| Web Search | Ask whether Tavily-backed web search should be enabled |
-| Provider Keys | Recommend a provider path and ask before editing `.env.local` or `server-providers.yml` |
-| Generation | Ask before reading PDFs or sending generation requests |
+| Provider Keys | Recommend a provider path and tell the user to edit `.env.local` or `server-providers.yml` themselves |
+| Generation | Ask before reading PDFs, submit an async generation job, then poll the same job until it finishes or tell the user to check back later |
 
 ### Example Usage
 
@@ -310,7 +309,7 @@ Agent: "I found or can clone the repo. Do you want me to reuse the existing chec
 
 ```
 You: "Generate a classroom from this PDF"
-Agent: "OpenMAIC is healthy. I need to read the PDF and then send a generation request. Do you want me to continue?"
+Agent: "OpenMAIC is healthy. I need to read the PDF first. After that I'll submit the classroom generation job and keep checking its progress."
 ```
 
 This keeps the setup transparent and user-confirmed instead of hiding a long workflow behind a plugin tool call.
@@ -328,7 +327,7 @@ OpenMAIC/
 ├── app/                        # Next.js App Router
 │   ├── api/                    #   Server API routes (~18 endpoints)
 │   │   ├── generate/           #     Scene generation pipeline (outlines, content, images, TTS …)
-│   │   ├── generate-classroom/ #     Full lesson generation entry point
+│   │   ├── generate-classroom/ #     Async classroom job submission + polling
 │   │   ├── chat/               #     Multi-agent discussion (SSE streaming)
 │   │   ├── pbl/                #     Project-Based Learning endpoints
 │   │   └── ...                 #     quiz-grade, parse-pdf, web-search, transcription, etc.

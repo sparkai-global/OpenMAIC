@@ -74,20 +74,34 @@ After the job is submitted:
 GET {pollUrl}
 ```
 
-4. Use a steady polling cadence of about 5 seconds between polls.
+4. Prefer a conservative polling cadence of about 60 seconds between polls for classroom generation jobs, even if `pollIntervalMs` is shorter.
 5. Treat `queued` and `running` as in-progress states.
 6. Stop only when `status` becomes `succeeded` or `failed`.
 
 ### Reliability Rules
 
 - Never restart the job just because a poll request fails once.
-- If a poll request returns a transient network error or `5xx`, wait 5 seconds and retry the same `pollUrl`.
+- If a poll request returns a transient network error or `5xx`, wait about 60 seconds and retry the same `pollUrl`.
 - If the job is still running after many polls, tell the user it is still in progress and continue polling instead of resubmitting.
-- Within a single agent turn, cap active polling to about 10 minutes or 120 polls. If the job is still not finished, tell the user it is still running and include the `jobId` and `pollUrl` so a later turn can continue checking without resubmitting.
+- Prefer fewer poll attempts over aggressive polling. Long-running jobs are more likely to survive agent-loop limits if the tool-call cadence stays low.
+- Within a single agent turn, cap active polling to about 10 minutes. If the job is still not finished, tell the user it is still running and include the `jobId` and `pollUrl` so a later turn can continue checking without resubmitting.
 - Report progress to the user only when `status`, `step`, or visible progress meaningfully changes. Do not spam every poll result.
 - Do not try to recover from auth, provider, model, or base URL errors by changing request parameters. Tell the user to fix OpenMAIC server-side config and retry only after they confirm.
 - On `failed`, surface the server error and include the `jobId`.
 - On `succeeded`, use `result.classroomId` and `result.url` from the final poll response.
+
+## If The Loop Ends First
+
+If the job is still running when you stop active polling for this turn, tell the user that the classroom generation is still running in the background and invite them to come back a little later to continue checking the same job.
+
+Use natural phrasing such as:
+
+```text
+The classroom generation is still running in the background.
+Job ID: abc123
+
+Check back with me in a little while and I can continue tracking this same job without starting over.
+```
 
 ## What To Return
 

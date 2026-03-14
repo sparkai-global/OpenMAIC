@@ -80,15 +80,17 @@ You can also configure providers via `server-providers.yml`:
 
 ```yaml
 providers:
-  - id: openai
+  openai:
     apiKey: sk-...
-  - id: anthropic
+  anthropic:
     apiKey: sk-ant-...
 ```
 
 Supported providers: **OpenAI**, **Anthropic**, **Google Gemini**, **DeepSeek**, and any OpenAI-compatible API.
 
 > **Recommended model:** **Gemini 3 Flash** — best balance of quality and speed. For highest quality (at slower speed), try **Gemini 3.1 Pro**.
+>
+> If you want OpenMAIC server APIs to use Gemini by default, also set `DEFAULT_MODEL=google:gemini-3-flash-preview`.
 
 ### 3. Run
 
@@ -255,56 +257,63 @@ Choose a role and collaborate with AI agents on structured projects with milesto
 
 ---
 
-## 🤖 OpenClaw Plugin
+## 🤖 OpenClaw Skill
 
-OpenMAIC ships with an [OpenClaw](https://github.com/anthropics/openclaw) plugin that lets any OpenClaw-powered AI agent manage and generate classrooms programmatically.
+OpenMAIC ships with an [OpenClaw](https://github.com/anthropics/openclaw) skill that guides the user through a confirmation-heavy SOP for cloning the repo, choosing a startup mode, choosing whether to enable web search, configuring provider keys, and generating classrooms.
 
 ### Installation
 
 ```bash
-# In your OpenClaw project, install the plugin from the openclaw/ directory:
-openclaw plugins install /path/to/OpenMAIC/openclaw
+# Install as a managed/shared skill:
+mkdir -p ~/.openclaw/skills
+cp -R /path/to/OpenMAIC/skills/openmaic ~/.openclaw/skills/openmaic
 ```
 
 ### Configuration
 
-Update the plugin config to your OpenClaw project's `~/.openclaw/openclaw.json`:
+Optional defaults can be configured in `~/.openclaw/openclaw.json`:
 
 ```jsonc
 {
-  "plugins": {
+  "skills": {
     "entries": {
-        "openmaic": {
-        "url": "http://localhost:3000",       // OpenMAIC server URL
-        "projectDir": "/path/to/OpenMAIC"     // Project directory (for start/stop/install)
+      "openmaic": {
+        "enabled": true,
+        "config": {
+          "repoDir": "/path/to/OpenMAIC",       // Optional local checkout to reuse
+          "url": "http://localhost:3000"        // Optional service URL default
+        }
       }
     }
-    
   }
 }
 ```
 
-### Tools Provided
+The skill still asks the user to confirm before any state-changing step. It uses these values only as defaults.
 
-| Tool | Description |
+### SOP Coverage
+
+| Phase | What the skill does |
 |------|-------------|
-| `openmaic_manage` | Start, stop, check status, or install dependencies for the OpenMAIC server |
-| `openmaic_generate` | Generate a full interactive classroom from a free-form requirement and/or PDF |
+| Clone | Detect an existing checkout or ask before cloning/installing |
+| Startup | Ask the user to choose `pnpm dev`, `pnpm build && pnpm start`, or Docker |
+| Web Search | Ask whether Tavily-backed web search should be enabled |
+| Provider Keys | Recommend a provider path and ask before editing `.env.local` or `server-providers.yml` |
+| Generation | Ask before reading PDFs or sending generation requests |
 
 ### Example Usage
 
 ```
-You: "Generate a classroom about quantum mechanics for high school students"
-Agent: calls openmaic_generate { requirement: "Quantum mechanics for high school students" }
-Agent: "Classroom generated! URL: http://localhost:3000/classroom/abc123"
+You: "Use OpenMAIC to set up a local classroom generator"
+Agent: "I found or can clone the repo. Do you want me to reuse the existing checkout or clone a fresh one?"
 ```
 
 ```
-You: "Use this PDF to create a lesson" (with /path/to/paper.pdf)
-Agent: calls openmaic_generate { requirement: "Create a lesson from the PDF", pdfPath: "/path/to/paper.pdf" }
+You: "Generate a classroom from this PDF"
+Agent: "OpenMAIC is healthy. I need to read the PDF and then send a generation request. Do you want me to continue?"
 ```
 
-The agent can also manage the server lifecycle — deploy, start, stop — all through natural language.
+This keeps the setup transparent and user-confirmed instead of hiding a long workflow behind a plugin tool call.
 
 ---
 
@@ -359,11 +368,10 @@ OpenMAIC/
 │   ├── pptxgenjs/              #   Customized PowerPoint generation
 │   └── mathml2omml/            #   MathML → Office Math conversion
 │
-├── openclaw/                   # OpenClaw plugin
-│   ├── openclaw.plugin.json    #   Plugin manifest (config schema, skills)
-│   ├── index.ts                #   Plugin entry — registers tools
-│   ├── src/tools.ts            #   Tool implementations (manage & generate)
-│   └── skills/openmaic/        #   Skill definitions for AI agents
+├── skills/                     # OpenClaw / ClawHub skills
+│   └── openmaic/               #   Guided OpenMAIC setup & generation SOP
+│       ├── SKILL.md            #   Thin router with confirmation rules
+│       └── references/         #   On-demand SOP sections
 │
 ├── configs/                    # Shared constants (shapes, fonts, hotkeys, themes …)
 └── public/                     # Static assets (logos, avatars)

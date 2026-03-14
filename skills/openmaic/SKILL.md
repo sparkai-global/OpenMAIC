@@ -48,6 +48,16 @@ Use `repoDir` and `url` only as defaults. Still confirm before acting.
 
 ## SOP Phases
 
+### 0. Choose Mode
+
+Before starting setup, ask the user how they want to use OpenMAIC:
+
+1. **Use hosted OpenMAIC** (recommended for quick start) — Requires an access code from open.maic.chat. No local setup needed.
+2. **Run locally** — Clone the repo, configure provider keys, and run on your machine.
+
+If the user chooses hosted mode, load [references/hosted-mode.md](references/hosted-mode.md) and skip phases 1–4.
+If the user chooses local mode, proceed to phase 1 as usual.
+
 ### 1. Clone Or Reuse Existing Repo
 
 Load [references/clone.md](references/clone.md).

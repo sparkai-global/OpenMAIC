@@ -6,7 +6,12 @@
 - Startup mode has been chosen
 - OpenMAIC is healthy at the selected `url`
 - Provider keys are configured
- 
+
+> **Hosted mode**: If using hosted OpenMAIC (open.maic.chat), all
+> preconditions (repo, startup, provider keys) are already satisfied.
+> Include `Authorization: Bearer <access-code>` header on all requests below.
+> See [hosted-mode.md](hosted-mode.md) for details.
+
 ## Requirement-Only Generation
 
 If the user has already clearly asked to generate the classroom and the preconditions are satisfied, submit the generation job immediately. Do not ask for a second confirmation just before calling `/api/generate-classroom`.

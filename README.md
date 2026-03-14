@@ -16,6 +16,7 @@
   <a href="https://open.maic.chat/"><img src="https://img.shields.io/badge/Demo-Live-brightgreen?style=flat-square" alt="Live Demo"/></a>
   <a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FTHU-MAIC%2FOpenMAIC&envDescription=Configure%20at%20least%20one%20LLM%20provider%20API%20key%20(e.g.%20OPENAI_API_KEY%2C%20ANTHROPIC_API_KEY).%20All%20providers%20are%20optional.&envLink=https%3A%2F%2Fgithub.com%2FTHU-MAIC%2FOpenMAIC%2Fblob%2Fmain%2F.env.example&project-name=openmaic&framework=nextjs"><img src="https://vercel.com/button" alt="Deploy with Vercel" height="20"/></a>
   <a href="https://github.com/THU-MAIC/OpenMAIC/stargazers"><img src="https://img.shields.io/github/stars/THU-MAIC/OpenMAIC?style=flat-square" alt="Stars"/></a>
+  <a href="#-openclaw-integration"><img src="https://img.shields.io/badge/OpenClaw-Integration-F4511E?style=flat-square" alt="OpenClaw Integration"/></a>
   <br/>
   <img src="https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js" alt="Next.js"/>
   <img src="https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=white" alt="React"/>
@@ -27,12 +28,12 @@
 <p align="center">
   <a href="./README.md">English</a> | <a href="./README-zh.md">简体中文</a>
   <br/>
-  <a href="https://open.maic.chat/">Live Demo</a> · <a href="#-quick-start">Quick Start</a> · <a href="#-features">Features</a> · <a href="#-use-cases">Use Cases</a>
+  <a href="https://open.maic.chat/">Live Demo</a> · <a href="#-quick-start">Quick Start</a> · <a href="#-features">Features</a> · <a href="#-use-cases">Use Cases</a> · <a href="#-openclaw-integration">OpenClaw</a>
 </p>
 
 ## 📖 Overview
 
-**OpenMAIC** (Open Multi-Agent Interactive Classroom) is an open-source AI platform that turns any topic or document into a rich, interactive classroom experience. Powered by multi-agent orchestration, it generates slides, quizzes, interactive simulations, and project-based learning activities — all delivered by AI teachers and AI classmates who can speak, draw on a whiteboard, and engage in real-time discussions with you.
+**OpenMAIC** (Open Multi-Agent Interactive Classroom) is an open-source AI platform that turns any topic or document into a rich, interactive classroom experience. Powered by multi-agent orchestration, it generates slides, quizzes, interactive simulations, and project-based learning activities — all delivered by AI teachers and AI classmates who can speak, draw on a whiteboard, and engage in real-time discussions with you. With built-in [OpenClaw](https://github.com/openclaw/openclaw) integration, you can generate classrooms directly from messaging apps like Feishu, Slack, or Telegram.
 
 <!-- PLACEHOLDER: product overview GIF -->
 <!-- <img src="assets/overview.gif" width="100%"/> -->
@@ -44,6 +45,7 @@
 - **Rich scene types** — Slides, quizzes, interactive HTML simulations, and project-based learning (PBL)
 - **Whiteboard & TTS** — Agents draw diagrams, write formulas, and explain out loud
 - **Export anywhere** — Download editable `.pptx` slides or interactive `.html` pages
+- **[OpenClaw integration](#-openclaw-integration)** — Generate classrooms from Feishu, Slack, Telegram, and 20+ messaging apps via your AI assistant
 
 ---
 
@@ -201,6 +203,67 @@ Choose a role and collaborate with AI agents on structured projects with milesto
 
 <img src="assets/discussion.gif" width="100%"/>
 
+### <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/openclaw.png" height="22" align="top"/> OpenClaw Integration
+
+OpenMAIC integrates with [OpenClaw](https://github.com/openclaw/openclaw) — a personal AI assistant that connects to messaging platforms you already use (Feishu, Slack, Discord, Telegram, WhatsApp, etc.). With this integration, you can **generate and view interactive classrooms directly from your chat app** without ever touching a terminal.
+
+<!-- PLACEHOLDER: portrait demo GIF — Feishu conversation generating a classroom on OpenMAIC -->
+<!-- <img src="assets/openclaw-feishu-demo.gif" width="360"/> -->
+
+<table><tr><td>
+
+**Available on ClawHub** — Install with one command:
+
+```bash
+clawhub install openmaic
+```
+
+Or copy manually:
+
+```bash
+mkdir -p ~/.openclaw/skills
+cp -R /path/to/OpenMAIC/skills/openmaic ~/.openclaw/skills/openmaic
+```
+
+</td></tr></table>
+
+Just tell your OpenClaw assistant what you want to learn — it handles everything else:
+
+- **Deploy OpenMAIC** — clone, install dependencies, configure API keys, and start the server
+- **Generate classrooms** — turn a topic or PDF into a full interactive classroom with one message
+- **Track progress** — poll the async generation job and send you the link when ready
+
+Every step asks for your confirmation first. No black-box automation.
+
+<details>
+<summary>Configuration & details</summary>
+
+| Phase | What the skill does |
+|------|-------------|
+| **Clone** | Detect an existing checkout or ask before cloning/installing |
+| **Startup** | Choose between `pnpm dev`, `pnpm build && pnpm start`, or Docker |
+| **Provider Keys** | Recommend a provider path; you edit `.env.local` yourself |
+| **Generation** | Submit an async generation job and poll until it completes |
+
+Optional config in `~/.openclaw/openclaw.json`:
+
+```jsonc
+{
+  "skills": {
+    "entries": {
+      "openmaic": {
+        "config": {
+          "repoDir": "/path/to/OpenMAIC",
+          "url": "http://localhost:3000"
+        }
+      }
+    }
+  }
+}
+```
+
+</details>
+
 ### Export
 
 | Format | Description |
@@ -254,65 +317,6 @@ Choose a role and collaborate with AI agents on structured projects with milesto
 </td>
 </tr>
 </table>
-
----
-
-## 🤖 OpenClaw Skill
-
-OpenMAIC ships with an [OpenClaw](https://github.com/openclaw/openclaw) skill that guides the user through a confirmation-heavy SOP for cloning the repo, choosing a startup mode, configuring provider keys, and generating classrooms.
-
-### Installation
-
-```bash
-# Install as a managed/shared skill:
-mkdir -p ~/.openclaw/skills
-cp -R /path/to/OpenMAIC/skills/openmaic ~/.openclaw/skills/openmaic
-```
-
-### Configuration
-
-Optional defaults can be configured in `~/.openclaw/openclaw.json`:
-
-```jsonc
-{
-  "skills": {
-    "entries": {
-      "openmaic": {
-        "enabled": true,
-        "config": {
-          "repoDir": "/path/to/OpenMAIC",       // Optional local checkout to reuse
-          "url": "http://localhost:3000"        // Optional service URL default
-        }
-      }
-    }
-  }
-}
-```
-
-The skill still asks the user to confirm before any state-changing step. It uses these values only as defaults.
-
-### SOP Coverage
-
-| Phase | What the skill does |
-|------|-------------|
-| Clone | Detect an existing checkout or ask before cloning/installing |
-| Startup | Ask the user to choose `pnpm dev`, `pnpm build && pnpm start`, or Docker |
-| Provider Keys | Recommend a provider path and tell the user to edit `.env.local` or `server-providers.yml` themselves |
-| Generation | Ask before reading PDFs, submit an async generation job, then poll the same job until it finishes or tell the user to check back later |
-
-### Example Usage
-
-```
-You: "Use OpenMAIC to set up a local classroom generator"
-Agent: "I found or can clone the repo. Do you want me to reuse the existing checkout or clone a fresh one?"
-```
-
-```
-You: "Generate a classroom from this PDF"
-Agent: "OpenMAIC is healthy. I need to read the PDF first. After that I'll submit the classroom generation job and keep checking its progress."
-```
-
-This keeps the setup transparent and user-confirmed instead of hiding a long workflow behind a plugin tool call.
 
 ---
 

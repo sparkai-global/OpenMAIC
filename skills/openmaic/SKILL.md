@@ -1,6 +1,6 @@
 ---
 name: openmaic
-description: Guided SOP for setting up and using OpenMAIC from OpenClaw. Use when the user wants to clone the OpenMAIC repo, choose a startup mode, choose a web-search mode, configure recommended API keys, start the service, or generate a classroom from requirements or a PDF. Run one phase at a time and ask for confirmation before each state-changing step.
+description: Guided SOP for setting up and using OpenMAIC from OpenClaw. Use when the user wants to clone the OpenMAIC repo, choose a startup mode, configure recommended API keys, start the service, or generate a classroom from requirements or a PDF. Run one phase at a time and ask for confirmation before each state-changing step.
 user-invocable: true
 metadata: { "openclaw": { "emoji": "🏫" } }
 ---
@@ -16,6 +16,11 @@ Use this as a guided, confirmation-heavy SOP. Do not compress the whole setup in
 - If local state already exists, show what you found and ask whether to keep it.
 - Do not assume the OpenClaw agent's own model or API key will be reused by OpenMAIC.
 - OpenMAIC classroom generation uses OpenMAIC server-side provider config.
+- Do not default to asking the user to paste API keys into chat.
+- Prefer guiding the user to edit local config files themselves.
+- Do not offer to write API keys into config files on the user's behalf.
+- Once setup is complete and the user clearly asks to generate a classroom, do not ask for a second confirmation before submitting the generation job.
+- Keep confirmations for local file reads such as reading a PDF from disk.
 
 ## Optional Skill Config
 
@@ -53,27 +58,21 @@ Load [references/startup-modes.md](references/startup-modes.md).
 
 Use this after the repo location is confirmed. Present the available startup modes, recommend one, and wait for the user's choice.
 
-### 3. Choose Web Search Mode
-
-Load [references/search-modes.md](references/search-modes.md).
-
-Use this before provider setup so the user can decide whether Tavily-backed web search should be enabled now or deferred.
-
-### 4. Configure Provider Keys
+### 3. Configure Provider Keys
 
 Load [references/provider-keys.md](references/provider-keys.md).
 
-Use this before starting classroom generation. Recommend a provider path instead of asking the user to guess.
+Use this before starting classroom generation. Recommend a provider path and tell the user exactly which config file to edit themselves.
 
-### 5. Start And Verify OpenMAIC
+### 4. Start And Verify OpenMAIC
 
 After the user has chosen a startup mode and configured keys, start OpenMAIC using the chosen method, then verify the service with `GET {url}/api/health`.
 
-### 6. Generate A Classroom
+### 5. Generate A Classroom
 
 Load [references/generate-flow.md](references/generate-flow.md).
 
-Use this only after the service is healthy. Confirm before reading local PDFs or sending generation requests.
+Use this only after the service is healthy. Confirm before reading local PDFs. If the user has already clearly asked to generate, do not ask for a second confirmation before submitting the generation job, and then follow the polling loop until it succeeds or fails.
 
 ## Response Style
 
@@ -81,3 +80,4 @@ Use this only after the service is healthy. Confirm before reading local PDFs or
 - Prefer 2-3 concrete options when the user must choose.
 - Always include the recommended option first and explain why in one sentence.
 - After a step completes, say what changed and what the next confirmation is for.
+- When returning a classroom link, place the raw absolute URL on its own line with no bold, markdown link syntax, code formatting, or tables.

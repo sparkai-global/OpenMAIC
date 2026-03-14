@@ -51,6 +51,8 @@
 
 ## 🚀 Quick Start
 
+> **Don't want to set up locally?** Use [OpenClaw](#-openclaw-integration) to deploy and generate classrooms directly from Feishu, Slack, Telegram, and other chat apps — no terminal needed.
+
 ### Prerequisites
 
 - **Node.js** >= 18
@@ -196,19 +198,48 @@ Choose a role and collaborate with AI agents on structured projects with milesto
 
 ### Multi-Agent Interaction
 
+<table>
+<tr>
+<td valign="top">
+
 - **Classroom Discussion** — Agents proactively initiate discussions; you can jump in anytime or get called on
 - **Roundtable Debate** — Multiple agents with different personas discuss a topic, with whiteboard illustrations
 - **Q&A Mode** — Ask questions freely; the AI teacher responds with slides, diagrams, or whiteboard drawings
 - **Whiteboard** — AI agents draw on a shared whiteboard in real time — solving equations step by step, sketching flowcharts, or illustrating concepts visually.
 
-<img src="assets/discussion.gif" width="100%"/>
+</td>
+<td width="360" valign="top">
+
+<img src="assets/discussion.gif" width="340"/>
+
+</td>
+</tr>
+</table>
 
 ### <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/openclaw.png" height="22" align="top"/> OpenClaw Integration
 
+<table>
+<tr>
+<td valign="top">
+
 OpenMAIC integrates with [OpenClaw](https://github.com/openclaw/openclaw) — a personal AI assistant that connects to messaging platforms you already use (Feishu, Slack, Discord, Telegram, WhatsApp, etc.). With this integration, you can **generate and view interactive classrooms directly from your chat app** without ever touching a terminal.
 
-<!-- PLACEHOLDER: portrait demo GIF — Feishu conversation generating a classroom on OpenMAIC -->
-<!-- <img src="assets/openclaw-feishu-demo.gif" width="360"/> -->
+</td>
+<td width="360" valign="top">
+
+<img src="assets/openclaw-feishu-demo.gif" width="340"/>
+
+</td>
+</tr>
+</table>
+
+Just tell your OpenClaw assistant what you want to learn — it handles everything else:
+
+- **Deploy OpenMAIC** — clone, install dependencies, configure API keys, and start the server
+- **Generate classrooms** — turn a topic or PDF into a full interactive classroom with one message
+- **Track progress** — poll the async generation job and send you the link when ready
+
+Every step asks for your confirmation first. No black-box automation.
 
 <table><tr><td>
 
@@ -226,14 +257,6 @@ cp -R /path/to/OpenMAIC/skills/openmaic ~/.openclaw/skills/openmaic
 ```
 
 </td></tr></table>
-
-Just tell your OpenClaw assistant what you want to learn — it handles everything else:
-
-- **Deploy OpenMAIC** — clone, install dependencies, configure API keys, and start the server
-- **Generate classrooms** — turn a topic or PDF into a full interactive classroom with one message
-- **Track progress** — poll the async generation job and send you the link when ready
-
-Every step asks for your confirmation first. No black-box automation.
 
 <details>
 <summary>Configuration & details</summary>
@@ -386,7 +409,6 @@ OpenMAIC/
 - **Multi-Agent Orchestration** (`lib/orchestration/`) — LangGraph state machine managing agent turns and discussions
 - **Playback Engine** (`lib/playback/`) — State machine driving classroom playback and live interaction
 - **Action Engine** (`lib/action/`) — Executes 28+ action types (speech, whiteboard draw/text/shape/chart, spotlight, laser …)
-- **Slide Editor** (`components/slide-renderer/`) — Canvas-based editor with drag, rotate, scale, text editing, image clipping
 
 ### How to Contribute
 

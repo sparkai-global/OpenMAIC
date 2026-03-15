@@ -31,6 +31,8 @@
   <a href="https://open.maic.chat/">在线体验</a> · <a href="#-快速开始">快速开始</a> · <a href="#-功能特性">功能特性</a> · <a href="#-使用场景">使用场景</a> · <a href="#-openclaw-集成">OpenClaw</a>
 </p>
 
+> **🔑 在线体验访问码：** [在线 Demo](https://open.maic.chat/) 需要输入访问码才能使用，访问码为 `MAIC-23A4-DACC-D093-8240`。
+
 ## 📖 项目简介
 
 **OpenMAIC**（Open Multi-Agent Interactive Classroom）是一个开源的 AI 互动课堂平台，能够将任何主题或文档转化为丰富的互动学习体验。基于多智能体协作引擎，它可以自动生成演示幻灯片、测验、交互式模拟实验和项目制学习活动——由 AI 教师和 AI 同学进行语音讲解、白板绘图，并与你展开实时讨论。内置 [OpenClaw](https://github.com/openclaw/openclaw) 集成，你还可以直接在飞书、Slack、Telegram 等聊天应用中生成课堂。

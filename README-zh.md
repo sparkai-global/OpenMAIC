@@ -35,7 +35,6 @@
   <a href="https://open.maic.chat/">在线体验</a> · <a href="#-快速开始">快速开始</a> · <a href="#-功能特性">功能特性</a> · <a href="#-使用场景">使用场景</a> · <a href="#-openclaw-集成">OpenClaw</a>
 </p>
 
-> **🔑 在线体验访问码：** [在线 Demo](https://open.maic.chat/) 需要输入访问码才能使用，访问码为 `MAIC-23A4-DACC-D093-8240`。
 
 ## 📖 项目简介
 

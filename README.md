@@ -35,7 +35,6 @@
   <a href="https://open.maic.chat/">Live Demo</a> · <a href="#-quick-start">Quick Start</a> · <a href="#-features">Features</a> · <a href="#-use-cases">Use Cases</a> · <a href="#-openclaw-integration">OpenClaw</a>
 </p>
 
-> **🔑 Live Demo Access Code:** The [live demo](https://open.maic.chat/) requires an access code to use. Enter `MAIC-23A4-DACC-D093-8240` when prompted.
 
 ## 📖 Overview
 

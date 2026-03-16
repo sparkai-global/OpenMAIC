@@ -67,9 +67,9 @@ export function TTSSettings({ selectedProviderId }: TTSSettingsProps) {
         if (!('speechSynthesis' in window)) {
           setTestStatus('error');
           setTestMessage(t('settings.browserTTSNotSupported'));
-          setTestingTTS(false);
           return;
         }
+
         const utterance = new SpeechSynthesisUtterance(testText);
         utterance.rate = ttsSpeed;
         const voices = window.speechSynthesis.getVoices();
@@ -77,17 +77,15 @@ export function TTSSettings({ selectedProviderId }: TTSSettingsProps) {
           (v) => v.name === effectiveVoice || v.lang === effectiveVoice,
         );
         if (selectedVoice) utterance.voice = selectedVoice;
-        utterance.onend = () => {
-          setTestStatus('success');
-          setTestMessage(t('settings.ttsTestSuccess'));
-          setTestingTTS(false);
-        };
-        utterance.onerror = (event) => {
-          setTestStatus('error');
-          setTestMessage(t('settings.ttsTestFailed') + ': ' + event.error);
-          setTestingTTS(false);
-        };
-        window.speechSynthesis.speak(utterance);
+
+        await new Promise<void>((resolve, reject) => {
+          utterance.onend = () => resolve();
+          utterance.onerror = (event) => reject(new Error(event.error));
+          window.speechSynthesis.speak(utterance);
+        });
+
+        setTestStatus('success');
+        setTestMessage(t('settings.ttsTestSuccess'));
         return;
       }
 
@@ -119,7 +117,7 @@ export function TTSSettings({ selectedProviderId }: TTSSettingsProps) {
         const audioUrl = URL.createObjectURL(audioBlob);
         if (audioRef.current) {
           audioRef.current.src = audioUrl;
-          audioRef.current.play();
+          await audioRef.current.play();
         }
         setTestStatus('success');
         setTestMessage(t('settings.ttsTestSuccess'));
@@ -130,7 +128,11 @@ export function TTSSettings({ selectedProviderId }: TTSSettingsProps) {
     } catch (error) {
       log.error('TTS test failed:', error);
       setTestStatus('error');
-      setTestMessage(t('settings.ttsTestFailed'));
+      setTestMessage(
+        error instanceof Error && error.message
+          ? `${t('settings.ttsTestFailed')}: ${error.message}`
+          : t('settings.ttsTestFailed'),
+      );
     } finally {
       setTestingTTS(false);
     }

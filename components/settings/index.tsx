@@ -192,6 +192,8 @@ export function SettingsDialog({ open, onOpenChange, initialSection }: SettingsD
   const setModel = useSettingsStore((state) => state.setModel);
   const setProviderConfig = useSettingsStore((state) => state.setProviderConfig);
   const setProvidersConfig = useSettingsStore((state) => state.setProvidersConfig);
+  const setTTSProvider = useSettingsStore((state) => state.setTTSProvider);
+  const setASRProvider = useSettingsStore((state) => state.setASRProvider);
 
   // Navigation
   const [activeSection, setActiveSection] = useState<SettingsSection>('providers');
@@ -203,9 +205,6 @@ export function SettingsDialog({ open, onOpenChange, initialSection }: SettingsD
     useState<ImageProviderId>(imageProviderId);
   const [selectedVideoProviderId, setSelectedVideoProviderId] =
     useState<VideoProviderId>(videoProviderId);
-  const [selectedTTSProviderId, setSelectedTTSProviderId] = useState<TTSProviderId>(ttsProviderId);
-  const [selectedASRProviderId, setSelectedASRProviderId] = useState<ASRProviderId>(asrProviderId);
-
   // Navigate to initialSection when dialog opens
   useEffect(() => {
     if (open && initialSection) {
@@ -606,7 +605,7 @@ export function SettingsDialog({ open, onOpenChange, initialSection }: SettingsD
         );
       }
       case 'tts': {
-        const ttsIcon = TTS_PROVIDERS[selectedTTSProviderId]?.icon;
+        const ttsIcon = TTS_PROVIDERS[ttsProviderId]?.icon;
         return (
           <>
             {ttsIcon ? (
@@ -621,14 +620,12 @@ export function SettingsDialog({ open, onOpenChange, initialSection }: SettingsD
             ) : (
               <Volume2 className="h-6 w-6 text-muted-foreground" />
             )}
-            <h2 className="text-lg font-semibold">
-              {getTTSProviderName(selectedTTSProviderId, t)}
-            </h2>
+            <h2 className="text-lg font-semibold">{getTTSProviderName(ttsProviderId, t)}</h2>
           </>
         );
       }
       case 'asr': {
-        const asrIcon = ASR_PROVIDERS[selectedASRProviderId]?.icon;
+        const asrIcon = ASR_PROVIDERS[asrProviderId]?.icon;
         return (
           <>
             {asrIcon ? (
@@ -643,9 +640,7 @@ export function SettingsDialog({ open, onOpenChange, initialSection }: SettingsD
             ) : (
               <Mic className="h-6 w-6 text-muted-foreground" />
             )}
-            <h2 className="text-lg font-semibold">
-              {getASRProviderName(selectedASRProviderId, t)}
-            </h2>
+            <h2 className="text-lg font-semibold">{getASRProviderName(asrProviderId, t)}</h2>
           </>
         );
       }
@@ -887,8 +882,8 @@ export function SettingsDialog({ open, onOpenChange, initialSection }: SettingsD
                   icon: p.icon,
                 }))}
                 configs={ttsProvidersConfig}
-                selectedId={selectedTTSProviderId}
-                onSelect={setSelectedTTSProviderId}
+                selectedId={ttsProviderId}
+                onSelect={setTTSProvider}
                 width={providerListWidth}
                 t={t}
               />
@@ -910,8 +905,8 @@ export function SettingsDialog({ open, onOpenChange, initialSection }: SettingsD
                   icon: p.icon,
                 }))}
                 configs={asrProvidersConfig}
-                selectedId={selectedASRProviderId}
-                onSelect={setSelectedASRProviderId}
+                selectedId={asrProviderId}
+                onSelect={setASRProvider}
                 width={providerListWidth}
                 t={t}
               />
@@ -984,12 +979,8 @@ export function SettingsDialog({ open, onOpenChange, initialSection }: SettingsD
               {activeSection === 'video' && (
                 <VideoSettings selectedProviderId={selectedVideoProviderId} />
               )}
-              {activeSection === 'tts' && (
-                <TTSSettings selectedProviderId={selectedTTSProviderId} />
-              )}
-              {activeSection === 'asr' && (
-                <ASRSettings selectedProviderId={selectedASRProviderId} />
-              )}
+              {activeSection === 'tts' && <TTSSettings selectedProviderId={ttsProviderId} />}
+              {activeSection === 'asr' && <ASRSettings selectedProviderId={asrProviderId} />}
             </div>
 
             {/* Footer */}

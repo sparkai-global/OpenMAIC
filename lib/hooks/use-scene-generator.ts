@@ -8,11 +8,15 @@ import { db } from '@/lib/utils/database';
 import type { SceneOutline, PdfImage, ImageMapping } from '@/lib/types/generation';
 import type { AgentInfo } from '@/lib/generation/generation-pipeline';
 import type { Scene } from '@/lib/types/stage';
-import type { SpeechAction } from '@/lib/types/action';
+import type { Action, SpeechAction } from '@/lib/types/action';
+import type { TTSProviderId } from '@/lib/audio/types';
 import { generateMediaForOutlines } from '@/lib/media/media-orchestrator';
 import { createLogger } from '@/lib/logger';
 
 const log = createLogger('SceneGenerator');
+const TTS_MAX_TEXT_LENGTH: Partial<Record<TTSProviderId, number>> = {
+  'glm-tts': 1024,
+};
 
 interface SceneContentResult {
   success: boolean;
@@ -26,6 +30,88 @@ interface SceneActionsResult {
   scene?: Scene;
   previousSpeeches?: string[];
   error?: string;
+}
+
+export function splitLongSpeechText(text: string, maxLength: number): string[] {
+  const normalized = text.trim();
+  if (!normalized || normalized.length <= maxLength) return [normalized];
+
+  const units = normalized
+    .split(/(?<=[。！？!?；;：:\n])/u)
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  const chunks: string[] = [];
+  let current = '';
+
+  const pushChunk = (value: string) => {
+    const trimmed = value.trim();
+    if (trimmed) chunks.push(trimmed);
+  };
+
+  const appendUnit = (unit: string) => {
+    if (!current) {
+      current = unit;
+      return;
+    }
+    if ((current + unit).length <= maxLength) {
+      current += unit;
+      return;
+    }
+    pushChunk(current);
+    current = unit;
+  };
+
+  const hardSplitUnit = (unit: string) => {
+    const parts = unit.split(/(?<=[，,、])/u).filter(Boolean);
+    if (parts.length > 1) {
+      for (const part of parts) {
+        if (part.length <= maxLength) appendUnit(part);
+        else hardSplitUnit(part);
+      }
+      return;
+    }
+
+    let start = 0;
+    while (start < unit.length) {
+      appendUnit(unit.slice(start, start + maxLength));
+      start += maxLength;
+    }
+  };
+
+  for (const unit of units.length > 0 ? units : [normalized]) {
+    if (unit.length <= maxLength) appendUnit(unit);
+    else hardSplitUnit(unit);
+  }
+
+  pushChunk(current);
+  return chunks;
+}
+
+function splitLongSpeechActions(actions: Action[], providerId: TTSProviderId): Action[] {
+  const maxLength = TTS_MAX_TEXT_LENGTH[providerId];
+  if (!maxLength) return actions;
+
+  let didSplit = false;
+  const nextActions: Action[] = actions.flatMap((action) => {
+    if (action.type !== 'speech' || !action.text || action.text.length <= maxLength)
+      return [action];
+
+    const chunks = splitLongSpeechText(action.text, maxLength);
+    if (chunks.length <= 1) return [action];
+    didSplit = true;
+    const { audioId: _audioId, ...baseAction } = action;
+
+    log.info(
+      `Split speech for ${providerId}: action=${action.id}, len=${action.text.length}, chunks=${chunks.length}`,
+    );
+    return chunks.map((chunk, i) => ({
+      ...baseAction,
+      id: `${action.id}_tts_${i + 1}`,
+      text: chunk,
+    }));
+  });
+  return didSplit ? nextActions : actions;
 }
 
 function getApiHeaders(): HeadersInit {
@@ -128,43 +214,44 @@ export async function generateAndStoreTTS(
   if (settings.ttsProviderId === 'browser-native-tts') return;
 
   const ttsProviderConfig = settings.ttsProvidersConfig?.[settings.ttsProviderId];
+  const response = await fetch('/api/generate/tts', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      text,
+      audioId,
+      ttsProviderId: settings.ttsProviderId,
+      ttsVoice: settings.ttsVoice,
+      ttsSpeed: settings.ttsSpeed,
+      ttsApiKey: ttsProviderConfig?.apiKey || undefined,
+      ttsBaseUrl: ttsProviderConfig?.baseUrl || undefined,
+    }),
+    signal,
+  });
 
-  try {
-    const response = await fetch('/api/generate/tts', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        text,
-        audioId,
-        ttsProviderId: settings.ttsProviderId,
-        ttsVoice: settings.ttsVoice,
-        ttsSpeed: settings.ttsSpeed,
-        ttsApiKey: ttsProviderConfig?.apiKey || undefined,
-        ttsBaseUrl: ttsProviderConfig?.baseUrl || undefined,
-      }),
-      signal,
-    });
-
-    if (!response.ok) return;
-    const data = await response.json();
-    if (!data.success) return;
-
-    const binary = atob(data.base64);
-    const bytes = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i++) {
-      bytes[i] = binary.charCodeAt(i);
-    }
-    const blob = new Blob([bytes], { type: `audio/${data.format}` });
-    await db.audioFiles.put({
-      id: audioId,
-      blob,
-      format: data.format,
-      createdAt: Date.now(),
-    });
-  } catch (err) {
+  const data = await response
+    .json()
+    .catch(() => ({ success: false, error: response.statusText || 'Invalid TTS response' }));
+  if (!response.ok || !data.success || !data.base64 || !data.format) {
+    const err = new Error(
+      data.details || data.error || `TTS request failed: HTTP ${response.status}`,
+    );
     log.warn('TTS failed for', audioId, ':', err);
     throw err;
   }
+
+  const binary = atob(data.base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  const blob = new Blob([bytes], { type: `audio/${data.format}` });
+  await db.audioFiles.put({
+    id: audioId,
+    blob,
+    format: data.format,
+    createdAt: Date.now(),
+  });
 }
 
 /** Generate TTS for all speech actions in a scene. Returns result. */
@@ -172,7 +259,9 @@ async function generateTTSForScene(
   scene: Scene,
   signal?: AbortSignal,
 ): Promise<{ success: boolean; failedCount: number; error?: string }> {
-  const speechActions = (scene.actions || []).filter(
+  const providerId = useSettingsStore.getState().ttsProviderId;
+  scene.actions = splitLongSpeechActions(scene.actions || [], providerId);
+  const speechActions = scene.actions.filter(
     (a): a is SpeechAction => a.type === 'speech' && !!a.text,
   );
   if (speechActions.length === 0) return { success: true, failedCount: 0 };
@@ -185,9 +274,15 @@ async function generateTTSForScene(
     action.audioId = audioId;
     try {
       await generateAndStoreTTS(audioId, action.text, signal);
-    } catch {
+    } catch (error) {
       failedCount++;
-      lastError = `TTS failed for action ${action.id}`;
+      lastError = error instanceof Error ? error.message : `TTS failed for action ${action.id}`;
+      log.warn('TTS generation failed:', {
+        providerId,
+        actionId: action.id,
+        textLength: action.text.length,
+        error: lastError,
+      });
     }
   }
 

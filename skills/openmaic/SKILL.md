@@ -35,6 +35,7 @@ If present, read defaults from `~/.openclaw/openclaw.json` under:
       "openmaic": {
         "enabled": true,
         "config": {
+          "accessCode": "sk-xxx",
           "repoDir": "/path/to/OpenMAIC",
           "url": "http://localhost:3000"
         }
@@ -44,13 +45,17 @@ If present, read defaults from `~/.openclaw/openclaw.json` under:
 }
 ```
 
-Use `repoDir` and `url` only as defaults. Still confirm before acting.
+- If `accessCode` is present, default to hosted mode and skip the mode-selection prompt.
+- Use `repoDir` and `url` only as defaults for local mode.
+- Still confirm before acting.
 
 ## SOP Phases
 
 ### 0. Choose Mode
 
-Before starting setup, ask the user how they want to use OpenMAIC:
+First check skill config for `accessCode`. If present, announce that a stored access code was found and proceed directly to hosted mode (load [references/hosted-mode.md](references/hosted-mode.md), skip phases 1–4). Do not ask the user to paste the code again.
+
+If no `accessCode` in config, ask the user how they want to use OpenMAIC:
 
 1. **Use hosted OpenMAIC** (recommended for quick start) — Requires an access code from open.maic.chat. No local setup needed.
 2. **Run locally** — Clone the repo, configure provider keys, and run on your machine.

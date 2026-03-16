@@ -40,8 +40,7 @@
 
 **OpenMAIC** (Open Multi-Agent Interactive Classroom) is an open-source AI platform that turns any topic or document into a rich, interactive classroom experience. Powered by multi-agent orchestration, it generates slides, quizzes, interactive simulations, and project-based learning activities — all delivered by AI teachers and AI classmates who can speak, draw on a whiteboard, and engage in real-time discussions with you. With built-in [OpenClaw](https://github.com/openclaw/openclaw) integration, you can generate classrooms directly from messaging apps like Feishu, Slack, or Telegram.
 
-<!-- PLACEHOLDER: product overview GIF -->
-<!-- <img src="assets/overview.gif" width="100%"/> -->
+<video src="https://file.maic.chat/videos/openmaic-promo-en.mp4" width="100%" autoplay loop muted></video>
 
 ### Highlights
 
@@ -54,9 +53,23 @@
 
 ---
 
-## 🚀 Quick Start
+> [!TIP]
+> ### <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/openclaw.png" height="20" align="top"/> Use OpenMAIC from your chat app — zero setup
+>
+> With [OpenClaw](https://github.com/openclaw/openclaw), you can generate classrooms directly from Feishu, Slack, Discord, Telegram, and 20+ messaging apps. Two ways to get started:
+>
+> **Option A: Hosted mode** (no local setup needed)
+> 1. Get an access code at [open.maic.chat](https://open.maic.chat/)
+> 2. `clawhub install openmaic`
+> 3. Tell your assistant *"teach me quantum physics"* — done!
+>
+> **Option B: Self-hosted** — the skill walks you through clone, config, and startup step by step.
+>
+> [Learn more →](#-openclaw-integration)
 
-> **Don't want to set up locally?** Use [OpenClaw](#-openclaw-integration) to deploy and generate classrooms directly from Feishu, Slack, Telegram, and other chat apps — no terminal needed.
+---
+
+## 🚀 Quick Start
 
 ### Prerequisites
 
@@ -240,9 +253,9 @@ OpenMAIC integrates with [OpenClaw](https://github.com/openclaw/openclaw) — a 
 
 Just tell your OpenClaw assistant what you want to learn — it handles everything else:
 
-- **Deploy OpenMAIC** — clone, install dependencies, configure API keys, and start the server
-- **Generate classrooms** — turn a topic or PDF into a full interactive classroom with one message
-- **Track progress** — poll the async generation job and send you the link when ready
+- **Hosted mode** — Grab an access code from [open.maic.chat](https://open.maic.chat/), save it in your config, and generate classrooms instantly — no local setup required
+- **Self-hosted mode** — Clone, install dependencies, configure API keys, and start the server — the skill guides you through each step
+- **Track progress** — Poll the async generation job and send you the link when ready
 
 Every step asks for your confirmation first. No black-box automation.
 
@@ -281,6 +294,9 @@ Optional config in `~/.openclaw/openclaw.json`:
     "entries": {
       "openmaic": {
         "config": {
+          // Hosted mode: paste your access code from open.maic.chat
+          "accessCode": "sk-xxx",
+          // Self-hosted mode: local repo path and URL
           "repoDir": "/path/to/OpenMAIC",
           "url": "http://localhost:3000"
         }

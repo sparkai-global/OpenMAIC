@@ -468,6 +468,12 @@ If you find OpenMAIC useful in your research, please consider citing:
 
 ---
 
+## ⭐ Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=THU-MAIC/OpenMAIC&type=Date)](https://star-history.com/#THU-MAIC/OpenMAIC&Date)
+
+---
+
 ## 📄 License
 
 This project is licensed under the [GNU Affero General Public License v3.0](LICENSE).

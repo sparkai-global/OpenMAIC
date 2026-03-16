@@ -468,6 +468,12 @@ OpenMAIC/
 
 ---
 
+## ⭐ Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=THU-MAIC/OpenMAIC&type=Date)](https://star-history.com/#THU-MAIC/OpenMAIC&Date)
+
+---
+
 ## 📄 许可证
 
 本项目基于 [GNU Affero General Public License v3.0](LICENSE) 开源。

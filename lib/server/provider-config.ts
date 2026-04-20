@@ -74,9 +74,9 @@ const PDF_ENV_MAP: Record<string, string> = {
 };
 
 const IMAGE_ENV_MAP: Record<string, string> = {
-  IMAGE_SEEDREAM: 'seedream',
-  IMAGE_QWEN_IMAGE: 'qwen-image',
   IMAGE_NANO_BANANA: 'nano-banana',
+  IMAGE_QWEN_IMAGE: 'qwen-image',
+  IMAGE_SEEDREAM: 'seedream',
   IMAGE_MINIMAX: 'minimax-image',
   IMAGE_GROK: 'grok-image',
 };
@@ -127,12 +127,12 @@ function loadYamlFile(filename: string): YamlData {
 // ---------------------------------------------------------------------------
 
 function loadEnvSection(
-  envMap: Record<string, string>,
-  yamlSection: Record<string, Partial<ServerProviderEntry>> | undefined,
-  {
-    requiresBaseUrl = false,
-    keylessProviders = new Set<string>(),
-  }: { requiresBaseUrl?: boolean; keylessProviders?: Set<string> } = {},
+    envMap: Record<string, string>,
+    yamlSection: Record<string, Partial<ServerProviderEntry>> | undefined,
+    {
+      requiresBaseUrl = false,
+      keylessProviders = new Set<string>(),
+    }: { requiresBaseUrl?: boolean; keylessProviders?: Set<string> } = {},
 ): Record<string, ServerProviderEntry> {
   const result: Record<string, ServerProviderEntry> = {};
 
@@ -140,9 +140,9 @@ function loadEnvSection(
   if (yamlSection) {
     for (const [id, entry] of Object.entries(yamlSection)) {
       if (
-        requiresBaseUrl
-          ? !!entry?.baseUrl
-          : entry?.apiKey || (entry?.baseUrl && keylessProviders.has(id))
+          requiresBaseUrl
+              ? !!entry?.baseUrl
+              : entry?.apiKey || (entry?.baseUrl && keylessProviders.has(id))
       ) {
         result[id] = {
           apiKey: entry.apiKey || '',
@@ -160,11 +160,11 @@ function loadEnvSection(
     const envBaseUrl = process.env[`${prefix}_BASE_URL`] || undefined;
     const envModelsStr = process.env[`${prefix}_MODELS`];
     const envModels = envModelsStr
-      ? envModelsStr
-          .split(',')
-          .map((m) => m.trim())
-          .filter(Boolean)
-      : undefined;
+        ? envModelsStr
+            .split(',')
+            .map((m) => m.trim())
+            .filter(Boolean)
+        : undefined;
 
     if (result[providerId]) {
       // YAML entry exists — env vars override individual fields
@@ -176,9 +176,9 @@ function loadEnvSection(
 
     // Activate on API key, or base URL alone for keyless providers (e.g. Ollama)
     if (
-      requiresBaseUrl
-        ? !envBaseUrl
-        : !(envApiKey || (envBaseUrl && keylessProviders.has(providerId)))
+        requiresBaseUrl
+            ? !envBaseUrl
+            : !(envApiKey || (envBaseUrl && keylessProviders.has(providerId)))
     )
       continue;
     result[providerId] = {
@@ -226,7 +226,7 @@ function logConfig(config: ServerConfig, label: string): void {
   ];
   if (counts.some((c) => c > 0)) {
     log.info(
-      `[ServerProviderConfig] Loaded (${label}): ${counts[0]} LLM, ${counts[1]} TTS, ${counts[2]} ASR, ${counts[3]} PDF, ${counts[4]} Image, ${counts[5]} Video, ${counts[6]} WebSearch providers`,
+        `[ServerProviderConfig] Loaded (${label}): ${counts[0]} LLM, ${counts[1]} TTS, ${counts[2]} ASR, ${counts[3]} PDF, ${counts[4]} Image, ${counts[5]} Video, ${counts[6]} WebSearch providers`,
     );
   }
 }
@@ -366,8 +366,8 @@ export function resolveImageApiKey(providerId: string, clientKey?: string): stri
 }
 
 export function resolveImageBaseUrl(
-  providerId: string,
-  clientBaseUrl?: string,
+    providerId: string,
+    clientBaseUrl?: string,
 ): string | undefined {
   if (clientBaseUrl) return clientBaseUrl;
   return getConfig().image[providerId]?.baseUrl;
@@ -392,8 +392,8 @@ export function resolveVideoApiKey(providerId: string, clientKey?: string): stri
 }
 
 export function resolveVideoBaseUrl(
-  providerId: string,
-  clientBaseUrl?: string,
+    providerId: string,
+    clientBaseUrl?: string,
 ): string | undefined {
   if (clientBaseUrl) return clientBaseUrl;
   return getConfig().video[providerId]?.baseUrl;

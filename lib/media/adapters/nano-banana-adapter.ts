@@ -13,7 +13,14 @@
  *
  * API docs: https://ai.google.dev/gemini-api/docs/image-generation
  */
-
+async function pFetch(input: string | URL, init?: RequestInit): Promise<Response> {
+  try {
+    const { proxyFetch } = await import('@/lib/server/proxy-fetch');
+    return proxyFetch(input as string, init);
+  } catch {
+    return fetch(input, init);
+  }
+}
 import type {
   ImageGenerationConfig,
   ImageGenerationOptions,
@@ -49,7 +56,7 @@ interface GeminiResponse {
  * Uses GET /v1beta/models/{model} which does not trigger generation.
  */
 export async function testNanoBananaConnectivity(
-  config: ImageGenerationConfig,
+    config: ImageGenerationConfig,
 ): Promise<{ success: boolean; message: string }> {
   const baseUrl = config.baseUrl || DEFAULT_BASE_URL;
   const model = config.model || DEFAULT_MODEL;
@@ -58,13 +65,13 @@ export async function testNanoBananaConnectivity(
   // Try ?key= query param first (direct Google API), fall back to x-goog-api-key header (proxy)
   let response: Response | null = null;
   try {
-    response = await fetch(`${url}?key=${config.apiKey}`, { method: 'GET' });
+    response = await pFetch(`${url}?key=${config.apiKey}`, { method: 'GET' });
   } catch {
     // Direct API unreachable, try header auth
   }
   if (!response || !response.ok) {
     try {
-      response = await fetch(url, {
+      response = await pFetch(url, {
         method: 'GET',
         headers: { 'x-goog-api-key': config.apiKey },
       });
@@ -95,13 +102,13 @@ export async function testNanoBananaConnectivity(
 }
 
 export async function generateWithNanoBanana(
-  config: ImageGenerationConfig,
-  options: ImageGenerationOptions,
+    config: ImageGenerationConfig,
+    options: ImageGenerationOptions,
 ): Promise<ImageGenerationResult> {
   const baseUrl = config.baseUrl || DEFAULT_BASE_URL;
   const model = config.model || DEFAULT_MODEL;
 
-  const response = await fetch(`${baseUrl}/v1beta/models/${model}:generateContent`, {
+  const response = await pFetch(`${baseUrl}/v1beta/models/${model}:generateContent`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

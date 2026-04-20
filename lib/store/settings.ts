@@ -1140,13 +1140,11 @@ export const useSettingsStore = create<SettingsState>()(
                 if (models?.length) recoveredVideoModel = models[0].id;
               }
 
-              const validLLMModel = validLLMProvider
-                ? validateModel(
-                    state.modelId,
-                    newProvidersConfig[validLLMProvider as ProviderId]?.models ?? [],
-                  )
-                : '';
-              const imageModels =
+                const llmModels = newProvidersConfig[validLLMProvider as ProviderId]?.models ?? [];
+                const validLLMModel = validLLMProvider
+                    ? validateModel(state.modelId, llmModels) || llmModels[0]?.id || ''
+                    : '';
+                const imageModels =
                 IMAGE_PROVIDERS[validImageProvider as ImageProviderId]?.models ?? [];
               const validImageModel = validImageProvider
                 ? recoveredImageModel ||

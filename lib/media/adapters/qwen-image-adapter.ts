@@ -17,7 +17,7 @@ import type {
   ImageGenerationResult,
 } from '../types';
 
-const DEFAULT_MODEL = 'qwen-image-max';
+const DEFAULT_MODEL = 'wan2.6-t2i';
 const DEFAULT_BASE_URL = 'https://dashscope.aliyuncs.com';
 
 /**
@@ -35,24 +35,24 @@ function resolveDashScopeSize(options: ImageGenerationOptions): string {
  * request. 401/403 means key invalid; other errors mean key is valid.
  */
 export async function testQwenImageConnectivity(
-  config: ImageGenerationConfig,
+    config: ImageGenerationConfig,
 ): Promise<{ success: boolean; message: string }> {
   const baseUrl = config.baseUrl || DEFAULT_BASE_URL;
   try {
     const response = await fetch(
-      `${baseUrl}/api/v1/services/aigc/multimodal-generation/generation`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${config.apiKey}`,
+        `${baseUrl}/api/v1/services/aigc/multimodal-generation/generation`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${config.apiKey}`,
+          },
+          body: JSON.stringify({
+            model: config.model || DEFAULT_MODEL,
+            input: { messages: [{ role: 'user', content: [{ text: '' }] }] },
+            parameters: { size: '1*1' },
+          }),
         },
-        body: JSON.stringify({
-          model: config.model || DEFAULT_MODEL,
-          input: { messages: [{ role: 'user', content: [{ text: '' }] }] },
-          parameters: { size: '1*1' },
-        }),
-      },
     );
     if (response.status === 401 || response.status === 403) {
       const text = await response.text();
@@ -68,8 +68,8 @@ export async function testQwenImageConnectivity(
 }
 
 export async function generateWithQwenImage(
-  config: ImageGenerationConfig,
-  options: ImageGenerationOptions,
+    config: ImageGenerationConfig,
+    options: ImageGenerationOptions,
 ): Promise<ImageGenerationResult> {
   const baseUrl = config.baseUrl || DEFAULT_BASE_URL;
 

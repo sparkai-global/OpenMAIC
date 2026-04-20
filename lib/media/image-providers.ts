@@ -38,6 +38,7 @@ export const IMAGE_PROVIDERS: Record<ImageProviderId, ImageProviderConfig> = {
     requiresApiKey: true,
     defaultBaseUrl: 'https://dashscope.aliyuncs.com',
     models: [
+      { id: 'wan2.6-t2i', name: 'Wanx 2.6 T2I' },
       { id: 'qwen-image-max', name: 'Qwen Image Max' },
       { id: 'qwen-image-max-2025-12-30', name: 'Qwen Image Max (2025-12-30)' },
       { id: 'qwen-image-plus', name: 'Qwen Image Plus' },
@@ -96,7 +97,7 @@ export const IMAGE_PROVIDERS: Record<ImageProviderId, ImageProviderConfig> = {
 };
 
 export async function testImageConnectivity(
-  config: ImageGenerationConfig,
+    config: ImageGenerationConfig,
 ): Promise<{ success: boolean; message: string }> {
   switch (config.providerId) {
     case 'seedream':
@@ -118,8 +119,8 @@ export async function testImageConnectivity(
 }
 
 export async function generateImage(
-  config: ImageGenerationConfig,
-  options: ImageGenerationOptions,
+    config: ImageGenerationConfig,
+    options: ImageGenerationOptions,
 ): Promise<ImageGenerationResult> {
   switch (config.providerId) {
     case 'seedream':
@@ -138,8 +139,8 @@ export async function generateImage(
 }
 
 export function aspectRatioToDimensions(
-  ratio: string,
-  maxWidth = 1024,
+    ratio: string,
+    maxWidth = 1024,
 ): { width: number; height: number } {
   const [w, h] = ratio.split(':').map(Number);
   if (!w || !h) return { width: maxWidth, height: Math.round((maxWidth * 9) / 16) };

@@ -67,9 +67,9 @@ function mediaServingUrl(baseUrl: string, classroomId: string, subPath: string):
 // ---------------------------------------------------------------------------
 
 export async function generateMediaForClassroom(
-  outlines: SceneOutline[],
-  classroomId: string,
-  baseUrl: string,
+    outlines: SceneOutline[],
+    classroomId: string,
+    baseUrl: string,
 ): Promise<Record<string, string>> {
   const mediaDir = path.join(CLASSROOMS_DIR, classroomId, 'media');
   await ensureDir(mediaDir);
@@ -91,41 +91,48 @@ export async function generateMediaForClassroom(
 
   const generateImages = async () => {
     for (const req of imageRequests) {
-      try {
-        const providerId = imageProviderIds[0] as ImageProviderId;
-        const apiKey = resolveImageApiKey(providerId);
-        if (!apiKey) {
-          log.warn(`No API key for image provider "${providerId}", skipping ${req.elementId}`);
-          continue;
+      let generated = false;
+      for (const providerId of imageProviderIds as ImageProviderId[]) {
+        try {
+          const apiKey = resolveImageApiKey(providerId);
+          if (!apiKey) {
+            log.warn(`No API key for image provider "${providerId}", skipping`);
+            continue;
+          }
+          const providerConfig = IMAGE_PROVIDERS[providerId];
+          const model = providerConfig?.models?.[0]?.id;
+
+          const result = await generateImage(
+              { providerId, apiKey, baseUrl: resolveImageBaseUrl(providerId), model },
+              { prompt: req.prompt, aspectRatio: req.aspectRatio || '16:9' },
+          );
+
+          let buf: Buffer;
+          let ext: string;
+          if (result.base64) {
+            buf = Buffer.from(result.base64, 'base64');
+            ext = 'png';
+          } else if (result.url) {
+            buf = await downloadToBuffer(result.url);
+            const urlExt = path.extname(new URL(result.url).pathname).replace('.', '');
+            ext = ['png', 'jpg', 'jpeg', 'webp'].includes(urlExt) ? urlExt : 'png';
+          } else {
+            log.warn(`Image generation returned no data for ${req.elementId}`);
+            continue;
+          }
+
+          const filename = `${req.elementId}.${ext}`;
+          await fs.writeFile(path.join(mediaDir, filename), buf);
+          mediaMap[req.elementId] = mediaServingUrl(baseUrl, classroomId, `media/${filename}`);
+          log.info(`Generated image: ${filename} [provider=${providerId}]`);
+          generated = true;
+          break;
+        } catch (err) {
+          log.warn(`[ClassroomMedia] Image generation failed for ${req.elementId} [${providerId}]:`, err);
         }
-        const providerConfig = IMAGE_PROVIDERS[providerId];
-        const model = providerConfig?.models?.[0]?.id;
-
-        const result = await generateImage(
-          { providerId, apiKey, baseUrl: resolveImageBaseUrl(providerId), model },
-          { prompt: req.prompt, aspectRatio: req.aspectRatio || '16:9' },
-        );
-
-        let buf: Buffer;
-        let ext: string;
-        if (result.base64) {
-          buf = Buffer.from(result.base64, 'base64');
-          ext = 'png';
-        } else if (result.url) {
-          buf = await downloadToBuffer(result.url);
-          const urlExt = path.extname(new URL(result.url).pathname).replace('.', '');
-          ext = ['png', 'jpg', 'jpeg', 'webp'].includes(urlExt) ? urlExt : 'png';
-        } else {
-          log.warn(`Image generation returned no data for ${req.elementId}`);
-          continue;
-        }
-
-        const filename = `${req.elementId}.${ext}`;
-        await fs.writeFile(path.join(mediaDir, filename), buf);
-        mediaMap[req.elementId] = mediaServingUrl(baseUrl, classroomId, `media/${filename}`);
-        log.info(`Generated image: ${filename}`);
-      } catch (err) {
-        log.warn(`Image generation failed for ${req.elementId}:`, err);
+      }
+      if (!generated) {
+        log.warn(`All image providers failed for ${req.elementId}`);
       }
     }
   };
@@ -148,8 +155,8 @@ export async function generateMediaForClassroom(
         });
 
         const result = await generateVideo(
-          { providerId, apiKey, baseUrl: resolveVideoBaseUrl(providerId), model },
-          normalized,
+            { providerId, apiKey, baseUrl: resolveVideoBaseUrl(providerId), model },
+            normalized,
         );
 
         const buf = await downloadToBuffer(result.url);
@@ -178,18 +185,18 @@ export function replaceMediaPlaceholders(scenes: Scene[], mediaMap: Record<strin
   for (const scene of scenes) {
     if (scene.type !== 'slide') continue;
     const canvas = (
-      scene.content as {
-        canvas?: { elements?: Array<{ id: string; src?: string; type?: string }> };
-      }
+        scene.content as {
+          canvas?: { elements?: Array<{ id: string; src?: string; type?: string }> };
+        }
     )?.canvas;
     if (!canvas?.elements) continue;
 
     for (const el of canvas.elements) {
       if (
-        (el.type === 'image' || el.type === 'video') &&
-        typeof el.src === 'string' &&
-        isMediaPlaceholder(el.src) &&
-        mediaMap[el.src]
+          (el.type === 'image' || el.type === 'video') &&
+          typeof el.src === 'string' &&
+          isMediaPlaceholder(el.src) &&
+          mediaMap[el.src]
       ) {
         el.src = mediaMap[el.src];
       }
@@ -202,16 +209,16 @@ export function replaceMediaPlaceholders(scenes: Scene[], mediaMap: Record<strin
 // ---------------------------------------------------------------------------
 
 export async function generateTTSForClassroom(
-  scenes: Scene[],
-  classroomId: string,
-  baseUrl: string,
+    scenes: Scene[],
+    classroomId: string,
+    baseUrl: string,
 ): Promise<void> {
   const audioDir = path.join(CLASSROOMS_DIR, classroomId, 'audio');
   await ensureDir(audioDir);
 
   // Resolve TTS provider (exclude browser-native-tts)
   const ttsProviderIds = Object.keys(getServerTTSProviders()).filter(
-    (id) => id !== 'browser-native-tts',
+      (id) => id !== 'browser-native-tts',
   );
   if (ttsProviderIds.length === 0) {
     log.warn('No server TTS provider configured, skipping TTS generation');
@@ -225,11 +232,11 @@ export async function generateTTSForClassroom(
     return;
   }
   const ttsBaseUrl =
-    resolveTTSBaseUrl(providerId) ||
-    TTS_PROVIDERS[providerId as keyof typeof TTS_PROVIDERS]?.defaultBaseUrl;
+      resolveTTSBaseUrl(providerId) ||
+      TTS_PROVIDERS[providerId as keyof typeof TTS_PROVIDERS]?.defaultBaseUrl;
   const voice = DEFAULT_TTS_VOICES[providerId as keyof typeof DEFAULT_TTS_VOICES] || 'default';
   const format =
-    TTS_PROVIDERS[providerId as keyof typeof TTS_PROVIDERS]?.supportedFormats?.[0] || 'mp3';
+      TTS_PROVIDERS[providerId as keyof typeof TTS_PROVIDERS]?.supportedFormats?.[0] || 'mp3';
 
   for (const scene of scenes) {
     if (!scene.actions) continue;
@@ -249,15 +256,15 @@ export async function generateTTSForClassroom(
 
       try {
         const result = await generateTTS(
-          {
-            providerId,
-            modelId: DEFAULT_TTS_MODELS[providerId as keyof typeof DEFAULT_TTS_MODELS] || '',
-            apiKey,
-            baseUrl: ttsBaseUrl,
-            voice,
-            speed: speechAction.speed,
-          },
-          speechAction.text,
+            {
+              providerId,
+              modelId: DEFAULT_TTS_MODELS[providerId as keyof typeof DEFAULT_TTS_MODELS] || '',
+              apiKey,
+              baseUrl: ttsBaseUrl,
+              voice,
+              speed: speechAction.speed,
+            },
+            speechAction.text,
         );
 
         const filename = `${audioId}.${format}`;

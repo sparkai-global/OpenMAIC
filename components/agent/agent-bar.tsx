@@ -115,11 +115,10 @@ function AgentVoicePill({
             ttsModelId: modelId || providerConfig?.modelId,
             ttsVoice: voiceId,
             ttsSpeed: 1,
-            ttsApiKey: providerConfig?.apiKey,
-            ttsBaseUrl:
-              providerConfig?.serverBaseUrl ||
-              providerConfig?.baseUrl ||
-              providerConfig?.customDefaultBaseUrl,
+            ttsApiKey: providerConfig?.isServerConfigured ? undefined : providerConfig?.apiKey,
+            ttsBaseUrl: providerConfig?.isServerConfigured
+                ? undefined
+                : providerConfig?.baseUrl || providerConfig?.customDefaultBaseUrl,
           }),
           signal: controller.signal,
         });

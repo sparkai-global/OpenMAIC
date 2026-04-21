@@ -921,8 +921,10 @@ export const useSettingsStore = create<SettingsState>()(
                   const currentModels = newProvidersConfig[key].models;
                   // When server specifies allowed models, filter the models list
                   const filteredModels = info.models?.length
-                    ? currentModels.filter((m) => info.models!.includes(m.id))
-                    : currentModels;
+                      ? info.models
+                          .map((id) => currentModels.find((m) => m.id === id))
+                          .filter((m): m is (typeof currentModels)[number] => !!m)
+                      : currentModels;
                   newProvidersConfig[key] = {
                     ...newProvidersConfig[key],
                     isServerConfigured: true,

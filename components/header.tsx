@@ -174,17 +174,21 @@ export function Header({ currentSceneTitle }: HeaderProps) {
             )}
           </div>
 
-          <div className="w-[1px] h-4 bg-gray-200 dark:bg-gray-700" />
+          {!isEmbedded && (
+            <>
+              <div className="w-[1px] h-4 bg-gray-200 dark:bg-gray-700" />
 
-          {/* Settings Button */}
-          <div className="relative">
-            <button
-              onClick={() => setSettingsOpen(true)}
-              className="p-2 rounded-full text-gray-400 dark:text-gray-500 hover:bg-white dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-gray-200 hover:shadow-sm transition-all group"
-            >
-              <Settings className="w-4 h-4 group-hover:rotate-90 transition-transform duration-500" />
-            </button>
-          </div>
+              {/* Settings Button */}
+              <div className="relative">
+                <button
+                  onClick={() => setSettingsOpen(true)}
+                  className="p-2 rounded-full text-gray-400 dark:text-gray-500 hover:bg-white dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-gray-200 hover:shadow-sm transition-all group"
+                >
+                  <Settings className="w-4 h-4 group-hover:rotate-90 transition-transform duration-500" />
+                </button>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Export Dropdown */}

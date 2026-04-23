@@ -21,6 +21,7 @@ import {
   Upload,
   Sparkles,
   Atom,
+  Github,
 } from 'lucide-react';
 import { useI18n } from '@/lib/hooks/use-i18n';
 import { LanguageSwitcher } from '@/components/language-switcher';
@@ -413,6 +414,19 @@ function HomePage() {
             </div>
           )}
         </div>
+
+        <div className="w-[1px] h-4 bg-gray-200 dark:bg-gray-700" />
+
+        {/* GitHub Source Code Button */}
+        <a
+          href="https://github.com/sparkai-global/OpenMAIC"
+          target="_blank"
+          rel="noopener noreferrer"
+          title="View source on GitHub"
+          className="p-2 rounded-full text-gray-400 dark:text-gray-500 hover:bg-white dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-gray-200 hover:shadow-sm transition-all"
+        >
+          <Github className="w-4 h-4" />
+        </a>
 
         <div className="w-[1px] h-4 bg-gray-200 dark:bg-gray-700" />
 

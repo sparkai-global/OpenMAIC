@@ -5,7 +5,8 @@ import { ThemeProvider } from '@/lib/hooks/use-theme';
 import { useStageStore } from '@/lib/store';
 import { loadImageMapping } from '@/lib/utils/image-storage';
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
+import { useUserProfileStore } from '@/lib/store/user-profile';
 import { useSceneGenerator } from '@/lib/hooks/use-scene-generator';
 import { useMediaGenerationStore } from '@/lib/store/media-generation';
 import { useWhiteboardHistoryStore } from '@/lib/store/whiteboard-history';
@@ -18,8 +19,33 @@ const log = createLogger('Classroom');
 export default function ClassroomDetailPage() {
   const params = useParams();
   const classroomId = params?.id as string;
+  const searchParams = useSearchParams();
 
   const { loadFromStorage } = useStageStore();
+
+  useEffect(() => {
+    if (!searchParams) return;
+    const nickname = searchParams.get('nickname');
+    const avatar = searchParams.get('avatar');
+    const bio = searchParams.get('bio');
+    const store = useUserProfileStore.getState();
+    if (nickname) store.setNickname(nickname);
+    if (avatar) store.setAvatar(avatar);
+    if (bio) store.setBio(bio);
+  }, [searchParams]);
+
+  useEffect(() => {
+    const handler = (e: MessageEvent) => {
+      if (e.data?.type !== 'openmaic:user-profile') return;
+      const { nickname, avatar, bio } = e.data.payload ?? {};
+      const store = useUserProfileStore.getState();
+      if (typeof nickname === 'string') store.setNickname(nickname);
+      if (typeof avatar === 'string') store.setAvatar(avatar);
+      if (typeof bio === 'string') store.setBio(bio);
+    };
+    window.addEventListener('message', handler);
+    return () => window.removeEventListener('message', handler);
+  }, []);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

@@ -42,12 +42,35 @@ async function verifyToken(token: string, accessCode: string): Promise<boolean> 
 }
 
 export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // === 内部 API token 校验（保护只应由 Go 后端调用的接口，防止外部滥用）===
+  const INTERNAL_PROTECTED_PREFIXES = [
+    '/api/generate-classroom',
+    '/api/parse-pdf',
+    '/api/generate/image',
+    '/api/generate/video',
+    '/api/generate/scene-content',
+    '/api/generate/scene-actions',
+    '/api/generate/scene-outlines-stream',
+    '/api/generate/agent-profiles',
+  ];
+  if (INTERNAL_PROTECTED_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
+    const internalToken = request.headers.get('x-internal-token');
+    const expectedToken = process.env.INTERNAL_API_TOKEN;
+    if (!expectedToken || internalToken !== expectedToken) {
+      return NextResponse.json(
+          { success: false, errorCode: 'UNAUTHORIZED', error: 'Invalid internal token' },
+          { status: 401 },
+      );
+    }
+    return NextResponse.next();
+  }
+
   const accessCode = process.env.ACCESS_CODE;
   if (!accessCode) {
     return NextResponse.next();
   }
-
-  const { pathname } = request.nextUrl;
 
   // Whitelist: access-code endpoints, health check
   if (pathname.startsWith('/api/access-code/') || pathname === '/api/health') {

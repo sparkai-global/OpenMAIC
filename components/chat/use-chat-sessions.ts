@@ -505,7 +505,13 @@ export function useChatSessions(options: UseChatSessionsOptions = {}) {
 
           getMessages: () => {
             const currentSession = sessionsRef.current.find((s) => s.id === sessionId);
-            return currentSession?.messages ?? requestTemplate.messages;
+            const refMsgs = currentSession?.messages ?? [];
+            const templateMsgs = requestTemplate.messages;
+            // sessionsRef is synced via useEffect (one tick behind state).
+            // On the first send of a new session, ref may briefly hold the
+            // just-created session with empty messages — fall back to the
+            // snapshot passed from the caller, whichever is longer.
+            return refMsgs.length >= templateMsgs.length ? refMsgs : templateMsgs;
           },
 
           fetchChat: (body, signal) =>

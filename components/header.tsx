@@ -34,6 +34,15 @@ export function Header({ currentSceneTitle }: HeaderProps) {
   const router = useRouter();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [themeOpen, setThemeOpen] = useState(false);
+  const [isEmbedded, setIsEmbedded] = useState(false);
+
+  useEffect(() => {
+    try {
+      setIsEmbedded(window.self !== window.top);
+    } catch {
+      setIsEmbedded(true);
+    }
+  }, []);
 
   // Export
   const { exporting: isExporting, exportPPTX, exportResourcePack } = useExportPPTX();
@@ -77,13 +86,15 @@ export function Header({ currentSceneTitle }: HeaderProps) {
     <>
       <header className="h-20 px-8 flex items-center justify-between z-10 bg-transparent gap-4">
         <div className="flex items-center gap-3 min-w-0 flex-1">
-          <button
-            onClick={() => router.push('/')}
-            className="shrink-0 p-2 rounded-lg text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
-            title={t('generation.backToHome')}
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </button>
+          {!isEmbedded && (
+            <button
+              onClick={() => router.push('/')}
+              className="shrink-0 p-2 rounded-lg text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+              title={t('generation.backToHome')}
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+          )}
           <div className="flex flex-col min-w-0">
             <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400 dark:text-gray-500 mb-0.5">
               {t('stage.currentScene')}
@@ -163,17 +174,21 @@ export function Header({ currentSceneTitle }: HeaderProps) {
             )}
           </div>
 
-          <div className="w-[1px] h-4 bg-gray-200 dark:bg-gray-700" />
+          {!isEmbedded && (
+            <>
+              <div className="w-[1px] h-4 bg-gray-200 dark:bg-gray-700" />
 
-          {/* Settings Button */}
-          <div className="relative">
-            <button
-              onClick={() => setSettingsOpen(true)}
-              className="p-2 rounded-full text-gray-400 dark:text-gray-500 hover:bg-white dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-gray-200 hover:shadow-sm transition-all group"
-            >
-              <Settings className="w-4 h-4 group-hover:rotate-90 transition-transform duration-500" />
-            </button>
-          </div>
+              {/* Settings Button */}
+              <div className="relative">
+                <button
+                  onClick={() => setSettingsOpen(true)}
+                  className="p-2 rounded-full text-gray-400 dark:text-gray-500 hover:bg-white dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-gray-200 hover:shadow-sm transition-all group"
+                >
+                  <Settings className="w-4 h-4 group-hover:rotate-90 transition-transform duration-500" />
+                </button>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Export Dropdown */}

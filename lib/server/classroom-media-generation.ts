@@ -1,14 +1,21 @@
 /**
  * Server-side media and TTS generation for classrooms.
  *
- * Generates image/video files and TTS audio for a classroom,
- * writes them to disk, and returns serving URL mappings.
+ * Generates image/video files and TTS audio for a classroom, uploads them
+ * to Aliyun OSS, and returns the public-URL mappings used by scenes.
+ *
+ * The legacy `/api/classroom-media/<id>/<path>` route is kept untouched
+ * so classrooms generated before this change can still serve their media
+ * from local disk. New classrooms only have OSS URLs in their JSON.
  */
 
-import { promises as fs } from 'fs';
 import path from 'path';
 import { createLogger } from '@/lib/logger';
-import { CLASSROOMS_DIR } from '@/lib/server/classroom-storage';
+import {
+  buildClassroomMediaKey,
+  contentTypeForExt,
+  uploadToOSS,
+} from '@/lib/server/oss-client';
 import { generateImage } from '@/lib/media/image-providers';
 import { generateVideo, normalizeVideoOptions } from '@/lib/media/video-providers';
 import { generateTTS } from '@/lib/audio/tts-providers';
@@ -41,10 +48,6 @@ const log = createLogger('ClassroomMedia');
 // Helpers
 // ---------------------------------------------------------------------------
 
-async function ensureDir(dir: string) {
-  await fs.mkdir(dir, { recursive: true });
-}
-
 const DOWNLOAD_TIMEOUT_MS = 120_000; // 2 minutes
 const DOWNLOAD_MAX_SIZE = 100 * 1024 * 1024; // 100 MB
 
@@ -58,10 +61,6 @@ async function downloadToBuffer(url: string): Promise<Buffer> {
   return Buffer.from(await resp.arrayBuffer());
 }
 
-function mediaServingUrl(baseUrl: string, classroomId: string, subPath: string): string {
-  return `${baseUrl}/api/classroom-media/${classroomId}/${subPath}`;
-}
-
 // ---------------------------------------------------------------------------
 // Image / Video generation
 // ---------------------------------------------------------------------------
@@ -69,10 +68,10 @@ function mediaServingUrl(baseUrl: string, classroomId: string, subPath: string):
 export async function generateMediaForClassroom(
     outlines: SceneOutline[],
     classroomId: string,
-    baseUrl: string,
+    _baseUrl: string, // retained for call-site compatibility; URLs now come from OSS
 ): Promise<Record<string, string>> {
-  const mediaDir = path.join(CLASSROOMS_DIR, classroomId, 'media');
-  await ensureDir(mediaDir);
+  // All media files of this generation job share the same yyyy/mm prefix.
+  const jobStartedAt = new Date();
 
   // Collect all media generation requests from outlines
   const requests = outlines.flatMap((o) => o.mediaGenerations ?? []);
@@ -122,9 +121,20 @@ export async function generateMediaForClassroom(
           }
 
           const filename = `${req.elementId}.${ext}`;
-          await fs.writeFile(path.join(mediaDir, filename), buf);
-          mediaMap[req.elementId] = mediaServingUrl(baseUrl, classroomId, `media/${filename}`);
-          log.info(`Generated image: ${filename} [provider=${providerId}]`);
+          // Image was generated successfully — try to upload. If upload fails
+          // after retries, drop this image (don't write into mediaMap) and
+          // stop trying other providers: regenerating from a different
+          // provider only wastes quota since the original output was fine.
+          try {
+            const key = buildClassroomMediaKey(classroomId, 'media', filename, jobStartedAt);
+            mediaMap[req.elementId] = await uploadToOSS(key, buf, contentTypeForExt(ext));
+            log.info(`Generated image: ${filename} [provider=${providerId}]`);
+          } catch (uploadErr) {
+            log.warn(
+              `OSS upload failed for image ${req.elementId} (skipping):`,
+              uploadErr,
+            );
+          }
           generated = true;
           break;
         } catch (err) {
@@ -161,9 +171,16 @@ export async function generateMediaForClassroom(
 
         const buf = await downloadToBuffer(result.url);
         const filename = `${req.elementId}.mp4`;
-        await fs.writeFile(path.join(mediaDir, filename), buf);
-        mediaMap[req.elementId] = mediaServingUrl(baseUrl, classroomId, `media/${filename}`);
-        log.info(`Generated video: ${filename}`);
+        try {
+          const key = buildClassroomMediaKey(classroomId, 'media', filename, jobStartedAt);
+          mediaMap[req.elementId] = await uploadToOSS(key, buf, contentTypeForExt('mp4'));
+          log.info(`Generated video: ${filename}`);
+        } catch (uploadErr) {
+          log.warn(
+            `OSS upload failed for video ${req.elementId} (skipping):`,
+            uploadErr,
+          );
+        }
       } catch (err) {
         log.warn(`Video generation failed for ${req.elementId}:`, err);
       }
@@ -211,10 +228,10 @@ export function replaceMediaPlaceholders(scenes: Scene[], mediaMap: Record<strin
 export async function generateTTSForClassroom(
     scenes: Scene[],
     classroomId: string,
-    baseUrl: string,
+    _baseUrl: string, // retained for call-site compatibility; URLs now come from OSS
 ): Promise<void> {
-  const audioDir = path.join(CLASSROOMS_DIR, classroomId, 'audio');
-  await ensureDir(audioDir);
+  // All TTS files of this generation job share the same yyyy/mm prefix.
+  const jobStartedAt = new Date();
 
   // Resolve TTS provider (exclude browser-native-tts)
   const ttsProviderIds = Object.keys(getServerTTSProviders()).filter(
@@ -268,11 +285,25 @@ export async function generateTTSForClassroom(
         );
 
         const filename = `${audioId}.${format}`;
-        await fs.writeFile(path.join(audioDir, filename), result.audio);
-
-        speechAction.audioId = audioId;
-        speechAction.audioUrl = mediaServingUrl(baseUrl, classroomId, `audio/${filename}`);
-        log.info(`Generated TTS: ${filename} (${result.audio.length} bytes)`);
+        // TTS audio was generated successfully — try to upload. If upload
+        // fails after retries, leave audioUrl/audioId unset so the player
+        // skips this segment (consistent with the "warn + continue"
+        // behaviour for media generation failures).
+        try {
+          const key = buildClassroomMediaKey(classroomId, 'audio', filename, jobStartedAt);
+          speechAction.audioUrl = await uploadToOSS(
+            key,
+            Buffer.from(result.audio),
+            contentTypeForExt(format),
+          );
+          speechAction.audioId = audioId;
+          log.info(`Generated TTS: ${filename} (${result.audio.length} bytes)`);
+        } catch (uploadErr) {
+          log.warn(
+            `OSS upload failed for TTS ${audioId} (skipping):`,
+            uploadErr,
+          );
+        }
       } catch (err) {
         log.warn(`TTS generation failed for action ${action.id}:`, err);
       }

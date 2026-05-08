@@ -254,6 +254,8 @@ export interface StatelessChatRequest {
     discussionPrompt?: string;
     /** Which agent should speak first in a discussion */
     triggerAgentId?: string;
+    /** When true: cue the user to answer first, then only the teacher responds once. No student agents join. */
+    teacherOnly?: boolean;
     /** Full agent configs for generated (non-default) agents that aren't in the server-side registry */
     agentConfigs?: Array<{
       id: string;

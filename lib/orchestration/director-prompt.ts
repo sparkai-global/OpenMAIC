@@ -30,6 +30,7 @@ export function buildDirectorPrompt(
   whiteboardLedger?: WhiteboardActionRecord[],
   userProfile?: { nickname?: string; bio?: string },
   whiteboardOpen?: boolean,
+  teacherOnly?: boolean | null,
 ): string {
   const agentList = agents
     .map((a) => `- id: "${a.id}", name: "${a.name}", role: ${a.role}, priority: ${a.priority}`)
@@ -54,9 +55,11 @@ Topic: "${discussionContext!.topic}"${discussionContext!.prompt ? `\nPrompt: "${
 This is a student-initiated discussion, not a Q&A session.\n`
     : '';
 
-  const rule1 = isDiscussion
-    ? `1. The discussion initiator${triggerAgentId ? ` ("${triggerAgentId}")` : ''} should speak first to kick off the topic. Then the teacher responds to guide the discussion. After that, other students may add their perspectives.`
-    : "1. The teacher (role: teacher, highest priority) should usually speak first to address the user's question or topic.";
+  const rule1 = teacherOnly
+    ? `1. The teacher has just asked the user a direct recall question. The user has now responded. Dispatch ONLY the teacher (role: teacher) to evaluate and respond to the user's answer. After the teacher responds once, output END. Do NOT dispatch any student agents.`
+    : isDiscussion
+      ? `1. The discussion initiator${triggerAgentId ? ` ("${triggerAgentId}")` : ''} should speak first to kick off the topic. Then the teacher responds to guide the discussion. After that, other students may add their perspectives.`
+      : "1. The teacher (role: teacher, highest priority) should usually speak first to address the user's question or topic.";
 
   const studentProfileSection =
     userProfile?.nickname || userProfile?.bio

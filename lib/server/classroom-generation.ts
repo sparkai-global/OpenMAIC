@@ -362,7 +362,11 @@ export async function generateClassroom(
       totalScenes: outlines.length,
     });
 
-    const content = await generateSceneContent(safeOutline, aiCall, { agents, languageDirective });
+    const content = await generateSceneContent(safeOutline, aiCall, {
+      agents,
+      languageDirective,
+      previousOutlines: outlines.slice(0, index),
+    });
     if (!content) {
       log.warn(`Skipping scene "${safeOutline.title}" — content generation failed`);
       continue;

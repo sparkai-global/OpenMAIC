@@ -74,8 +74,8 @@ const PDF_ENV_MAP: Record<string, string> = {
 };
 
 const IMAGE_ENV_MAP: Record<string, string> = {
-  IMAGE_NANO_BANANA: 'nano-banana',
   IMAGE_QWEN_IMAGE: 'qwen-image',
+  IMAGE_NANO_BANANA: 'nano-banana',
   IMAGE_SEEDREAM: 'seedream',
   IMAGE_MINIMAX: 'minimax-image',
   IMAGE_GROK: 'grok-image',

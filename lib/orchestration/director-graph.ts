@@ -54,6 +54,7 @@ const OrchestratorState = Annotation.Root({
   thinkingConfig: Annotation<ThinkingConfig | null>,
   discussionContext: Annotation<{ topic: string; prompt?: string } | null>,
   triggerAgentId: Annotation<string | null>,
+  teacherOnly: Annotation<boolean | null>,
   userProfile: Annotation<{ nickname?: string; bio?: string } | null>,
   /** Request-scoped agent configs for generated agents (not in the default registry) */
   agentConfigOverrides: Annotation<Record<string, AgentConfig>>,
@@ -134,6 +135,13 @@ async function directorNode(
     return { shouldEnd: true };
   }
 
+  // ── teacherOnly: cue user first, then only teacher responds ──
+  if (state.turnCount === 0 && state.teacherOnly) {
+    log.info('[Director] teacherOnly mode: cueing user to answer first');
+    write({ type: 'cue_user', data: {} });
+    return { shouldEnd: false };
+  }
+
   // ── Multi agent: fast-path for first turn with trigger ──
   if (state.turnCount === 0 && state.triggerAgentId) {
     const triggerId = state.triggerAgentId;
@@ -174,6 +182,7 @@ async function directorNode(
     state.whiteboardLedger,
     state.userProfile || undefined,
     state.storeState.whiteboardOpen,
+    state.teacherOnly,
   );
 
   const adapter = new AISdkLangGraphAdapter(state.languageModel, state.thinkingConfig ?? undefined);
@@ -535,6 +544,7 @@ export function buildInitialState(
     thinkingConfig: thinkingConfig ?? null,
     discussionContext,
     triggerAgentId: request.config.triggerAgentId || null,
+    teacherOnly: request.config.teacherOnly || null,
     userProfile: request.userProfile || null,
     agentConfigOverrides,
     currentAgentId: null,

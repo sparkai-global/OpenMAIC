@@ -123,10 +123,21 @@ export function buildStateContext(storeState: StatelessChatRequest['storeState']
         `Current scene: "${currentScene.title}" (${currentScene.type}, id: ${currentSceneId})`,
       );
 
-      // Slide scene: include element details
+      // Slide scene: include element details + narration summary
       if (currentScene.content.type === 'slide') {
         const elements = currentScene.content.canvas.elements;
         lines.push(`Current slide elements (${elements.length}):\n${summarizeElements(elements)}`);
+
+        // Include narration so agents can ground their discussion in what was actually taught.
+        // Capped at 5 segments × 100 chars to keep context length manageable.
+        const narration = (currentScene.actions || [])
+          .filter((a) => a.type === 'speech' && 'text' in a && (a as { text: string }).text)
+          .slice(0, 5)
+          .map((a, i) => `  ${i + 1}. ${((a as { text: string }).text).slice(0, 100)}`)
+          .join('\n');
+        if (narration) {
+          lines.push(`Current slide narration (what was taught — stay consistent with this):\n${narration}`);
+        }
       }
 
       // Quiz scene: include question summary

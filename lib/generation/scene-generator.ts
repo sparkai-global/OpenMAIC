@@ -33,6 +33,7 @@ import {
   buildCourseContext,
   buildLanguageText,
   formatAgentsForPrompt,
+  formatLearnedContent,
   formatTeacherPersonaForPrompt,
   formatImageDescription,
   formatImagePlaceholder,
@@ -68,6 +69,12 @@ export interface SceneContentOptions {
   generatedMediaMapping?: ImageMapping;
   agents?: AgentInfo[];
   languageDirective?: string;
+  /**
+   * Outlines that come BEFORE this scene in the course.
+   * Used by quiz generation to constrain questions to taught material.
+   * Quiz dispatcher filters this for type==='slide' to build learnedContent.
+   */
+  previousOutlines?: SceneOutline[];
 }
 
 export interface SceneActionsOptions {
@@ -112,7 +119,13 @@ export async function generateFullScenes(
   const results = await Promise.all(
     sceneOutlines.map(async (outline, index) => {
       try {
-        const sceneId = await generateSingleScene(outline, api, aiCall, languageDirective);
+        const sceneId = await generateSingleScene(
+          outline,
+          api,
+          aiCall,
+          languageDirective,
+          sceneOutlines.slice(0, index),
+        );
 
         // Update progress (not atomic, but sufficient for UI display)
         completedCount++;
@@ -157,10 +170,14 @@ async function generateSingleScene(
   api: ReturnType<typeof createStageAPI>,
   aiCall: AICallFn,
   languageDirective?: string,
+  previousOutlines?: SceneOutline[],
 ): Promise<string | null> {
   // Step 3.1: Generate content
   log.info(`Step 3.1: Generating content for: ${outline.title}`);
-  const content = await generateSceneContent(outline, aiCall, { languageDirective });
+  const content = await generateSceneContent(outline, aiCall, {
+    languageDirective,
+    previousOutlines,
+  });
   if (!content) {
     log.error(`Failed to generate content for: ${outline.title}`);
     return null;
@@ -331,7 +348,7 @@ export async function generateSceneContent(
         agents,
       );
     case 'quiz':
-      return generateQuizContent(outline, aiCall);
+      return generateQuizContent(outline, aiCall, options.previousOutlines);
     case 'pbl':
       return generatePBLSceneContent(outline, languageModel);
     default:
@@ -766,6 +783,7 @@ async function generateSlideContent(
 async function generateQuizContent(
   outline: SceneOutline,
   aiCall: AICallFn,
+  previousOutlines?: SceneOutline[],
 ): Promise<GeneratedQuizContent | null> {
   const quizConfig = outline.quizConfig || {
     questionCount: 3,
@@ -780,6 +798,7 @@ async function generateQuizContent(
     questionCount: quizConfig.questionCount,
     difficulty: quizConfig.difficulty,
     questionTypes: quizConfig.questionTypes.join(', '),
+    learnedContent: formatLearnedContent(previousOutlines),
   });
 
   if (!prompts) {
@@ -1164,7 +1183,7 @@ export async function generateSceneActions(
       keyPoints: (outline.keyPoints || []).map((p, i) => `${i + 1}. ${p}`).join('\n'),
       description: outline.description,
       elements: elementsText,
-      courseContext: buildCourseContext(ctx),
+      courseContext: buildCourseContext(ctx, 'slide'),
       agents: agentsText,
       userProfile: userProfile || '',
     });

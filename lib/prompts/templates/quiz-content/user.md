@@ -3,6 +3,8 @@ Description: {{description}}
 Test Points: {{keyPoints}}
 Question Count: {{questionCount}}, Difficulty: {{difficulty}}, Question Types: {{questionTypes}}
 
+{{learnedContent}}
+
 ## Language Directive
 {{languageDirective}}
 

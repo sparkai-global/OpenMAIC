@@ -1135,13 +1135,12 @@ export function Stage({
         )}
       </div>
 
-      {/* Chat Area */}
+      {/* Chat Area — 强制始终展开（笔记/对话栏不可收起） */}
       <ChatArea
         ref={chatAreaRef}
         width={chatAreaWidth}
         onWidthChange={setChatAreaWidth}
-        collapsed={chatAreaCollapsed}
-        onCollapseChange={setChatAreaCollapsed}
+        collapsed={false}
         activeBubbleId={activeBubbleId}
         onActiveBubble={(id) => setActiveBubbleId(id)}
         currentSceneId={currentSceneId}

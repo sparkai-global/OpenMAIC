@@ -44,6 +44,19 @@ async function verifyToken(token: string, accessCode: string): Promise<boolean> 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Dev mode: 当配置了 BACKEND_URL 时，本地 /api/* 通过 rewrites 转发到远端后端。
+  // 自动注入 X-Internal-Token，避免每个 fetch 都手动加 header；
+  // 同时跳过下方对入站 token 的校验（因为浏览器请求没带 token 是正常的）。
+  const backendUrl = process.env.BACKEND_URL;
+  if (backendUrl && pathname.startsWith('/api/')) {
+    const token = process.env.INTERNAL_API_TOKEN;
+    if (token) {
+      const headers = new Headers(request.headers);
+      headers.set('x-internal-token', token);
+      return NextResponse.next({ request: { headers } });
+    }
+  }
+
   // === 内部 API token 校验（保护只应由 Go 后端调用的接口，防止外部滥用）===
   const INTERNAL_PROTECTED_PREFIXES = [
     '/api/generate-classroom',

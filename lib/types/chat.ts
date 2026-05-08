@@ -62,6 +62,8 @@ export interface SessionConfig {
   currentTurn: number;
   triggerAgentId?: string; // For discussion: first agent to speak
   defaultAgentId?: string; // For QA: the responding agent
+  /** 仅老师参与的讨论（teacherOnly=true 时不带其他学生 agent，不设 triggerAgentId） */
+  teacherOnly?: boolean;
 }
 
 /**

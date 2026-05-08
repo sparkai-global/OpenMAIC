@@ -70,30 +70,37 @@ export function SceneSidebar({
   const isDraggingRef = useRef(false);
 
   const handleDragStart = useCallback(
-    (e: React.MouseEvent) => {
+    (e: React.PointerEvent<HTMLDivElement>) => {
       e.preventDefault();
       isDraggingRef.current = true;
       const startX = e.clientX;
       const startWidth = sidebarWidth;
+      const target = e.currentTarget;
+      target.setPointerCapture(e.pointerId);
 
-      const handleMouseMove = (me: MouseEvent) => {
-        const delta = me.clientX - startX;
+      const handlePointerMove = (pe: PointerEvent) => {
+        const delta = pe.clientX - startX;
         const newWidth = Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, startWidth + delta));
         setSidebarWidth(newWidth);
       };
 
-      const handleMouseUp = () => {
+      const handlePointerUp = (pe: PointerEvent) => {
         isDraggingRef.current = false;
-        document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', handleMouseUp);
+        if (target.hasPointerCapture(pe.pointerId)) {
+          target.releasePointerCapture(pe.pointerId);
+        }
+        target.removeEventListener('pointermove', handlePointerMove);
+        target.removeEventListener('pointerup', handlePointerUp);
+        target.removeEventListener('pointercancel', handlePointerUp);
         document.body.style.cursor = '';
         document.body.style.userSelect = '';
       };
 
       document.body.style.cursor = 'col-resize';
       document.body.style.userSelect = 'none';
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
+      target.addEventListener('pointermove', handlePointerMove);
+      target.addEventListener('pointerup', handlePointerUp);
+      target.addEventListener('pointercancel', handlePointerUp);
     },
     [sidebarWidth],
   );
@@ -121,7 +128,8 @@ export function SceneSidebar({
       {/* Drag handle */}
       {!collapsed && (
         <div
-          onMouseDown={handleDragStart}
+          onPointerDown={handleDragStart}
+          style={{ touchAction: 'none' }}
           className="absolute right-0 top-0 bottom-0 w-1.5 cursor-col-resize z-50 group hover:bg-purple-400/30 dark:hover:bg-purple-600/30 active:bg-purple-500/40 dark:active:bg-purple-500/40 transition-colors"
         >
           <div className="absolute right-0.5 top-1/2 -translate-y-1/2 w-0.5 h-8 rounded-full bg-gray-300 dark:bg-gray-600 group-hover:bg-purple-400 dark:group-hover:bg-purple-500 transition-colors" />

@@ -189,6 +189,7 @@ function updateButton(text) {
 - Sliders: Increase thumb size for mobile (min 24px)
 - Add `touch-action: manipulation` to prevent double-tap zoom
 - Use `touch-action: none` on canvas for custom gesture handling
+- **MANDATORY for drag/pointer interactions**: use Pointer Events (`pointerdown` / `pointermove` / `pointerup` / `pointercancel`), NOT mouse-only events. Mouse-only drag fails on touch devices. Call `setPointerCapture(e.pointerId)` on pointerdown for smooth drag tracking. Coordinates come from `e.clientX` / `e.clientY` directly (no need for `e.touches`). Apply `touch-action: none` and `user-select: none` to draggable elements.
 
 ### 5. Canvas Sizing
 - Use `ResizeObserver` or window resize event

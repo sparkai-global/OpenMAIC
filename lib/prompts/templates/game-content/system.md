@@ -118,6 +118,76 @@ Learning: Player EXPERIENCES F=ma by adjusting thrust and seeing result
 - Pause/resume functionality
 - Clear instructions before game starts
 
+## Drag & Pointer Input (MANDATORY for any drag/swipe interaction)
+
+**CRITICAL**: If your game has ANY drag, swipe, or pointer-tracking interaction, it MUST work on both desktop (mouse) AND touch devices (mobile, tablet, trackpad gestures). Mouse-only drag is a hard failure — large segments of users will be unable to play.
+
+### REQUIRED: Use Pointer Events, not Mouse Events
+
+Pointer Events unify mouse, touch, and pen into a single API. Always use them:
+
+```javascript
+// ✅ CORRECT — works for mouse, touch, pen
+element.addEventListener('pointerdown', handleStart);
+element.addEventListener('pointermove', handleMove);
+element.addEventListener('pointerup', handleEnd);
+element.addEventListener('pointercancel', handleEnd);
+
+// ❌ WRONG — touch users cannot drag
+element.addEventListener('mousedown', handleStart);
+element.addEventListener('mousemove', handleMove);
+element.addEventListener('mouseup', handleEnd);
+```
+
+### REQUIRED CSS for draggable elements
+
+```css
+.draggable {
+  touch-action: none;        /* prevents browser scroll/zoom from hijacking the gesture */
+  user-select: none;         /* prevents text selection on drag */
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+```
+
+### REQUIRED: setPointerCapture for smooth drag
+
+```javascript
+function handleStart(e) {
+  e.preventDefault();
+  e.target.setPointerCapture(e.pointerId);  // ensures pointermove keeps firing even outside the element
+  // ... start drag
+}
+
+function handleEnd(e) {
+  e.target.releasePointerCapture(e.pointerId);
+  // ... end drag
+}
+```
+
+### Coordinate handling
+
+Use `clientX` / `clientY` from the PointerEvent (works for both mouse and touch). Do NOT use `e.touches[0]` — that only exists on touch events. With pointer events, the coordinates are always on `e` directly.
+
+### Fallback if you must use legacy events
+
+If for some reason you use mouse/touch events instead of pointer events, you MUST register BOTH sets and call `e.preventDefault()` on touch events to prevent scrolling:
+
+```javascript
+element.addEventListener('mousedown', handleStart);
+element.addEventListener('touchstart', (e) => { e.preventDefault(); handleStart(e.touches[0]); }, { passive: false });
+// ... and so on for move/up
+```
+
+But pointer events are strongly preferred — simpler, fewer bugs.
+
+### Self-check before finishing
+
+- [ ] Every drag/swipe interaction registers `pointerdown` / `pointermove` / `pointerup` (not `mousedown` / `mousemove` / `mouseup`)
+- [ ] Draggable elements have `touch-action: none` in CSS
+- [ ] `setPointerCapture` is called on pointerdown
+- [ ] Tested mentally: a finger touch on a phone screen would trigger the same code path as a mouse click
+
 ## Fair Start Requirements (CRITICAL)
 
 **NEVER let the player fail immediately when the game starts!**

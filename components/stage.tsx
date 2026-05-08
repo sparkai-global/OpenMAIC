@@ -90,6 +90,8 @@ export function Stage({
   // Streaming state for stop button (Issue 1)
   const [chatIsStreaming, setChatIsStreaming] = useState(false);
   const [chatSessionType, setChatSessionType] = useState<string | null>(null);
+  // 当前讨论是否 teacherOnly：true 时底部 speech bubble 隐藏，只在右侧讨论 Tab 显示
+  const [discussionTeacherOnly, setDiscussionTeacherOnly] = useState(false);
 
   // Topic pending state: session is soft-paused, bubble stays visible, waiting for user input
   const [isTopicPending, setIsTopicPending] = useState(false);
@@ -449,9 +451,9 @@ export function Stage({
       onProactiveHide: () => {
         setDiscussionTrigger(null);
       },
-      onDiscussionConfirmed: (topic, prompt, agentId) => {
+      onDiscussionConfirmed: (topic, prompt, agentId, teacherOnly) => {
         // Start SSE discussion via ChatArea
-        handleDiscussionSSE(topic, prompt, agentId);
+        handleDiscussionSSE(topic, prompt, agentId, teacherOnly);
       },
       onDiscussionEnd: () => {
         // Abort any active SSE
@@ -460,6 +462,7 @@ export function Stage({
           discussionAbortRef.current = null;
         }
         setDiscussionTrigger(null);
+        setDiscussionTeacherOnly(false);
         // Stop any in-flight discussion TTS audio
         discussionTTS.cleanup();
         // Clear roundtable state (idempotent — may already be cleared by doSessionCleanup)
@@ -595,15 +598,18 @@ export function Stage({
    * Handle discussion SSE — POST /api/chat and push events to engine
    */
   const handleDiscussionSSE = useCallback(
-    async (topic: string, prompt?: string, agentId?: string) => {
+    async (topic: string, prompt?: string, agentId?: string, teacherOnly?: boolean) => {
       // Start discussion display in ChatArea (lecture speech is preserved independently)
       chatAreaRef.current?.startDiscussion({
         topic,
         prompt,
         agentId: agentId || 'default-1',
+        teacherOnly,
       });
-      // Auto-switch to chat tab when discussion starts
-      chatAreaRef.current?.switchToTab('chat');
+      // 切到对应 Tab：teacher-only → 讨论 (lecture)；多人 → 拓展 (chat)
+      chatAreaRef.current?.switchToTab(teacherOnly ? 'lecture' : 'chat');
+      // 标记当前讨论是否 teacher-only —— 用于隐藏底部 speech bubble
+      setDiscussionTeacherOnly(teacherOnly === true);
       // Immediately mark streaming for synchronized stop button
       setChatIsStreaming(true);
       setChatSessionType('discussion');
@@ -1129,19 +1135,20 @@ export function Stage({
               controlsVisible={controlsVisible}
               onTogglePresentation={togglePresentation}
               onPresentationInteractionChange={setIsPresentationInteractionActive}
+              onReplyClick={() => chatAreaRef.current?.focusInput()}
+              suppressBubble={discussionTeacherOnly}
               fullscreenContainerRef={stageRef}
             />
           </div>
         )}
       </div>
 
-      {/* Chat Area */}
+      {/* Chat Area — 强制始终展开（笔记/对话栏不可收起） */}
       <ChatArea
         ref={chatAreaRef}
         width={chatAreaWidth}
         onWidthChange={setChatAreaWidth}
-        collapsed={chatAreaCollapsed}
-        onCollapseChange={setChatAreaCollapsed}
+        collapsed={false}
         activeBubbleId={activeBubbleId}
         onActiveBubble={(id) => setActiveBubbleId(id)}
         currentSceneId={currentSceneId}

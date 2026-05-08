@@ -15,6 +15,7 @@ import {
   BookOpen,
   Loader2,
   Volume2,
+  CornerUpLeft,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { AudioIndicatorState } from './audio-indicator';
@@ -37,6 +38,8 @@ export interface DiscussionRequest {
   topic: string;
   prompt?: string;
   agentId?: string; // Agent ID to initiate discussion (default: 'default-1')
+  /** teacherOnly=true：只让 teacher role 的 agent 参与；不设 triggerAgentId */
+  teacherOnly?: boolean;
 }
 
 interface RoundtableProps {
@@ -88,6 +91,10 @@ interface RoundtableProps {
   readonly controlsVisible?: boolean;
   readonly onTogglePresentation?: () => void;
   readonly onPresentationInteractionChange?: (active: boolean) => void;
+  /** 当老师最后一句是问句时，restart 按钮变"回复" → 调这个聚焦右侧输入框 */
+  readonly onReplyClick?: () => void;
+  /** teacherOnly 讨论进行中时设为 true：隐藏底部 speech bubble（教师对话只在右侧讨论 Tab 显示） */
+  readonly suppressBubble?: boolean;
   /** Ref to the fullscreen container — passed to ProactiveCard so its portal
    *  renders inside the top-layer during presentation mode. */
   readonly fullscreenContainerRef?: React.RefObject<HTMLDivElement | null>;
@@ -173,6 +180,8 @@ export function Roundtable({
   controlsVisible,
   onTogglePresentation,
   onPresentationInteractionChange,
+  onReplyClick,
+  suppressBubble,
   fullscreenContainerRef,
 }: RoundtableProps) {
   const { t } = useI18n();
@@ -232,14 +241,16 @@ export function Roundtable({
     !!(speakingAgentId || thinkingState || isStreaming || sessionType);
 
   // Role-aware source text: userMessage overlay on top of playbackView
-  const sourceText = userMessage
-    ? userMessage
-    : (playbackView?.sourceText ??
-      (currentSpeech
-        ? currentSpeech
-        : isInLiveFlow
-          ? ''
-          : lectureSpeech || (playbackCompleted ? '' : idleText) || ''));
+  const sourceText = suppressBubble
+    ? ''
+    : userMessage
+      ? userMessage
+      : (playbackView?.sourceText ??
+        (currentSpeech
+          ? currentSpeech
+          : isInLiveFlow
+            ? ''
+            : lectureSpeech || (playbackCompleted ? '' : idleText) || ''));
   const hasAgentFeedback = Boolean(playbackView?.sourceText || thinkingState);
   const prevHasAgentFeedbackRef = useRef(hasAgentFeedback);
 
@@ -559,7 +570,8 @@ export function Roundtable({
   // sessionType is only cleared in doSessionCleanup, so this stays stable through
   // brief loading gaps (e.g. between user message and agent SSE response).
   const showStopButton =
-    engineMode === 'live' || sessionType === 'qa' || sessionType === 'discussion';
+    !suppressBubble &&
+    (engineMode === 'live' || sessionType === 'qa' || sessionType === 'discussion');
 
   const handleCycleSpeed = useCallback(() => {
     const currentIndex = PLAYBACK_SPEEDS.indexOf(playbackSpeed as (typeof PLAYBACK_SPEEDS)[number]);
@@ -813,7 +825,7 @@ export function Roundtable({
 
           {/* "Your turn" cue prompt — clickable, opens input panel */}
           <AnimatePresence>
-            {isCueUser && !bubbleRole && !thinkingState && !isInputOpen && !isVoiceOpen && (
+            {!suppressBubble && isCueUser && !bubbleRole && !thinkingState && !isInputOpen && !isVoiceOpen && (
               <motion.div
                 key="presentation-cue-user"
                 initial={{ opacity: 0, scale: 0.92, y: 8 }}
@@ -835,7 +847,7 @@ export function Roundtable({
 
           {/* Director thinking indicator */}
           <AnimatePresence>
-            {thinkingState?.stage === 'director' && !currentSpeech && !userMessage && (
+            {!suppressBubble && thinkingState?.stage === 'director' && !currentSpeech && !userMessage && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -1333,7 +1345,7 @@ export function Roundtable({
 
             {/* Thinking dots (Issue 5) */}
             <AnimatePresence>
-              {thinkingState?.stage === 'director' && !currentSpeech && !userMessage && (
+              {!suppressBubble && thinkingState?.stage === 'director' && !currentSpeech && !userMessage && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -1378,7 +1390,7 @@ export function Roundtable({
 
             {/* Cue user: centered indicator when waiting for user input */}
             <AnimatePresence>
-              {isCueUser && !bubbleRole && !thinkingState && !isInputOpen && !isVoiceOpen && (
+              {!suppressBubble && isCueUser && !bubbleRole && !thinkingState && !isInputOpen && !isVoiceOpen && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.85 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -1707,6 +1719,23 @@ export function Roundtable({
                           }
 
                           if (btnState === 'restart') {
+                            // 最后一句是问句时，按钮改成"回复"，点击聚焦右侧输入框
+                            const trimmed = (sourceText ?? '').trim();
+                            const endsWithQuestion = /[?？]$/.test(trimmed);
+                            if (endsWithQuestion && onReplyClick) {
+                              return (
+                                <div
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    onReplyClick();
+                                  }}
+                                  className="absolute right-2.5 bottom-2.5 flex items-center gap-1 px-2.5 py-1 rounded-full bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-300 ring-1 ring-purple-200/60 dark:ring-purple-700/40 hover:bg-purple-100 dark:hover:bg-purple-900/50 transition-all duration-200 cursor-pointer text-[11px] font-medium"
+                                >
+                                  <CornerUpLeft className="w-3 h-3" />
+                                  <span>回复</span>
+                                </div>
+                              );
+                            }
                             return (
                               <div className="absolute right-2.5 bottom-2.5 p-1.5 rounded-full bg-gray-50/80 dark:bg-gray-700/80 hover:bg-purple-100 dark:hover:bg-purple-900/50 group-hover/bubble:bg-purple-100 dark:group-hover/bubble:bg-purple-900/50 transition-all duration-300 cursor-pointer">
                                 <Repeat className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500 hover:text-purple-600 dark:hover:text-purple-400 group-hover/bubble:text-purple-600 dark:group-hover/bubble:text-purple-400" />

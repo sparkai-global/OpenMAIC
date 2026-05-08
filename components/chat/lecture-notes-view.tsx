@@ -27,9 +27,13 @@ const ACTION_ICON_ONLY: Record<string, { Icon: typeof Flashlight; style: string 
 interface LectureNotesViewProps {
   notes: LectureNoteEntry[];
   currentSceneId?: string | null;
+  /** 是否把最后一段 speech 加粗 */
+  boldLastSpeech?: boolean;
+  /** 渲染在最后一张卡片底部的内容（如收起按钮） */
+  footerSlot?: React.ReactNode;
 }
 
-export function LectureNotesView({ notes, currentSceneId }: LectureNotesViewProps) {
+export function LectureNotesView({ notes, currentSceneId, boldLastSpeech, footerSlot }: LectureNotesViewProps) {
   const { t } = useI18n();
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -149,6 +153,13 @@ export function LectureNotesView({ notes, currentSceneId }: LectureNotesViewProp
                 if (pendingInline.length > 0) {
                   rows.push({ kind: 'trailing', inlineActions: pendingInline });
                 }
+                // 找到最后一个 speech 行的下标，用于加粗
+                const lastSpeechIdx = (() => {
+                  for (let i = rows.length - 1; i >= 0; i--) {
+                    if (rows[i].kind === 'speech') return i;
+                  }
+                  return -1;
+                })();
                 return rows.map((row, i) => {
                   if (row.kind === 'discussion') {
                     return (
@@ -164,10 +175,21 @@ export function LectureNotesView({ notes, currentSceneId }: LectureNotesViewProp
                     );
                   }
                   const actions = row.kind === 'trailing' ? row.inlineActions : row.inlineActions;
+                  // 仅当最后一段以问号结尾（中英）时加粗
+                  const lastTextTrimmed =
+                    row.kind === 'speech' && i === lastSpeechIdx ? row.text.trim() : '';
+                  const endsWithQuestion = /[?？]$/.test(lastTextTrimmed);
+                  const isLastSpeech =
+                    boldLastSpeech && row.kind === 'speech' && i === lastSpeechIdx && endsWithQuestion;
                   return (
                     <p
                       key={i}
-                      className="text-[12px] leading-[1.8] text-gray-700 dark:text-gray-300"
+                      className={cn(
+                        'text-[12px] leading-[1.8]',
+                        isLastSpeech
+                          ? 'font-bold text-gray-900 dark:text-gray-100'
+                          : 'text-gray-700 dark:text-gray-300',
+                      )}
                     >
                       {actions.map((a, j) => {
                         const cfg = ACTION_ICON_ONLY[a];
@@ -191,6 +213,13 @@ export function LectureNotesView({ notes, currentSceneId }: LectureNotesViewProp
                 });
               })()}
             </div>
+
+            {/* footerSlot — 仅渲染在最后一张卡片底部 */}
+            {footerSlot && index === notes.length - 1 && (
+              <div className="pl-4 pt-2 mt-1 border-t border-gray-200/50 dark:border-gray-700/30">
+                {footerSlot}
+              </div>
+            )}
           </div>
         );
       })}

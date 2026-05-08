@@ -28,6 +28,17 @@ interface QueueItem {
   voiceId: string;
 }
 
+// Decode base64 string to a Blob without going through a data URL.
+// Avoids holding the full base64 + decoded copies in JS heap; the Blob
+// is stored in the browser's binary blob store and freed via revokeObjectURL.
+function base64ToBlob(base64: string, mimeType: string): Blob {
+  const binary = atob(base64);
+  const len = binary.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) bytes[i] = binary.charCodeAt(i);
+  return new Blob([bytes], { type: mimeType });
+}
+
 export function useDiscussionTTS({ enabled, agents, onAudioStateChange }: DiscussionTTSOptions) {
   const ttsProvidersConfig = useSettingsStore((s) => s.ttsProvidersConfig);
   const ttsSpeed = useSettingsStore((s) => s.ttsSpeed);
@@ -46,6 +57,7 @@ export function useDiscussionTTS({ enabled, agents, onAudioStateChange }: Discus
   const segmentDoneCounterRef = useRef(0);
   const abortControllerRef = useRef<AbortController | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const currentBlobUrlRef = useRef<string | null>(null);
   const onAudioStateChangeRef = useRef(onAudioStateChange);
   onAudioStateChangeRef.current = onAudioStateChange;
   const processQueueRef = useRef<() => void>(() => {});
@@ -171,12 +183,28 @@ export function useDiscussionTTS({ enabled, agents, onAudioStateChange }: Discus
       const data = await res.json();
       if (!data.base64) throw new Error('No audio in response');
 
-      const audioUrl = `data:audio/${data.format || 'mp3'};base64,${data.base64}`;
-      const audio = new Audio(audioUrl);
+      const mimeType = `audio/${data.format || 'mp3'}`;
+      const blob = base64ToBlob(data.base64, mimeType);
+      const blobUrl = URL.createObjectURL(blob);
+      // Defensive: revoke any leftover blob URL before assigning a new one.
+      if (currentBlobUrlRef.current) {
+        URL.revokeObjectURL(currentBlobUrlRef.current);
+      }
+      currentBlobUrlRef.current = blobUrl;
+      const audio = new Audio(blobUrl);
       audio.playbackRate = playbackSpeed;
       audio.volume = ttsMuted ? 0 : ttsVolume;
       audioRef.current = audio;
+
+      const releaseBlob = () => {
+        if (currentBlobUrlRef.current === blobUrl) {
+          URL.revokeObjectURL(blobUrl);
+          currentBlobUrlRef.current = null;
+        }
+      };
+
       audio.addEventListener('ended', () => {
+        releaseBlob();
         audioRef.current = null;
         isPlayingRef.current = false;
         segmentDoneCounterRef.current++;
@@ -186,6 +214,7 @@ export function useDiscussionTTS({ enabled, agents, onAudioStateChange }: Discus
         }
       });
       audio.addEventListener('error', () => {
+        releaseBlob();
         audioRef.current = null;
         isPlayingRef.current = false;
         segmentDoneCounterRef.current++;
@@ -253,6 +282,10 @@ export function useDiscussionTTS({ enabled, agents, onAudioStateChange }: Discus
       audioRef.current.pause();
       audioRef.current.src = '';
       audioRef.current = null;
+    }
+    if (currentBlobUrlRef.current) {
+      URL.revokeObjectURL(currentBlobUrlRef.current);
+      currentBlobUrlRef.current = null;
     }
     browserCancelRef.current();
     queueRef.current = [];

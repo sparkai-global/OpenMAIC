@@ -277,6 +277,7 @@ export class PlaybackEngine {
       this.currentTrigger.question,
       this.currentTrigger.prompt,
       this.currentTrigger.agentId,
+      this.currentTrigger.teacherOnly,
     );
     this.currentTrigger = null;
   }
@@ -557,6 +558,7 @@ export class PlaybackEngine {
           question: discussionAction.topic,
           prompt: discussionAction.prompt,
           agentId: discussionAction.agentId,
+          teacherOnly: discussionAction.teacherOnly,
         };
 
         this.triggerDelayTimer = setTimeout(() => {

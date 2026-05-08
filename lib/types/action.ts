@@ -182,6 +182,8 @@ export interface DiscussionAction extends ActionBase {
   topic: string;
   prompt?: string;
   agentId?: string;
+  /** When true: cue the user to answer first, then only the teacher responds once. No student agents join. */
+  teacherOnly?: boolean;
 }
 
 // ==================== Widget Interaction Actions ====================

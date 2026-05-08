@@ -49,6 +49,8 @@ const log = createLogger('ClassroomMedia');
 // ---------------------------------------------------------------------------
 
 const DOWNLOAD_TIMEOUT_MS = 120_000; // 2 minutes
+const TTS_MAX_RETRIES = 3;
+const TTS_RETRY_DELAY_MS = 3_000; // 3 seconds between TTS retry attempts
 const DOWNLOAD_MAX_SIZE = 100 * 1024 * 1024; // 100 MB
 
 async function downloadToBuffer(url: string): Promise<Buffer> {
@@ -268,44 +270,70 @@ export async function generateTTSForClassroom(
     for (const action of scene.actions) {
       if (action.type !== 'speech' || !(action as SpeechAction).text) continue;
       const speechAction = action as SpeechAction;
+
+      // Skip TTS for pause-cue texts that contain no speakable characters
+      // (e.g. "…", "......", "——"). TTS providers reject pure-punctuation input.
+      const speakable = speechAction.text.replace(/[\s…。，、！？。，、！？.…,!?;；:：\-—_]/g, '');
+      if (!speakable) {
+        log.debug(`Skipping TTS for pause-cue action ${action.id}: "${speechAction.text}"`);
+        continue;
+      }
+
       // Include scene order in audioId to prevent collision across scenes
       const audioId = `tts_s${sceneOrder}_${action.id}`;
 
-      try {
-        const result = await generateTTS(
-            {
-              providerId,
-              modelId: DEFAULT_TTS_MODELS[providerId as keyof typeof DEFAULT_TTS_MODELS] || '',
-              apiKey,
-              baseUrl: ttsBaseUrl,
-              voice,
-              speed: speechAction.speed,
-            },
-            speechAction.text,
-        );
-
-        const filename = `${audioId}.${format}`;
-        // TTS audio was generated successfully — try to upload. If upload
-        // fails after retries, leave audioUrl/audioId unset so the player
-        // skips this segment (consistent with the "warn + continue"
-        // behaviour for media generation failures).
+      let succeeded = false;
+      for (let attempt = 1; attempt <= TTS_MAX_RETRIES; attempt++) {
         try {
-          const key = buildClassroomMediaKey(classroomId, 'audio', filename, jobStartedAt);
-          speechAction.audioUrl = await uploadToOSS(
-            key,
-            Buffer.from(result.audio),
-            contentTypeForExt(format),
+          const result = await generateTTS(
+              {
+                providerId,
+                modelId: DEFAULT_TTS_MODELS[providerId as keyof typeof DEFAULT_TTS_MODELS] || '',
+                apiKey,
+                baseUrl: ttsBaseUrl,
+                voice,
+                speed: speechAction.speed,
+              },
+              speechAction.text,
           );
-          speechAction.audioId = audioId;
-          log.info(`Generated TTS: ${filename} (${result.audio.length} bytes)`);
-        } catch (uploadErr) {
+
+          const filename = `${audioId}.${format}`;
+          try {
+            const key = buildClassroomMediaKey(classroomId, 'audio', filename, jobStartedAt);
+            speechAction.audioUrl = await uploadToOSS(
+              key,
+              Buffer.from(result.audio),
+              contentTypeForExt(format),
+            );
+            speechAction.audioId = audioId;
+            log.info(`Generated TTS: ${filename} (${result.audio.length} bytes)`);
+          } catch (uploadErr) {
+            log.warn(`OSS upload failed for TTS ${audioId} (skipping):`, uploadErr);
+          }
+          succeeded = true;
+          break;
+        } catch (err) {
+          // InvalidParameter means the text itself is rejected — retrying won't help.
+          const isParamError =
+            err instanceof Error && err.message.includes('InvalidParameter');
+          if (isParamError || attempt >= TTS_MAX_RETRIES) {
+            log.warn(
+              isParamError
+                ? `TTS skipped (InvalidParameter) for action ${action.id} — text rejected by provider:`
+                : `TTS generation failed after ${TTS_MAX_RETRIES} attempts for action ${action.id}, skipping:`,
+              err,
+            );
+            break;
+          }
           log.warn(
-            `OSS upload failed for TTS ${audioId} (skipping):`,
-            uploadErr,
+            `TTS attempt ${attempt}/${TTS_MAX_RETRIES} failed for action ${action.id}, retrying in ${TTS_RETRY_DELAY_MS}ms...`,
+            err,
           );
+          await new Promise((r) => setTimeout(r, TTS_RETRY_DELAY_MS));
         }
-      } catch (err) {
-        log.warn(`TTS generation failed for action ${action.id}:`, err);
+      }
+      if (!succeeded) {
+        log.warn(`Skipped TTS for action ${action.id} — no audio will be available for this segment`);
       }
     }
   }

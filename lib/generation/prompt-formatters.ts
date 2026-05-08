@@ -2,11 +2,14 @@
  * Prompt and context building utilities for the generation pipeline.
  */
 
-import type { PdfImage } from '@/lib/types/generation';
+import type { PdfImage, SceneOutline } from '@/lib/types/generation';
 import type { AgentInfo, SceneGenerationContext } from './pipeline-types';
 
 /** Build a course context string for injection into action prompts */
-export function buildCourseContext(ctx?: SceneGenerationContext): string {
+export function buildCourseContext(
+  ctx?: SceneGenerationContext,
+  sceneType?: 'slide' | 'quiz' | 'interactive' | 'pbl',
+): string {
   if (!ctx) return '';
 
   const lines: string[] = [];
@@ -44,6 +47,32 @@ export function buildCourseContext(ctx?: SceneGenerationContext): string {
     lines.push('Previous page speech (for transition reference):');
     const lastSpeech = ctx.previousSpeeches[ctx.previousSpeeches.length - 1];
     lines.push(`  "...${lastSpeech.slice(-150)}"`);
+  }
+
+  // Slide-only inquiry-first pedagogy. Sits next to page-position cues so it
+  // stays close to the model's attention. Skipped for quiz / interactive /
+  // pbl — they have their own delivery shapes and inquiry-first hurts them.
+  if (sceneType === 'slide') {
+    lines.push('');
+    lines.push('Pedagogy (Inquiry-First — CRITICAL, applies to THIS page):');
+    lines.push(
+      '- Open this page with a question / prediction / contrast / surprising fact — NOT with the conclusion. Even on the last page, lead with a recall prompt before any summary sentence.',
+    );
+    lines.push(
+      '- For one or two of the most concept-heavy key points, use the rhythm: text(question or prediction) → optional pause cue → spotlight/laser → text(reveal & explain). Do NOT explain every key point as a one-shot conclusion.',
+    );
+    lines.push(
+      '- Insert a short pause-cue text between question and reveal (a brief ellipsis line signalling a few seconds of thinking time). Phrase it in the course language specified by the Language Directive.',
+    );
+    lines.push(
+      '- Hook patterns to adapt (write idiomatic phrasing in the course language; do NOT translate literally): "Before I show you, what would you guess?", "Compare this to page N — what changed?", "You might think it\'s X, but it\'s actually Y — why?"',
+    );
+    lines.push(
+      '- Forbidden openers (in ANY language — they all announce the conclusion): "Now let\'s look at...", "In this slide we will discuss...", "The definition of X is...", or their equivalents in the course language. Replace with a question.',
+    );
+    lines.push(
+      '- Voice: speak to the student in the second person (the equivalent of "you" in the course language) and anchor at least one explanation on this page in a concrete everyday object, scene, or action they already know. Avoid textbook connectors like "It is well known that...", "Furthermore...", "In summary...", and any equivalents in the course language — replace them with a concrete scenario or a rhetorical question.',
+    );
   }
 
   return lines.join('\n');
@@ -147,4 +176,35 @@ export function buildLanguageText(directive?: string, sceneNote?: string): strin
     text += (text ? '\n\n' : '') + `Additional language note for this scene: ${sceneNote}`;
   }
   return text;
+}
+
+/**
+ * Build a "Previously Taught Content" block for quiz prompt injection.
+ * Lists keyPoints from prior `slide`-type outlines so the quiz LLM can only
+ * test concepts the student has already been taught. Returns empty string
+ * when there is no prior slide content (e.g. quiz is the very first scene).
+ */
+export function formatLearnedContent(previousOutlines?: SceneOutline[]): string {
+  if (!previousOutlines || previousOutlines.length === 0) return '';
+
+  const slideOutlines = previousOutlines.filter((o) => o.type === 'slide');
+  if (slideOutlines.length === 0) return '';
+
+  const lines: string[] = [
+    '## Previously Taught Content',
+    '',
+    'Questions MUST be grounded in the concepts below. Do NOT invent new concepts students have not seen.',
+    '',
+  ];
+
+  for (const o of slideOutlines) {
+    const orderLabel = typeof o.order === 'number' ? `Page ${o.order}` : 'Page';
+    lines.push(`### ${orderLabel} — ${o.title}`);
+    for (const kp of o.keyPoints || []) {
+      lines.push(`- ${kp}`);
+    }
+    lines.push('');
+  }
+
+  return lines.join('\n').trim();
 }

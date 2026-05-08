@@ -80,6 +80,7 @@ Open-ended question requiring a written response. No options or predefined answe
 - Clear and concise, avoid ambiguity
 - Focus on key knowledge points
 - Appropriate difficulty based on specified level
+- **Stay within taught material (HARD)**: Every question MUST test a concept that appears in the `Previously Taught Content` block of the user prompt. Do NOT invent new application scenarios, terminology, formulas, or examples that students haven't seen on prior slides. If `Previously Taught Content` is empty (e.g. the quiz is the very first scene), fall back to the quiz's own `Test Points`. If you cannot ground a question in the taught material, write a simpler question on a concept you can ground.
 
 ### Option Design
 

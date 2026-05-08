@@ -23,6 +23,8 @@ export interface TriggerEvent {
   question: string;
   prompt?: string;
   agentId?: string;
+  /** Mirrors DiscussionAction.teacherOnly — passed through to the chat config */
+  teacherOnly?: boolean;
 }
 
 /** Playback engine callbacks */
@@ -40,7 +42,7 @@ export interface PlaybackEngineCallbacks {
   onProactiveHide?: () => void;
 
   // Discussion lifecycle
-  onDiscussionConfirmed?: (topic: string, prompt?: string, agentId?: string) => void;
+  onDiscussionConfirmed?: (topic: string, prompt?: string, agentId?: string, teacherOnly?: boolean) => void;
   onDiscussionEnd?: () => void;
   onUserInterrupt?: (text: string) => void;
 

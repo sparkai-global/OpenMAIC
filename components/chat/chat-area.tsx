@@ -13,6 +13,10 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useChatSessions } from './use-chat-sessions';
 import { ChatSessionComponent } from './chat-session';
 import { LectureNotesView } from './lecture-notes-view';
+import { useTeacherChat } from '@/lib/hooks/use-teacher-chat';
+import { useUserProfileStore } from '@/lib/store/user-profile';
+import { useAgentRegistry } from '@/lib/orchestration/registry/store';
+import { motion, AnimatePresence } from 'motion/react';
 
 interface ChatAreaProps {
   className?: string;
@@ -57,11 +61,141 @@ export interface ChatAreaRef {
   pauseActiveLiveBuffer: () => boolean;
   resumeActiveLiveBuffer: () => void;
   switchToTab: (tab: 'lecture' | 'chat') => void;
+  focusInput: () => void;
 }
 
 const DEFAULT_WIDTH = 340;
 const MIN_WIDTH = 240;
 const MAX_WIDTH = 560;
+
+/** 师生 1对1 私聊气泡列表（讨论 Tab 用） */
+function TeacherChatLog({
+  messages,
+  isStreaming,
+  isThinking,
+  userAvatar,
+  userNickname,
+}: {
+  messages: import('@/lib/hooks/use-teacher-chat').TeacherChatMessage[];
+  isStreaming: boolean;
+  isThinking: boolean;
+  userAvatar?: string;
+  userNickname?: string;
+}) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  // 自动滚到底
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages, isThinking]);
+
+  return (
+    <div
+      ref={scrollRef}
+      className="flex-1 overflow-y-auto overflow-x-hidden p-3 space-y-2 scrollbar-hide border-t border-gray-100 dark:border-gray-800"
+    >
+      {messages.length === 0 && !isStreaming ? (
+        <div className="h-full flex flex-col items-center justify-center text-center p-4 opacity-50">
+          <p className="text-[10px] text-gray-400 dark:text-gray-500">
+            在下方输入与老师对话
+          </p>
+        </div>
+      ) : (
+        <AnimatePresence initial={false}>
+          {messages.map((m) => {
+            const isUser = m.role === 'user';
+            return (
+              <motion.div
+                key={m.id}
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2 }}
+                className={cn('flex gap-2', isUser && 'flex-row-reverse')}
+              >
+                <div
+                  className="w-7 h-7 rounded-full overflow-hidden shrink-0 ring-1 ring-gray-200/60 dark:ring-gray-700/60 bg-gray-200 dark:bg-gray-700"
+                  style={!isUser && m.agentColor ? { backgroundColor: m.agentColor } : {}}
+                >
+                  {(isUser ? userAvatar : m.agentAvatar) ? (
+                    <img
+                      src={isUser ? userAvatar : m.agentAvatar}
+                      alt=""
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-white text-[10px] font-bold">
+                      {(isUser ? userNickname : m.agentName)?.[0] ?? '?'}
+                    </div>
+                  )}
+                </div>
+                <div className={cn('flex flex-col max-w-[80%]', isUser && 'items-end')}>
+                  <span className="text-[9px] text-gray-400 dark:text-gray-500 mb-0.5 px-1">
+                    {isUser ? userNickname || '我' : m.agentName}
+                  </span>
+                  <div
+                    className={cn(
+                      'rounded-2xl px-3 py-2 text-[12px] whitespace-pre-wrap break-words leading-relaxed',
+                      isUser
+                        ? 'bg-purple-500 text-white rounded-br-sm'
+                        : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100 rounded-bl-sm',
+                    )}
+                  >
+                    {m.text || (
+                      <span className="inline-flex gap-0.5 items-center">
+                        <span
+                          className="w-1 h-1 rounded-full bg-current animate-bounce"
+                          style={{ animationDelay: '0ms' }}
+                        />
+                        <span
+                          className="w-1 h-1 rounded-full bg-current animate-bounce"
+                          style={{ animationDelay: '150ms' }}
+                        />
+                        <span
+                          className="w-1 h-1 rounded-full bg-current animate-bounce"
+                          style={{ animationDelay: '300ms' }}
+                        />
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })}
+        </AnimatePresence>
+      )}
+
+      {/* 思考中（仅在 isThinking 且没有刚开始的 assistant 流式消息时） */}
+      {isThinking && (
+        <motion.div
+          initial={{ opacity: 0, y: 4 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex gap-2"
+        >
+          <div className="w-7 h-7 rounded-full bg-gray-100 dark:bg-gray-800 ring-1 ring-gray-200/60 dark:ring-gray-700/60 shrink-0 flex items-center justify-center">
+            <span className="text-[10px] text-gray-400">…</span>
+          </div>
+          <div className="rounded-2xl rounded-bl-sm bg-gray-100 dark:bg-gray-800 px-3 py-2.5">
+            <span className="inline-flex gap-1 items-center">
+              <span
+                className="w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-gray-500 animate-bounce"
+                style={{ animationDelay: '0ms' }}
+              />
+              <span
+                className="w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-gray-500 animate-bounce"
+                style={{ animationDelay: '150ms' }}
+              />
+              <span
+                className="w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-gray-500 animate-bounce"
+                style={{ animationDelay: '300ms' }}
+              />
+            </span>
+          </div>
+        </motion.div>
+      )}
+    </div>
+  );
+}
 
 export const ChatArea = forwardRef<ChatAreaRef, ChatAreaProps>(
   (
@@ -87,6 +221,14 @@ export const ChatArea = forwardRef<ChatAreaRef, ChatAreaProps>(
   ) => {
     const { t } = useI18n();
     const scenes = useStageStore((s) => s.scenes);
+    const stageId = useStageStore((s) => s.stage?.id);
+    const userAvatar = useUserProfileStore((s) => s.avatar);
+    const userNickname = useUserProfileStore((s) => s.nickname);
+
+    // 讨论 Tab 的独立师生 1对1 聊天（按 课堂ID + sceneID 隔离，每个 scene 独立历史）
+    const teacherChatKey =
+      stageId && currentSceneId ? `${stageId}:${currentSceneId}` : null;
+    const teacherChat = useTeacherChat({ storageKey: teacherChatKey });
     const {
       sessions,
       activeSessionType,
@@ -124,6 +266,7 @@ export const ChatArea = forwardRef<ChatAreaRef, ChatAreaProps>(
     const [notesCollapsed, setNotesCollapsed] = useState(true);
     const [inputValue, setInputValue] = useState('');
     const notesScrollRef = useRef<HTMLDivElement>(null);
+    const inputRef = useRef<HTMLTextAreaElement>(null);
     const isDraggingRef = useRef(false);
     const [isDragging, setIsDragging] = useState(false);
     const bottomRef = useRef<HTMLDivElement>(null);
@@ -166,13 +309,37 @@ export const ChatArea = forwardRef<ChatAreaRef, ChatAreaProps>(
       [scenes],
     );
 
-    // 对话 tab 不显示 lecture（lecture 已经渲染在笔记里）
-    const chatSessions = useMemo(() => sessions.filter((s) => s.type !== 'lecture'), [sessions]);
+    // 排除 lecture（已在笔记区渲染）
+    const nonLectureSessions = useMemo(
+      () => sessions.filter((s) => s.type !== 'lecture'),
+      [sessions],
+    );
 
-    // 有进行中的讨论 / QA → 笔记 tab 上显示提示小红点
+    // 讨论 Tab 下方：老师对话 = QA 会话 + teacher-only discussion 会话
+    const teacherSessions = useMemo(
+      () =>
+        nonLectureSessions.filter(
+          (s) => s.type === 'qa' || s.config.teacherOnly === true,
+        ),
+      [nonLectureSessions],
+    );
+
+    // 拓展 Tab：多人讨论 = 非 teacherOnly 的 discussion 会话
+    const groupSessions = useMemo(
+      () =>
+        nonLectureSessions.filter(
+          (s) => s.type === 'discussion' && s.config.teacherOnly !== true,
+        ),
+      [nonLectureSessions],
+    );
+
+    // 兼容旧名（其他地方可能引用）
+    const chatSessions = nonLectureSessions;
+
+    // 拓展 Tab 红点（有多人讨论进行中且当前不在拓展 Tab）
     const hasActiveChatSession = useMemo(
-      () => chatSessions.some((s) => s.status === 'active'),
-      [chatSessions],
+      () => groupSessions.some((s) => s.status === 'active'),
+      [groupSessions],
     );
 
     // 当前 scene 的笔记（只显示这一条）
@@ -187,6 +354,30 @@ export const ChatArea = forwardRef<ChatAreaRef, ChatAreaProps>(
       const el = notesScrollRef.current;
       if (el) el.scrollTop = el.scrollHeight;
     }, [notesCollapsed, currentSceneNotes, currentSceneId]);
+
+    // 当前 scene 最后一句若以问号结尾，自动作为老师的"开场"塞进讨论 Tab
+    useEffect(() => {
+      const items = currentSceneNotes[0]?.items ?? [];
+      let lastSpeech = '';
+      for (let i = items.length - 1; i >= 0; i--) {
+        if (items[i].kind === 'speech') {
+          lastSpeech = (items[i] as { kind: 'speech'; text: string }).text.trim();
+          break;
+        }
+      }
+      if (!lastSpeech || !/[?？]$/.test(lastSpeech)) return;
+
+      // 找一个 teacher role agent 提供身份信息（头像、名字、颜色）
+      const registry = useAgentRegistry.getState();
+      let teacher: { id: string; name?: string; avatar?: string; color?: string } | undefined;
+      for (const [id, a] of Object.entries(registry.agents)) {
+        if (a.role === 'teacher') {
+          teacher = { id, name: a.name, avatar: a.avatar, color: a.color };
+          break;
+        }
+      }
+      teacherChat.pushAssistant(lastSpeech, teacher);
+    }, [currentSceneId, currentSceneNotes, teacherChat]);
 
     // Wrap endSession for QA/Discussion: also notify parent for engine cleanup
     const handleEndSession = useCallback(
@@ -203,10 +394,18 @@ export const ChatArea = forwardRef<ChatAreaRef, ChatAreaProps>(
 
     const handleSend = useCallback(() => {
       const text = inputValue.trim();
-      if (!text || isStreaming) return;
-      setInputValue('');
-      sendMessage(text);
-    }, [inputValue, isStreaming, sendMessage]);
+      if (!text) return;
+      // 讨论 Tab → 师生独立聊天（teacherOnly）；拓展 Tab → 走原 sendMessage
+      if (activeTab === 'lecture') {
+        if (teacherChat.isStreaming) return;
+        setInputValue('');
+        teacherChat.sendMessage(text);
+      } else {
+        if (isStreaming) return;
+        setInputValue('');
+        sendMessage(text);
+      }
+    }, [inputValue, isStreaming, sendMessage, activeTab, teacherChat]);
 
     useImperativeHandle(ref, () => ({
       createSession,
@@ -226,6 +425,14 @@ export const ChatArea = forwardRef<ChatAreaRef, ChatAreaProps>(
       pauseActiveLiveBuffer,
       resumeActiveLiveBuffer,
       switchToTab,
+      focusInput: () => {
+        // 切到 chat tab 并聚焦输入框
+        setActiveTab('chat');
+        // 等 tab 渲染完再聚焦
+        requestAnimationFrame(() => {
+          inputRef.current?.focus();
+        });
+      },
     }));
 
     // Drag-to-resize (Pointer Events — works for mouse, touch, pen)
@@ -302,11 +509,11 @@ export const ChatArea = forwardRef<ChatAreaRef, ChatAreaProps>(
               <TabsList variant="line" className="h-full flex-1 w-0">
                 <TabsTrigger value="lecture" className="text-xs gap-1 flex-1">
                   <BookOpen className="w-3.5 h-3.5" />
-                  {t('chat.tabs.lecture')}
+                  讨论
                 </TabsTrigger>
                 <TabsTrigger value="chat" className="text-xs gap-1 flex-1 relative">
                   <MessageSquare className="w-3.5 h-3.5" />
-                  {t('chat.tabs.chat')}
+                  拓展
                   {hasActiveChatSession && activeTab === 'lecture' && (
                     <span className="absolute -top-0.5 -right-0.5 flex h-2 w-2">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
@@ -317,8 +524,9 @@ export const ChatArea = forwardRef<ChatAreaRef, ChatAreaProps>(
               </TabsList>
             </div>
 
-            {/* 笔记 Tab —— 收起按钮直接做在笔记卡片内部 */}
+            {/* 讨论 Tab —— 上方笔记卡片，下方聊天历史 */}
             <TabsContent value="lecture" className="flex-1 overflow-hidden flex flex-col">
+              {/* 顶部：笔记卡片，可收起 */}
               <div
                 className={cn(
                   'relative shrink-0 transition-[height,max-height] duration-300',
@@ -354,7 +562,7 @@ export const ChatArea = forwardRef<ChatAreaRef, ChatAreaProps>(
                               notesCollapsed && 'rotate-180',
                             )}
                           />
-                          <span>{notesCollapsed ? '展开笔记' : '收起笔记'}</span>
+                          <span>{notesCollapsed ? '展开' : '收起'}</span>
                         </button>
                       }
                     />
@@ -372,26 +580,35 @@ export const ChatArea = forwardRef<ChatAreaRef, ChatAreaProps>(
                   <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white via-white/40 to-transparent dark:from-gray-900 dark:via-gray-900/40 dark:to-transparent" />
                 )}
               </div>
+
+              {/* 下方：师生 1对1 私聊历史（独立 state，不走课堂引擎） */}
+              <TeacherChatLog
+                messages={teacherChat.messages}
+                isStreaming={teacherChat.isStreaming}
+                isThinking={teacherChat.isThinking}
+                userAvatar={userAvatar}
+                userNickname={userNickname}
+              />
             </TabsContent>
 
-            {/* 对话 Tab —— 扁平化连续聊天记录（学生消息 + AI 回复） */}
+            {/* 拓展 Tab —— 多人讨论（teacherOnly !== true 的 discussion 会话） */}
             <TabsContent value="chat" className="flex-1 overflow-hidden flex flex-col">
               <div className="flex-1 overflow-y-auto overflow-x-hidden p-3 space-y-1 scrollbar-hide">
-                {chatSessions.length === 0 ? (
+                {groupSessions.length === 0 ? (
                   <div className="h-full flex flex-col items-center justify-center text-center p-6 opacity-50">
                     <div className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-3 text-gray-300 dark:text-gray-600">
                       <MessageSquare className="w-6 h-6" />
                     </div>
                     <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                      {t('chat.noConversations')}
+                      多人讨论
                     </p>
                     <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1">
-                      {t('chat.startConversation')}
+                      课堂触发讨论时会显示在这里
                     </p>
                   </div>
                 ) : (
                   <>
-                    {chatSessions.map((session) => (
+                    {groupSessions.map((session) => (
                       <ChatSessionComponent
                         key={session.id}
                         session={session}
@@ -401,7 +618,6 @@ export const ChatArea = forwardRef<ChatAreaRef, ChatAreaProps>(
                         onEndSession={handleEndSession}
                       />
                     ))}
-                    <div ref={bottomRef} />
                   </>
                 )}
               </div>
@@ -410,6 +626,7 @@ export const ChatArea = forwardRef<ChatAreaRef, ChatAreaProps>(
             {/* 底部输入框 —— 两个 Tab 下都显示 */}
             <div className="shrink-0 border-t border-gray-100 dark:border-gray-800 p-2 flex items-end gap-1.5">
               <textarea
+                ref={inputRef}
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={(e) => {
@@ -423,9 +640,12 @@ export const ChatArea = forwardRef<ChatAreaRef, ChatAreaProps>(
                 className="flex-1 resize-none rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-xs leading-relaxed focus:outline-none focus:ring-2 focus:ring-purple-400 dark:focus:ring-purple-500/50 max-h-32 disabled:opacity-50"
                 style={{ minHeight: 36 }}
               />
-              {isStreaming ? (
+              {(activeTab === 'lecture' ? teacherChat.isStreaming : isStreaming) ? (
                 <button
-                  onClick={() => endActiveSession?.()}
+                  onClick={() => {
+                    if (activeTab === 'lecture') teacherChat.stop();
+                    else endActiveSession?.();
+                  }}
                   className="w-9 h-9 shrink-0 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center active:scale-95 transition-all"
                   title="停止"
                 >

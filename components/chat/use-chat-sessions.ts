@@ -1192,16 +1192,30 @@ export function useChatSessions(options: UseChatSessionsOptions = {}) {
       const sessionId = `session-${Date.now()}-${Math.random().toString(36).slice(2)}`;
       const now = Date.now();
       const agentId = request.agentId || 'default-1';
+      const teacherOnly = request.teacherOnly === true;
 
       // Read all selected agent IDs from settings store
       const settingsState = useSettingsStore.getState();
-      const agentIds: string[] =
-        settingsState.selectedAgentIds?.length > 0
-          ? [...settingsState.selectedAgentIds]
-          : [agentId];
-      // Ensure the trigger agent is included
-      if (!agentIds.includes(agentId)) {
-        agentIds.unshift(agentId);
+      let agentIds: string[];
+      if (teacherOnly) {
+        // teacherOnly: 只保留 teacher role 的 agent
+        const registry = useAgentRegistry.getState();
+        const candidates =
+          settingsState.selectedAgentIds?.length > 0
+            ? settingsState.selectedAgentIds
+            : [agentId];
+        agentIds = candidates.filter((id) => registry.getAgent(id)?.role === 'teacher');
+        // 兜底：没找到 teacher 时强制加 default-1
+        if (agentIds.length === 0) agentIds = ['default-1'];
+      } else {
+        agentIds =
+          settingsState.selectedAgentIds?.length > 0
+            ? [...settingsState.selectedAgentIds]
+            : [agentId];
+        // Ensure the trigger agent is included
+        if (!agentIds.includes(agentId)) {
+          agentIds.unshift(agentId);
+        }
       }
 
       // No pre-created assistant message — agent_start events create them dynamically
@@ -1215,7 +1229,8 @@ export function useChatSessions(options: UseChatSessionsOptions = {}) {
           agentIds,
           maxTurns: 0, // Not used for runtime — frontend loop manages maxTurns
           currentTurn: 0,
-          triggerAgentId: agentId,
+          // teacherOnly 模式下不设 triggerAgentId
+          ...(teacherOnly ? { teacherOnly: true } : { triggerAgentId: agentId }),
         },
         toolCalls: [],
         pendingToolCalls: [],
@@ -1254,7 +1269,9 @@ export function useChatSessions(options: UseChatSessionsOptions = {}) {
               sessionType: 'discussion',
               discussionTopic: request.topic,
               discussionPrompt: request.prompt,
-              triggerAgentId: agentId,
+              ...(teacherOnly
+                ? { teacherOnly: true }
+                : { triggerAgentId: agentId }),
             },
             userProfile: {
               nickname: userProfileState.nickname || undefined,

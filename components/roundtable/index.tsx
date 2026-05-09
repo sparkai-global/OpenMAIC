@@ -569,9 +569,8 @@ export function Roundtable({
   // Show stop button whenever there's an active QA/discussion session or live mode.
   // sessionType is only cleared in doSessionCleanup, so this stays stable through
   // brief loading gaps (e.g. between user message and agent SSE response).
-  const showStopButton =
-    !suppressBubble &&
-    (engineMode === 'live' || sessionType === 'qa' || sessionType === 'discussion');
+  // 取消"结束讨论"按钮 —— 不再展示
+  const showStopButton = false;
 
   const handleCycleSpeed = useCallback(() => {
     const currentIndex = PLAYBACK_SPEEDS.indexOf(playbackSpeed as (typeof PLAYBACK_SPEEDS)[number]);

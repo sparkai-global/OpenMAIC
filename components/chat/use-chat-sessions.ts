@@ -471,7 +471,13 @@ export function useChatSessions(options: UseChatSessionsOptions = {}) {
         requestTemplate.config.agentConfigs = generatedConfigs;
       }
 
-      const defaultMaxTurns = requestTemplate.config.agentIds.length <= 1 ? 1 : 10;
+      // Discussion 会话允许更长的轮次（让 agents 多轮自动对话）
+      const isDiscussion = requestTemplate.config.sessionType === 'discussion';
+      const defaultMaxTurns = isDiscussion
+        ? 30
+        : requestTemplate.config.agentIds.length <= 1
+          ? 1
+          : 10;
       const maxTurns = settingsState.maxTurns
         ? parseInt(settingsState.maxTurns, 10) || defaultMaxTurns
         : defaultMaxTurns;
@@ -620,18 +626,27 @@ export function useChatSessions(options: UseChatSessionsOptions = {}) {
       // Handle loop completion (UI-specific)
       if (!controller.signal.aborted) {
         if (outcome.reason !== 'cue_user') {
-          setSessions((prev) =>
-            prev.map((s) =>
-              s.id === sessionId
-                ? {
-                    ...s,
-                    status: 'completed' as SessionStatus,
-                    updatedAt: Date.now(),
-                  }
-                : s,
-            ),
-          );
-          onStopSessionRef.current?.();
+          // Discussion 会话不自动 "已结束"：让用户随时插话继续聊。
+          // 只有用户主动点停止 / 切场景才会完结。
+          const session = sessionsRef.current.find((s) => s.id === sessionId);
+          const isDiscussion = session?.type === 'discussion';
+          if (!isDiscussion) {
+            setSessions((prev) =>
+              prev.map((s) =>
+                s.id === sessionId
+                  ? {
+                      ...s,
+                      status: 'completed' as SessionStatus,
+                      updatedAt: Date.now(),
+                    }
+                  : s,
+              ),
+            );
+            onStopSessionRef.current?.();
+          } else {
+            // 仅通知外部"流结束了"，session 保持 active
+            onStopSessionRef.current?.();
+          }
         }
       }
     },

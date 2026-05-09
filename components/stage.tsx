@@ -132,8 +132,9 @@ export function Stage({
   const [audioIndicatorState, setAudioIndicatorState] = useState<AudioIndicatorState>('idle');
   const [audioAgentId, setAudioAgentId] = useState<string | null>(null);
 
+  // 多 agent 讨论（拓展 Tab）不播 TTS：硬关
   const discussionTTS = useDiscussionTTS({
-    enabled: ttsEnabled && !ttsMuted,
+    enabled: false,
     agents: selectedAgents,
     onAudioStateChange: (agentId, state) => {
       setAudioAgentId(agentId);
@@ -606,10 +607,11 @@ export function Stage({
         agentId: agentId || 'default-1',
         teacherOnly,
       });
-      // 切到对应 Tab：teacher-only → 讨论 (lecture)；多人 → 拓展 (chat)
-      chatAreaRef.current?.switchToTab(teacherOnly ? 'lecture' : 'chat');
-      // 标记当前讨论是否 teacher-only —— 用于隐藏底部 speech bubble
-      setDiscussionTeacherOnly(teacherOnly === true);
+      // 引擎触发的 discussion 一律去「拓展」Tab，不论 teacherOnly
+      // （讨论 Tab 是给学生主动发起的师生 1v1 私聊用的，独立 hook 管理）
+      chatAreaRef.current?.switchToTab('chat');
+      // 永不隐藏底部 bubble —— 引擎触发的都正常显示
+      setDiscussionTeacherOnly(false);
       // Immediately mark streaming for synchronized stop button
       setChatIsStreaming(true);
       setChatSessionType('discussion');

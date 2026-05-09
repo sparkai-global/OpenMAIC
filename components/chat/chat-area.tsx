@@ -324,14 +324,9 @@ export const ChatArea = forwardRef<ChatAreaRef, ChatAreaProps>(
       [nonLectureSessions],
     );
 
-    // 拓展 Tab：多人讨论 = 非 teacherOnly 的 discussion 会话
-    const groupSessions = useMemo(
-      () =>
-        nonLectureSessions.filter(
-          (s) => s.type === 'discussion' && s.config.teacherOnly !== true,
-        ),
-      [nonLectureSessions],
-    );
+    // 拓展 Tab：所有引擎触发的多 agent 讨论 + 学生在拓展 Tab 主动发起的 QA
+    // 学生主动 1v1 私聊（讨论 Tab）走 useTeacherChat 独立 hook，不在 sessions 里
+    const groupSessions = useMemo(() => nonLectureSessions, [nonLectureSessions]);
 
     // 兼容旧名（其他地方可能引用）
     const chatSessions = nonLectureSessions;
@@ -395,17 +390,17 @@ export const ChatArea = forwardRef<ChatAreaRef, ChatAreaProps>(
     const handleSend = useCallback(() => {
       const text = inputValue.trim();
       if (!text) return;
-      // 讨论 Tab → 师生独立聊天（teacherOnly）；拓展 Tab → 走原 sendMessage
+      // 讨论 Tab → 师生独立聊天（流式中禁止重发）
       if (activeTab === 'lecture') {
         if (teacherChat.isStreaming) return;
         setInputValue('');
         teacherChat.sendMessage(text);
-      } else {
-        if (isStreaming) return;
-        setInputValue('');
-        sendMessage(text);
+        return;
       }
-    }, [inputValue, isStreaming, sendMessage, activeTab, teacherChat]);
+      // 拓展 Tab → sendMessage（active discussion 自动复用，否则新开 qa）
+      setInputValue('');
+      sendMessage(text);
+    }, [inputValue, sendMessage, activeTab, teacherChat]);
 
     useImperativeHandle(ref, () => ({
       createSession,
@@ -635,17 +630,15 @@ export const ChatArea = forwardRef<ChatAreaRef, ChatAreaProps>(
                     handleSend();
                   }
                 }}
-                placeholder={t('chat.inputPlaceholder') || '提问或参与讨论...'}
+                placeholder={activeTab === 'lecture' ? '向老师提问...' : '加入讨论...'}
                 rows={1}
-                className="flex-1 resize-none rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-xs leading-relaxed focus:outline-none focus:ring-2 focus:ring-purple-400 dark:focus:ring-purple-500/50 max-h-32 disabled:opacity-50"
+                className="flex-1 resize-none rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-xs leading-relaxed focus:outline-none focus:ring-2 focus:ring-purple-400 dark:focus:ring-purple-500/50 max-h-32"
                 style={{ minHeight: 36 }}
               />
-              {(activeTab === 'lecture' ? teacherChat.isStreaming : isStreaming) ? (
+              {/* 讨论 Tab：流式中显示停止；拓展 Tab：始终允许发送（让用户随时插话） */}
+              {activeTab === 'lecture' && teacherChat.isStreaming ? (
                 <button
-                  onClick={() => {
-                    if (activeTab === 'lecture') teacherChat.stop();
-                    else endActiveSession?.();
-                  }}
+                  onClick={() => teacherChat.stop()}
                   className="w-9 h-9 shrink-0 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center active:scale-95 transition-all"
                   title="停止"
                 >

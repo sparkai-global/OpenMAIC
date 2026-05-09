@@ -238,19 +238,23 @@ export function useTeacherChat({ storageKey }: UseTeacherChatOptions = {}) {
               setIsThinking(false);
               currentMsgId = data.messageId;
               const agent = registry.getAgent(data.agentId);
-              setMessages((prev) => [
-                ...prev,
-                {
-                  id: data.messageId,
-                  role: 'assistant',
-                  agentId: data.agentId,
-                  agentName: data.agentName ?? agent?.name,
-                  agentAvatar: data.agentAvatar ?? agent?.avatar,
-                  agentColor: data.agentColor ?? agent?.color,
-                  text: '',
-                  createdAt: Date.now(),
-                },
-              ]);
+              setMessages((prev) => {
+                // 同 messageId 已存在 → 不重复追加（防 SSE 重发）
+                if (prev.some((m) => m.id === data.messageId)) return prev;
+                return [
+                  ...prev,
+                  {
+                    id: data.messageId,
+                    role: 'assistant',
+                    agentId: data.agentId,
+                    agentName: data.agentName ?? agent?.name,
+                    agentAvatar: data.agentAvatar ?? agent?.avatar,
+                    agentColor: data.agentColor ?? agent?.color,
+                    text: '',
+                    createdAt: Date.now(),
+                  },
+                ];
+              });
             } else if (eventType === 'text_delta') {
               const msgId = data.messageId ?? currentMsgId;
               const content = data.content ?? data.text ?? '';
@@ -318,6 +322,7 @@ export function useTeacherChat({ storageKey }: UseTeacherChatOptions = {}) {
   /**
    * 由外部（如 lecture 笔记里的问句）注入一条老师消息作为对话起手。
    * 全局去重：messages 里任何位置有相同文本的 assistant 消息就跳过。
+   * 原子性：dedupe 放进 setMessages updater 里，避免同一 tick 重复 push 的竞态。
    */
   const pushAssistant = useCallback(
     (
@@ -326,23 +331,24 @@ export function useTeacherChat({ storageKey }: UseTeacherChatOptions = {}) {
     ) => {
       const trimmed = text.trim();
       if (!trimmed) return;
-      const exists = messagesRef.current.some(
-        (m) => m.role === 'assistant' && m.text.trim() === trimmed,
-      );
-      if (exists) return;
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: `seed-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-          role: 'assistant',
-          text: trimmed,
-          agentId: agent?.id,
-          agentName: agent?.name,
-          agentAvatar: agent?.avatar,
-          agentColor: agent?.color,
-          createdAt: Date.now(),
-        },
-      ]);
+      setMessages((prev) => {
+        if (prev.some((m) => m.role === 'assistant' && m.text.trim() === trimmed)) {
+          return prev;
+        }
+        return [
+          ...prev,
+          {
+            id: `seed-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+            role: 'assistant',
+            text: trimmed,
+            agentId: agent?.id,
+            agentName: agent?.name,
+            agentAvatar: agent?.avatar,
+            agentColor: agent?.color,
+            createdAt: Date.now(),
+          },
+        ];
+      });
     },
     [],
   );

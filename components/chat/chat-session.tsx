@@ -320,7 +320,7 @@ export function ChatSessionComponent({
           );
         })}
 
-        {/* Session ended indicator */}
+        {/* 场景切换时的分隔条 —— session 已 completed */}
         <AnimatePresence>
           {isEnded && (
             <motion.div
@@ -333,7 +333,7 @@ export function ChatSessionComponent({
               <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-700 to-transparent" />
               <span className="flex items-center gap-1 text-[9px] text-gray-400 dark:text-gray-500 font-medium">
                 <CircleStop className="w-2.5 h-2.5" />
-                {t('chat.ended')}
+                {t('chat.ended') || '已结束'}
               </span>
               <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-700 to-transparent" />
             </motion.div>
@@ -342,26 +342,6 @@ export function ChatSessionComponent({
 
         <div ref={bottomRef} />
       </div>
-
-      {/* End Session Button (for Q&A and Discussion) */}
-      <AnimatePresence>
-        {canEnd && onEndSession && (
-          <motion.button
-            initial={{ opacity: 0, y: 5 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 5 }}
-            whileHover={{ scale: 1.02 }}
-            onClick={() => onEndSession(session.id)}
-            className="mt-2 mx-2 bg-red-50/80 dark:bg-red-900/20 backdrop-blur-md text-red-600 dark:text-red-400 border border-red-200/50 dark:border-red-800/50 px-3 py-1.5 rounded-full text-[11px] font-semibold flex items-center justify-center gap-1.5 transition-all shadow-sm hover:shadow-md"
-          >
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 dark:bg-red-500 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500 dark:bg-red-400"></span>
-            </span>
-            {endButtonText}
-          </motion.button>
-        )}
-      </AnimatePresence>
     </div>
   );
 }

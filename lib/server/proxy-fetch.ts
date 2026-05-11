@@ -13,7 +13,6 @@
  *        const res = await proxyFetch('https://api.openai.com/v1/...', { ... });
  */
 
-import { ProxyAgent, fetch as undiciFetch, type RequestInit as UndiciRequestInit } from 'undici';
 import { createLogger } from '@/lib/logger';
 
 const log = createLogger('ProxyFetch');
@@ -28,18 +27,33 @@ function getProxyUrl(): string | undefined {
   );
 }
 
-let cachedAgent: ProxyAgent | null = null;
+// Cache the undici module so we only load it once per process. Loaded lazily
+// via require() inside loadUndici() to keep undici (and its node:net usage)
+// out of any client bundle that transitively imports this file.
+type UndiciModule = {
+  ProxyAgent: new (url: string) => unknown;
+  fetch: (input: string, init?: Record<string, unknown>) => Promise<unknown>;
+};
+let cachedUndici: UndiciModule | null = null;
+let cachedAgent: unknown = null;
 let cachedProxyUrl: string | undefined;
 
-function getProxyAgent(): ProxyAgent | undefined {
+function loadUndici(): UndiciModule {
+  if (cachedUndici) return cachedUndici;
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  cachedUndici = require('undici') as UndiciModule;
+  return cachedUndici;
+}
+
+function getProxyAgent(): unknown | undefined {
   const proxyUrl = getProxyUrl();
   if (!proxyUrl) return undefined;
 
-  // Reuse agent if proxy URL hasn't changed
   if (cachedAgent && cachedProxyUrl === proxyUrl) {
     return cachedAgent;
   }
 
+  const { ProxyAgent } = loadUndici();
   cachedAgent = new ProxyAgent(proxyUrl);
   cachedProxyUrl = proxyUrl;
   return cachedAgent;
@@ -59,12 +73,11 @@ export async function proxyFetch(input: string | URL, init?: RequestInit): Promi
   }
 
   log.info('Using proxy', cachedProxyUrl, 'for:', url.slice(0, 80));
-  // Use undici's fetch with the proxy dispatcher
-  const res = await undiciFetch(input, {
-    ...(init as UndiciRequestInit),
+  const { fetch: undiciFetch } = loadUndici();
+  const res = await undiciFetch(url, {
+    ...(init as Record<string, unknown>),
     dispatcher: agent,
   });
 
-  // undici's Response is compatible with the global Response
   return res as unknown as Response;
 }

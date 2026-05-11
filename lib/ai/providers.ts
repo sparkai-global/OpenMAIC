@@ -1294,7 +1294,13 @@ export function getModel(config: ModelConfig): ModelWithInfo {
       }
 
       const openai = createOpenAI(openaiOptions);
-      model = openai.chat(config.modelId);
+      // Some OpenAI models are only available via the Responses API (not Chat Completions),
+      // e.g. gpt-5.4-pro. Route them through openai.responses() instead of openai.chat().
+      const RESPONSES_ONLY_MODELS = new Set(['gpt-5.4-pro']);
+      model =
+        config.providerId === 'openai' && RESPONSES_ONLY_MODELS.has(config.modelId)
+          ? openai.responses(config.modelId)
+          : openai.chat(config.modelId);
       break;
     }
 

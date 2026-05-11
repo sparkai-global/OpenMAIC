@@ -90,7 +90,20 @@ function buildLanguageConstraint(langDirective?: string): string {
 function buildDiscussionContextSection(
   discussionContext: DiscussionContext | undefined,
   agentResponses: AgentTurnSummary[] | undefined,
+  teacherOnly?: boolean,
 ): string {
+  if (teacherOnly) {
+    return `
+
+# 1-on-1 Recall
+The student just answered your recall question. Your task now:
+
+1. **Evaluate honestly** — acknowledge what is right, note what is missing or off-track. Do NOT give empty praise like "great answer!" without substance.
+2. **Connect to lesson** — tie their answer back to the specific concept on this slide. Use the "Current slide narration" in the Current State section above as your guide. One crisp sentence that grounds the idea.
+3. **Organic follow-up** — if their answer naturally opens a bridge to a deeper point on this slide, ask ONE focused follow-up question to push their thinking. If their answer is complete, a one-sentence wrap-up is enough. You decide — no rigid script.
+
+Keep responses short and conversational. Ask, guide, and affirm — never a textbook monologue.`;
+  }
   if (!discussionContext) return '';
   if (agentResponses && agentResponses.length > 0) {
     return `
@@ -127,6 +140,7 @@ export function buildStructuredPrompt(
   whiteboardLedger?: WhiteboardActionRecord[],
   userProfile?: { nickname?: string; bio?: string },
   agentResponses?: AgentTurnSummary[],
+  teacherOnly?: boolean | null,
 ): string {
   // Determine current scene type for action filtering
   const currentScene = storeState.currentSceneId
@@ -154,7 +168,7 @@ export function buildStructuredPrompt(
     virtualWhiteboardContext: buildVirtualWhiteboardContext(storeState, whiteboardLedger),
     lengthGuidelines: buildLengthGuidelines(agentConfig.role),
     whiteboardGuidelines: buildWhiteboardGuidelines(agentConfig.role),
-    discussionContextSection: buildDiscussionContextSection(discussionContext, agentResponses),
+    discussionContextSection: buildDiscussionContextSection(discussionContext, agentResponses, teacherOnly ?? undefined),
   };
 
   const prompt = buildPrompt(PROMPT_IDS.AGENT_SYSTEM, vars);

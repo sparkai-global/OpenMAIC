@@ -295,6 +295,7 @@ async function runAgentGeneration(
     state.whiteboardLedger,
     state.userProfile || undefined,
     state.agentResponses,
+    state.teacherOnly,
   );
   const openaiMessages = convertMessagesToOpenAI(state.messages, agentId);
   const adapter = new AISdkLangGraphAdapter(state.languageModel, state.thinkingConfig ?? undefined);

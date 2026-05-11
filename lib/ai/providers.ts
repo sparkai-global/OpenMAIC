@@ -27,6 +27,7 @@ import { createOpenAI } from '@ai-sdk/openai';
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import type { LanguageModel } from 'ai';
+import { proxyFetch } from '@/lib/server/proxy-fetch';
 import type {
   ProviderId,
   ProviderConfig,
@@ -60,6 +61,22 @@ export const PROVIDERS: Record<ProviderId, ProviderConfig> = {
     requiresApiKey: true,
     icon: '/logos/openai.svg',
     models: [
+      {
+        id: 'gpt-5.4-pro',
+        name: 'GPT-5.4 Pro',
+        contextWindow: 1050000,
+        outputWindow: 128000,
+        capabilities: {
+          streaming: true,
+          tools: true,
+          vision: true,
+          thinking: {
+            toggleable: false,
+            budgetAdjustable: true,
+            defaultEnabled: true,
+          },
+        },
+      },
       {
         id: 'gpt-5.4',
         name: 'GPT-5.4',
@@ -1245,14 +1262,17 @@ export function getModel(config: ModelConfig): ModelWithInfo {
         baseURL: effectiveBaseUrl,
       };
 
-      // For OpenAI-compatible providers (not native OpenAI), add a fetch
-      // wrapper that injects vendor-specific thinking params into the HTTP
-      // body. The thinking config is read from AsyncLocalStorage, set by
-      // callLLM / streamLLM at call time.
-      if (config.providerId !== 'openai') {
+      if (config.providerId === 'openai') {
+        // Native OpenAI: route through proxyFetch so HTTPS_PROXY env var works in dev
+        openaiOptions.fetch = ((url: RequestInfo | URL, init?: RequestInit) =>
+          proxyFetch(url as string, init)) as typeof fetch;
+      } else {
+        // For OpenAI-compatible providers (not native OpenAI), wrap fetch to:
+        //   1. Inject vendor-specific thinking params into the HTTP body
+        //      (config read from AsyncLocalStorage, set by callLLM / streamLLM)
+        //   2. Route through proxyFetch so HTTPS_PROXY env var works in dev
         const providerId = config.providerId;
         openaiOptions.fetch = async (url: RequestInfo | URL, init?: RequestInit) => {
-          // Read thinking config from globalThis (set by thinking-context.ts)
           const thinkingCtx = (globalThis as Record<string, unknown>).__thinkingContext as
             | { getStore?: () => unknown }
             | undefined;
@@ -1269,7 +1289,7 @@ export function getModel(config: ModelConfig): ModelWithInfo {
               }
             }
           }
-          return globalThis.fetch(url, init);
+          return proxyFetch(url as string, init);
         };
       }
 
@@ -1282,6 +1302,8 @@ export function getModel(config: ModelConfig): ModelWithInfo {
       const anthropic = createAnthropic({
         apiKey: effectiveApiKey,
         baseURL: effectiveBaseUrl,
+        fetch: ((url: RequestInfo | URL, init?: RequestInit) =>
+          proxyFetch(url as string, init)) as typeof fetch,
       });
       model = anthropic.chat(config.modelId);
       break;

@@ -1321,7 +1321,7 @@ export function getModel(config: ModelConfig): ModelWithInfo {
         baseURL: effectiveBaseUrl,
       };
       if (config.proxy) {
-        // Dynamic require to avoid bundling undici on the client side
+        // Frontend explicitly provided a proxy URL: use that
         // eslint-disable-next-line @typescript-eslint/no-require-imports
         const { ProxyAgent, fetch: undiciFetch } = require('undici');
         const agent = new ProxyAgent(config.proxy);
@@ -1330,6 +1330,11 @@ export function getModel(config: ModelConfig): ModelWithInfo {
             ...(init as Record<string, unknown>),
             dispatcher: agent,
           }).then((r: unknown) => r as Response)) as typeof fetch;
+      } else {
+        // No frontend proxy: fall back to env-driven proxyFetch
+        // (works for server-side jobs like classroom generation that don't pass config.proxy)
+        googleOptions.fetch = ((url: RequestInfo | URL, init?: RequestInit) =>
+          proxyFetch(url as string, init)) as typeof fetch;
       }
       const google = createGoogleGenerativeAI(googleOptions);
       model = google.chat(config.modelId);

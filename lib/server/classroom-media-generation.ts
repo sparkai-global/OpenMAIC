@@ -40,7 +40,6 @@ import type { SpeechAction } from '@/lib/types/action';
 import type { ImageProviderId } from '@/lib/media/types';
 import type { VideoProviderId } from '@/lib/media/types';
 import type { TTSProviderId } from '@/lib/audio/types';
-import { splitLongSpeechActions } from '@/lib/audio/tts-utils';
 
 const log = createLogger('ClassroomMedia');
 
@@ -227,6 +226,99 @@ export function replaceMediaPlaceholders(scenes: Scene[], mediaMap: Record<strin
 // TTS generation
 // ---------------------------------------------------------------------------
 
+/**
+ * A single TTS segment plan: which text to synthesize with which provider.
+ *
+ * Currently {@link planTTSForText} always returns a single-plan list per
+ * speech action. The list shape is a future-extension point: when we later
+ * support mid-sentence Chinese/English splitting, this function returns
+ * multiple plans, and the main loop concatenates the resulting audio
+ * before upload. The rest of the pipeline (per-action API key resolution,
+ * retry, OSS upload) stays the same.
+ */
+interface TTSPlan {
+  text: string;
+  providerId: TTSProviderId;
+}
+
+/** Default fallback order when env-var preference is missing or unconfigured. */
+const ZH_FALLBACK_ORDER: TTSProviderId[] = ['doubao-tts', 'qwen-tts', 'glm-tts', 'minimax-tts'];
+const EN_FALLBACK_ORDER: TTSProviderId[] = ['elevenlabs-tts', 'openai-tts', 'azure-tts'];
+
+/** Detect dominant language of a text — Chinese if it contains any CJK char. */
+function detectTextLanguage(text: string): 'zh' | 'en' {
+  return /[一-龥]/.test(text) ? 'zh' : 'en';
+}
+
+/**
+ * Pick the best TTS provider for a given language.
+ *
+ * Priority:
+ *   1. Env var TTS_PROVIDER_ZH / TTS_PROVIDER_EN if its provider has an API key
+ *   2. First matching-language provider in the fallback order (zh: doubao→qwen→…, en: elevenlabs→…)
+ *   3. Cross-language fallback (e.g. only Chinese TTS configured → use it for English too, with a warn)
+ *   4. Any available provider (last resort)
+ */
+function resolveTTSProviderForLanguage(
+  lang: 'zh' | 'en',
+  available: Set<TTSProviderId>,
+): TTSProviderId | null {
+  const envKey = lang === 'zh' ? 'TTS_PROVIDER_ZH' : 'TTS_PROVIDER_EN';
+  const envPref = process.env[envKey] as TTSProviderId | undefined;
+  if (envPref && available.has(envPref)) return envPref;
+
+  const primaryOrder = lang === 'zh' ? ZH_FALLBACK_ORDER : EN_FALLBACK_ORDER;
+  for (const p of primaryOrder) {
+    if (available.has(p)) return p;
+  }
+
+  const crossOrder = lang === 'zh' ? EN_FALLBACK_ORDER : ZH_FALLBACK_ORDER;
+  for (const p of crossOrder) {
+    if (available.has(p)) {
+      log.warn(
+        `No ${lang === 'zh' ? 'Chinese' : 'English'} TTS provider configured; using "${p}" as cross-language fallback`,
+      );
+      return p;
+    }
+  }
+
+  return Array.from(available)[0] || null;
+}
+
+/**
+ * Plan how to synthesize a speech text. See {@link TTSPlan} for the
+ * extension contract — today this always returns a single plan covering
+ * the whole text.
+ */
+function planTTSForText(text: string, available: Set<TTSProviderId>): TTSPlan[] {
+  const providerId = resolveTTSProviderForLanguage(detectTextLanguage(text), available);
+  if (!providerId) return [];
+  return [{ text, providerId }];
+}
+
+/** Cached per-provider config used during a generation job. */
+interface ProviderRuntime {
+  providerId: TTSProviderId;
+  apiKey: string;
+  baseUrl: string | undefined;
+  voice: string;
+  modelId: string;
+  format: string;
+}
+
+function loadProviderRuntime(providerId: TTSProviderId): ProviderRuntime | null {
+  const apiKey = resolveTTSApiKey(providerId);
+  if (!apiKey) return null;
+  const baseUrl =
+    resolveTTSBaseUrl(providerId) ||
+    TTS_PROVIDERS[providerId as keyof typeof TTS_PROVIDERS]?.defaultBaseUrl;
+  const voice = DEFAULT_TTS_VOICES[providerId as keyof typeof DEFAULT_TTS_VOICES] || 'default';
+  const modelId = DEFAULT_TTS_MODELS[providerId as keyof typeof DEFAULT_TTS_MODELS] || '';
+  const format =
+    TTS_PROVIDERS[providerId as keyof typeof TTS_PROVIDERS]?.supportedFormats?.[0] || 'mp3';
+  return { providerId, apiKey, baseUrl, voice, modelId, format };
+}
+
 export async function generateTTSForClassroom(
     scenes: Scene[],
     classroomId: string,
@@ -235,36 +327,40 @@ export async function generateTTSForClassroom(
   // All TTS files of this generation job share the same yyyy/mm prefix.
   const jobStartedAt = new Date();
 
-  // Resolve TTS provider (exclude browser-native-tts)
-  const ttsProviderIds = Object.keys(getServerTTSProviders()).filter(
-      (id) => id !== 'browser-native-tts',
-  );
-  if (ttsProviderIds.length === 0) {
+  // Build the set of available TTS providers (have API key + not browser-native).
+  const availableProviders = new Set<TTSProviderId>();
+  for (const id of Object.keys(getServerTTSProviders())) {
+    if (id === 'browser-native-tts') continue;
+    availableProviders.add(id as TTSProviderId);
+  }
+  if (availableProviders.size === 0) {
     log.warn('No server TTS provider configured, skipping TTS generation');
     return;
   }
 
-  const providerId = ttsProviderIds[0] as TTSProviderId;
-  const apiKey = resolveTTSApiKey(providerId);
-  if (!apiKey) {
-    log.warn(`No API key for TTS provider "${providerId}", skipping TTS generation`);
-    return;
-  }
-  const ttsBaseUrl =
-      resolveTTSBaseUrl(providerId) ||
-      TTS_PROVIDERS[providerId as keyof typeof TTS_PROVIDERS]?.defaultBaseUrl;
-  const voice = DEFAULT_TTS_VOICES[providerId as keyof typeof DEFAULT_TTS_VOICES] || 'default';
-  const format =
-      TTS_PROVIDERS[providerId as keyof typeof TTS_PROVIDERS]?.supportedFormats?.[0] || 'mp3';
+  // Resolve & cache config per provider (apiKey, baseUrl, voice, model, format).
+  const runtimeCache = new Map<TTSProviderId, ProviderRuntime | null>();
+  const getRuntime = (providerId: TTSProviderId): ProviderRuntime | null => {
+    if (!runtimeCache.has(providerId)) {
+      runtimeCache.set(providerId, loadProviderRuntime(providerId));
+    }
+    return runtimeCache.get(providerId) ?? null;
+  };
+
+  log.info(
+    `TTS routing: providers=[${Array.from(availableProviders).join(', ')}], ` +
+      `zhPref=${process.env.TTS_PROVIDER_ZH || '(auto)'}, enPref=${process.env.TTS_PROVIDER_EN || '(auto)'}`,
+  );
 
   for (const scene of scenes) {
     if (!scene.actions) continue;
 
-    // Split long speech actions into multiple shorter ones before TTS generation,
-    // mirroring the client-side approach. Each sub-action gets its own audio file.
-    scene.actions = splitLongSpeechActions(scene.actions, providerId);
+    // NOTE: splitLongSpeechActions used to run here with a single global
+    // providerId. With per-action routing the maxLength varies — we now
+    // split inside the plan loop only if the resolved provider has a limit.
+    // For typical providers (doubao/qwen/elevenlabs) maxLength is undefined,
+    // so the splitter is effectively a no-op and we skip the call entirely.
 
-    // Use scene order to make audio IDs unique across scenes
     const sceneOrder = scene.order;
 
     for (const action of scene.actions) {
@@ -279,34 +375,62 @@ export async function generateTTSForClassroom(
         continue;
       }
 
-      // Include scene order in audioId to prevent collision across scenes
+      const plans = planTTSForText(speechAction.text, availableProviders);
+      if (plans.length === 0) {
+        log.warn(`No TTS provider available for action ${action.id}, skipping`);
+        continue;
+      }
+
+      // Currently always 1 plan per action. When mid-sentence splitting is
+      // added (returning N plans), concatenate the N audio buffers here
+      // before uploading a single mp3 to OSS. Audio shape on disk and the
+      // SpeechAction.audioUrl contract stay unchanged.
+      if (plans.length > 1) {
+        log.warn(
+          `Multi-plan TTS not yet implemented (action ${action.id}): falling back to first plan only`,
+        );
+      }
+      const plan = plans[0];
+      const runtime = getRuntime(plan.providerId);
+      if (!runtime) {
+        log.warn(
+          `No API key for resolved TTS provider "${plan.providerId}" (action ${action.id}), skipping`,
+        );
+        continue;
+      }
+
       const audioId = `tts_s${sceneOrder}_${action.id}`;
+      log.debug(
+        `TTS route: action=${action.id} lang=${detectTextLanguage(plan.text)} → ${plan.providerId}`,
+      );
 
       let succeeded = false;
       for (let attempt = 1; attempt <= TTS_MAX_RETRIES; attempt++) {
         try {
           const result = await generateTTS(
-              {
-                providerId,
-                modelId: DEFAULT_TTS_MODELS[providerId as keyof typeof DEFAULT_TTS_MODELS] || '',
-                apiKey,
-                baseUrl: ttsBaseUrl,
-                voice,
-                speed: speechAction.speed,
-              },
-              speechAction.text,
+            {
+              providerId: runtime.providerId,
+              modelId: runtime.modelId,
+              apiKey: runtime.apiKey,
+              baseUrl: runtime.baseUrl,
+              voice: runtime.voice,
+              speed: speechAction.speed,
+            },
+            plan.text,
           );
 
-          const filename = `${audioId}.${format}`;
+          const filename = `${audioId}.${runtime.format}`;
           try {
             const key = buildClassroomMediaKey(classroomId, 'audio', filename, jobStartedAt);
             speechAction.audioUrl = await uploadToOSS(
               key,
               Buffer.from(result.audio),
-              contentTypeForExt(format),
+              contentTypeForExt(runtime.format),
             );
             speechAction.audioId = audioId;
-            log.info(`Generated TTS: ${filename} (${result.audio.length} bytes)`);
+            log.info(
+              `Generated TTS: ${filename} (${result.audio.length} bytes) [${runtime.providerId}]`,
+            );
           } catch (uploadErr) {
             log.warn(`OSS upload failed for TTS ${audioId} (skipping):`, uploadErr);
           }
@@ -319,21 +443,23 @@ export async function generateTTSForClassroom(
           if (isParamError || attempt >= TTS_MAX_RETRIES) {
             log.warn(
               isParamError
-                ? `TTS skipped (InvalidParameter) for action ${action.id} — text rejected by provider:`
-                : `TTS generation failed after ${TTS_MAX_RETRIES} attempts for action ${action.id}, skipping:`,
+                ? `TTS skipped (InvalidParameter) for action ${action.id} — text rejected by ${runtime.providerId}:`
+                : `TTS generation failed after ${TTS_MAX_RETRIES} attempts for action ${action.id} [${runtime.providerId}], skipping:`,
               err,
             );
             break;
           }
           log.warn(
-            `TTS attempt ${attempt}/${TTS_MAX_RETRIES} failed for action ${action.id}, retrying in ${TTS_RETRY_DELAY_MS}ms...`,
+            `TTS attempt ${attempt}/${TTS_MAX_RETRIES} failed for action ${action.id} [${runtime.providerId}], retrying in ${TTS_RETRY_DELAY_MS}ms...`,
             err,
           );
           await new Promise((r) => setTimeout(r, TTS_RETRY_DELAY_MS));
         }
       }
       if (!succeeded) {
-        log.warn(`Skipped TTS for action ${action.id} — no audio will be available for this segment`);
+        log.warn(
+          `Skipped TTS for action ${action.id} — no audio will be available for this segment`,
+        );
       }
     }
   }

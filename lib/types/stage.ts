@@ -4,7 +4,7 @@ import type { Action } from '@/lib/types/action';
 import type { PBLProjectConfig } from '@/lib/pbl/types';
 import type { WidgetType, WidgetConfig, TeacherAction } from '@/lib/types/widgets';
 
-export type SceneType = 'slide' | 'quiz' | 'interactive' | 'pbl';
+export type SceneType = 'slide' | 'quiz' | 'interactive' | 'pbl' | 'flashcard' | 'chat';
 
 export type StageMode = 'autonomous' | 'playback';
 
@@ -77,7 +77,13 @@ export interface Scene {
 /**
  * Scene content based on type
  */
-export type SceneContent = SlideContent | QuizContent | InteractiveContent | PBLContent;
+export type SceneContent =
+  | SlideContent
+  | QuizContent
+  | InteractiveContent
+  | PBLContent
+  | FlashcardContent
+  | ChatContent;
 
 /**
  * Slide content - PPTist Canvas data
@@ -133,6 +139,32 @@ export interface InteractiveContent {
 export interface PBLContent {
   type: 'pbl';
   projectConfig: PBLProjectConfig;
+}
+
+/**
+ * Flashcard content - 卡片式问答记忆
+ * 每张卡片：front (正面问题) / back (背面答案) / hint (可选示例提示)
+ */
+export interface FlashcardCard {
+  front: string;
+  back: string;
+  hint?: string;
+}
+
+export interface FlashcardContent {
+  type: 'flashcard';
+  cards: FlashcardCard[];
+}
+
+/**
+ * Chat content - 单 agent 自由对话场景
+ * 学生与指定 agent (默认 default-1) 围绕 topic 自由交流
+ */
+export interface ChatContent {
+  type: 'chat';
+  topic: string;
+  openingPrompt?: string;
+  agentId?: string;
 }
 
 // Re-export generation types for convenience

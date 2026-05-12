@@ -184,12 +184,69 @@ function updateButton(text) {
   - "重新开始" / "重试" → Reset and start fresh (when ended)
 - One button should NOT do different things based on text alone
 
-### 4. Touch-Friendly Controls
+### 4. Touch-Friendly Controls (PRIMARY TARGET: TABLET)
+
+This simulation will run on tablets. Touch must work as the **default** input — mouse is secondary.
+
 - Minimum touch target: 44x44px for buttons
 - Sliders: Increase thumb size for mobile (min 24px)
-- Add `touch-action: manipulation` to prevent double-tap zoom
-- Use `touch-action: none` on canvas for custom gesture handling
-- **MANDATORY for drag/pointer interactions**: use Pointer Events (`pointerdown` / `pointermove` / `pointerup` / `pointercancel`), NOT mouse-only events. Mouse-only drag fails on touch devices. Call `setPointerCapture(e.pointerId)` on pointerdown for smooth drag tracking. Coordinates come from `e.clientX` / `e.clientY` directly (no need for `e.touches`). Apply `touch-action: none` and `user-select: none` to draggable elements.
+- Add `touch-action: manipulation` to prevent double-tap zoom on tap targets
+- Use `touch-action: none` on canvas / draggable elements for custom gesture handling
+
+#### MANDATORY: All drag / canvas interactions use Pointer Events
+
+❌ **Never** use `mousedown` / `mousemove` / `mouseup` alone — they don't fire on touch.
+❌ **Never** rely on `e.touches[0]` — Pointer Events don't have it.
+✅ **Always** use `pointerdown` / `pointermove` / `pointerup` / `pointercancel`.
+
+```javascript
+// ✅ Correct — works for mouse, touch, pen
+canvas.addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  canvas.setPointerCapture(e.pointerId);     // ⭐ critical for smooth drag
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  startDrag(x, y);
+});
+
+canvas.addEventListener('pointermove', (e) => {
+  if (!isDragging) return;
+  const rect = canvas.getBoundingClientRect();
+  updateDrag(e.clientX - rect.left, e.clientY - rect.top);
+});
+
+canvas.addEventListener('pointerup', (e) => {
+  canvas.releasePointerCapture(e.pointerId);
+  endDrag();
+});
+
+canvas.addEventListener('pointercancel', endDrag);
+```
+
+#### MANDATORY CSS for canvas / draggable
+
+```css
+canvas, .draggable {
+  touch-action: none;            /* stop browser scroll/zoom from hijacking the gesture */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+```
+
+Without `touch-action: none`, the iPad / Android browser will scroll the page when the user drags on the canvas — the drag never fires.
+
+#### Multi-touch (pinch-zoom, two-finger rotate)
+
+Use `pointerdown` / `pointermove` / `pointerup` and track pointers in a `Map<pointerId, point>`. When `map.size === 2`, compute pinch distance / angle.
+
+#### Self-check before completing
+
+- [ ] All drag handlers use `pointerdown` / `pointermove` / `pointerup` (not mouse-only)
+- [ ] `setPointerCapture` called in pointerdown
+- [ ] Canvas / draggable elements have `touch-action: none` in CSS
+- [ ] Tested mentally: a finger on iPad would fire the same code path as a mouse
 
 ### 5. Canvas Sizing
 - Use `ResizeObserver` or window resize event

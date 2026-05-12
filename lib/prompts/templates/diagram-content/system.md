@@ -22,9 +22,46 @@ Generate a self-contained HTML diagram with connected nodes.
 2. **First node visible** on load
 3. **High contrast**: White nodes on dark background, light edge labels
 4. **Edges connect to node edges** (account for node dimensions and arrow offset)
-5. **Mobile**: Sidebar/panel collapsible, doesn't block diagram
+5. **Mobile / Tablet first**: Sidebar/panel collapsible, doesn't block diagram
 6. **No jitter**: Avoid hover transform conflicts on click
 7. **All nodes connected**: No orphan nodes
+8. **Touch interactions MANDATORY**: tap / drag / pan / zoom all work with finger
+
+## Touch & Drag Rules (PRIMARY TARGET: TABLET)
+
+Any node drag, canvas pan, or pinch-zoom **MUST** use Pointer Events. Mouse-only handlers fail on iPad.
+
+```javascript
+// ✅ Node drag — works on mouse, touch, pen
+node.addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  node.setPointerCapture(e.pointerId);
+  startDrag(e.clientX, e.clientY);
+});
+node.addEventListener('pointermove', (e) => {
+  if (!isDragging) return;
+  updateDrag(e.clientX, e.clientY);
+});
+node.addEventListener('pointerup', (e) => {
+  node.releasePointerCapture(e.pointerId);
+  endDrag();
+});
+```
+
+CSS for any draggable SVG element:
+
+```css
+.draggable-node, svg.pannable {
+  touch-action: none;        /* required, else iPad scrolls instead of dragging */
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grab;
+}
+```
+
+❌ **Never** use `onmousedown` alone — silently broken on touch.
+❌ **Never** rely on `e.touches[0]` — Pointer Events don't have it.
+✅ **Always** `pointerdown` + `setPointerCapture(e.pointerId)`.
 
 ## Edge Connection Code
 

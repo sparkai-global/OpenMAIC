@@ -120,7 +120,7 @@ Learning: Player EXPERIENCES F=ma by adjusting thrust and seeing result
 
 ## Drag & Pointer Input (MANDATORY for any drag/swipe interaction)
 
-**CRITICAL**: If your game has ANY drag, swipe, or pointer-tracking interaction, it MUST work on both desktop (mouse) AND touch devices (mobile, tablet, trackpad gestures). Mouse-only drag is a hard failure — large segments of users will be unable to play.
+**PRIMARY TARGET: TABLET**. Players use this on iPad / Android tablets with their fingers. Touch is the default input — mouse is secondary. If a game has ANY drag, swipe, or pointer-tracking interaction, it MUST work with a finger first. Mouse-only handlers are a **hard failure** — the game is unplayable on tablet.
 
 ### REQUIRED: Use Pointer Events, not Mouse Events
 

@@ -22,6 +22,7 @@ const log = createLogger('QuizView');
 import type { QuizQuestion } from '@/lib/types/stage';
 import { useDraftCache } from '@/lib/hooks/use-draft-cache';
 import { SpeechButton } from '@/components/audio/speech-button';
+import { submitLearningEvent } from '@/lib/learning-event/submit';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -689,6 +690,8 @@ export function QuizView({ questions, sceneId }: QuizViewProps) {
   const [phase, setPhase] = useState<Phase>('not_started');
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
   const [results, setResults] = useState<QuestionResult[]>([]);
+  // 学习事件：从首次开始作答到提交的总时长
+  const quizStartTimeRef = useRef<number | null>(null);
 
   // Draft cache for quiz answers, keyed by sceneId to isolate across classrooms
   const {
@@ -725,6 +728,10 @@ export function QuizView({ questions, sceneId }: QuizViewProps) {
 
   const handleSetAnswer = useCallback(
     (questionId: string, value: string | string[]) => {
+      // 第一次作答开始计时
+      if (quizStartTimeRef.current === null) {
+        quizStartTimeRef.current = Date.now();
+      }
       setAnswers((prev) => {
         const next = { ...prev, [questionId]: value };
         updateAnswersCache(next);
@@ -767,6 +774,25 @@ export function QuizView({ questions, sceneId }: QuizViewProps) {
 
       setResults(ordered);
 
+      // 上报每道题的答题事件
+      const totalSpentSec = Math.max(
+        1,
+        Math.round((Date.now() - (quizStartTimeRef.current ?? Date.now())) / 1000),
+      );
+      const perQuestionSec = Math.round(totalSpentSec / Math.max(1, questions.length));
+      for (const q of questions) {
+        const r = allResultsMap.get(q.id);
+        if (!r) continue;
+        const userAnswer = answers[q.id];
+        const answerStr = Array.isArray(userAnswer) ? userAnswer.join(',') : (userAnswer ?? '');
+        submitLearningEvent('quiz_answered', {
+          quizId: q.id,
+          isCorrect: r.status === 'correct',
+          timeSpentSec: perQuestionSec,
+          answer: String(answerStr),
+        });
+      }
+
       setPhase('reviewing');
     })();
 
@@ -779,6 +805,7 @@ export function QuizView({ questions, sceneId }: QuizViewProps) {
     setPhase('not_started');
     setAnswers({});
     setResults([]);
+    quizStartTimeRef.current = null;
     clearAnswersCache();
   }, [clearAnswersCache]);
 

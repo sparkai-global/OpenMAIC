@@ -7,6 +7,7 @@ import { loadImageMapping } from '@/lib/utils/image-storage';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useUserProfileStore } from '@/lib/store/user-profile';
+import { useLearningEventStore } from '@/lib/learning-event/store';
 import { useSceneGenerator } from '@/lib/hooks/use-scene-generator';
 import { useMediaGenerationStore } from '@/lib/store/media-generation';
 import { useWhiteboardHistoryStore } from '@/lib/store/whiteboard-history';
@@ -36,12 +37,27 @@ export default function ClassroomDetailPage() {
 
   useEffect(() => {
     const handler = (e: MessageEvent) => {
-      if (e.data?.type !== 'openmaic:user-profile') return;
-      const { nickname, avatar, bio } = e.data.payload ?? {};
-      const store = useUserProfileStore.getState();
-      if (typeof nickname === 'string') store.setNickname(nickname);
-      if (typeof avatar === 'string') store.setAvatar(avatar);
-      if (typeof bio === 'string') store.setBio(bio);
+      // 用户信息注入
+      if (e.data?.type === 'openmaic:user-profile') {
+        const { nickname, avatar, bio } = e.data.payload ?? {};
+        const store = useUserProfileStore.getState();
+        if (typeof nickname === 'string') store.setNickname(nickname);
+        if (typeof avatar === 'string') store.setAvatar(avatar);
+        if (typeof bio === 'string') store.setBio(bio);
+        return;
+      }
+      // 学习事件上报 context 注入（token / sourceRootId 等）
+      // apiBaseUrl 不再由父页传入，改走 next.config.ts 里硬编码的同源代理 /app/* → 父项目后端
+      if (e.data?.type === 'openmaic:learning-context') {
+        const { token, sourceRootId, sourceId, sourceType } = e.data.payload ?? {};
+        useLearningEventStore.getState().setContext({
+          token: token ?? null,
+          sourceRootId: sourceRootId ?? null,
+          sourceId: sourceId ?? null,
+          ...(typeof sourceType === 'number' ? { sourceType } : {}),
+        });
+        return;
+      }
     };
     window.addEventListener('message', handler);
     return () => window.removeEventListener('message', handler);

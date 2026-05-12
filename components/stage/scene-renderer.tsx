@@ -6,6 +6,8 @@ import { SlideEditor as SlideRenderer } from '../slide-renderer/Editor';
 import { QuizView } from '../scene-renderers/quiz-view';
 import { InteractiveRenderer } from '../scene-renderers/interactive-renderer';
 import { PBLRenderer } from '../scene-renderers/pbl-renderer';
+import { FlashcardRenderer } from '../scene-renderers/flashcard-renderer';
+import { ChatRenderer } from '../scene-renderers/chat-renderer';
 
 interface SceneRendererProps {
   readonly scene: Scene;
@@ -27,6 +29,13 @@ export function SceneRenderer({ scene, mode }: SceneRendererProps) {
       case 'pbl':
         if (scene.content.type !== 'pbl') return <div>Invalid PBL content</div>;
         return <PBLRenderer content={scene.content} mode={mode} sceneId={scene.id} />;
+      case 'flashcard':
+        if (scene.content.type !== 'flashcard')
+          return <div>Invalid flashcard content</div>;
+        return <FlashcardRenderer content={scene.content} sceneId={scene.id} />;
+      case 'chat':
+        if (scene.content.type !== 'chat') return <div>Invalid chat content</div>;
+        return <ChatRenderer content={scene.content} sceneId={scene.id} />;
       default:
         return <div>Unknown scene type</div>;
     }

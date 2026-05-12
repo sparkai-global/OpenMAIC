@@ -10,6 +10,8 @@ import type {
   GeneratedQuizContent,
   GeneratedInteractiveContent,
   GeneratedPBLContent,
+  GeneratedFlashcardContent,
+  GeneratedChatContent,
   PdfImage,
   ImageMapping,
 } from '@/lib/types/generation';
@@ -131,7 +133,9 @@ export function buildCompleteScene(
     | GeneratedSlideContent
     | GeneratedQuizContent
     | GeneratedInteractiveContent
-    | GeneratedPBLContent,
+    | GeneratedPBLContent
+    | GeneratedFlashcardContent
+    | GeneratedChatContent,
   actions: Action[],
   stageId: string,
 ): Scene | null {

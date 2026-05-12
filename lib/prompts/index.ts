@@ -27,6 +27,8 @@ export const PROMPT_IDS = {
   WEB_SEARCH_QUERY_REWRITE: 'web-search-query-rewrite',
   SLIDE_CONTENT: 'slide-content',
   QUIZ_CONTENT: 'quiz-content',
+  FLASHCARD_CONTENT: 'flashcard-content',
+  CHAT_CONTENT: 'chat-content',
   SLIDE_ACTIONS: 'slide-actions',
   QUIZ_ACTIONS: 'quiz-actions',
   INTERACTIVE_ACTIONS: 'interactive-actions',

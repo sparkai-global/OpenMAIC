@@ -11,6 +11,8 @@ export type PromptId =
   | 'web-search-query-rewrite'
   | 'slide-content'
   | 'quiz-content'
+  | 'flashcard-content'
+  | 'chat-content'
   | 'slide-actions'
   | 'quiz-actions'
   | 'interactive-actions'

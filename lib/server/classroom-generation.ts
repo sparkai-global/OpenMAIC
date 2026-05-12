@@ -28,6 +28,7 @@ import {
 } from '@/lib/server/classroom-media-generation';
 import type { UserRequirements } from '@/lib/types/generation';
 import type { Scene, Stage } from '@/lib/types/stage';
+import type { Action } from '@/lib/types/action';
 import { AGENT_COLOR_PALETTE, AGENT_DEFAULT_AVATARS } from '@/lib/constants/agent-defaults';
 
 const log = createLogger('Classroom');
@@ -362,18 +363,39 @@ export async function generateClassroom(
       totalScenes: outlines.length,
     });
 
-    const content = await generateSceneContent(safeOutline, aiCall, {
+    // Snapshot scenes generated so far — flashcard / chat need to see the
+    // actual content (canvas + speech) of preceding scenes, not just outlines.
+    const previousScenes = store.getState().scenes;
+
+    const needsRetry = safeOutline.type === 'flashcard' || safeOutline.type === 'chat';
+    let content = await generateSceneContent(safeOutline, aiCall, {
       agents,
       languageDirective,
       previousOutlines: outlines.slice(0, index),
+      previousScenes,
     });
+    if (!content && needsRetry) {
+      log.warn(`Retrying content generation once for ${safeOutline.type}: ${safeOutline.title}`);
+      content = await generateSceneContent(safeOutline, aiCall, {
+        agents,
+        languageDirective,
+        previousOutlines: outlines.slice(0, index),
+        previousScenes,
+      });
+    }
     if (!content) {
       log.warn(`Skipping scene "${safeOutline.title}" — content generation failed`);
       continue;
     }
 
-    const actions = await generateSceneActions(safeOutline, content, aiCall, { agents });
-    log.info(`Scene "${safeOutline.title}": ${actions.length} actions`);
+    // flashcard / chat scenes have no scripted actions (interactive at runtime)
+    let actions: Action[] = [];
+    if (safeOutline.type !== 'flashcard' && safeOutline.type !== 'chat') {
+      actions = await generateSceneActions(safeOutline, content, aiCall, { agents });
+      log.info(`Scene "${safeOutline.title}": ${actions.length} actions`);
+    } else {
+      log.info(`Scene "${safeOutline.title}" (${safeOutline.type}): no actions`);
+    }
 
     const sceneId = createSceneWithActions(safeOutline, content, actions, api);
     if (!sceneId) {

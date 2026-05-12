@@ -84,7 +84,7 @@ export interface WidgetOutline {
  */
 export interface SceneOutline {
   id: string;
-  type: 'slide' | 'quiz' | 'interactive' | 'pbl';
+  type: 'slide' | 'quiz' | 'interactive' | 'pbl' | 'flashcard' | 'chat';
   title: string;
   description: string; // 1-2 sentences describing the purpose
   keyPoints: string[]; // 3-5 core key points
@@ -143,6 +143,26 @@ export interface GeneratedSlideContent {
  */
 export interface GeneratedQuizContent {
   questions: QuizQuestion[];
+}
+
+/**
+ * AI-generated flashcard content (3-5 cards extracted from preceding scene).
+ */
+export interface GeneratedFlashcardContent {
+  cards: Array<{
+    front: string;
+    back: string;
+    hint?: string;
+  }>;
+}
+
+/**
+ * AI-generated chat scene content (1-on-1 reflective discussion seed).
+ */
+export interface GeneratedChatContent {
+  topic: string;
+  openingPrompt: string;
+  agentId?: string;
 }
 
 // ==================== PBL Generation Types ====================

@@ -41,6 +41,7 @@ iframe.contentWindow.postMessage({ type, payload }, OPENMAIC_ORIGIN);
 
 | 消息 type | 方向 | 用途 |
 |---|---|---|
+<<<<<<< HEAD
 | `openmaic:ready` | iframe → 父 | **握手信号**。React 挂好 listener 后主动发，父页收到后再推 context 才安全 |
 | `openmaic:user-profile` | 父 → iframe | 注入学生用户信息（头像、昵称） |
 | `openmaic:learning-context` | 父 → iframe | 注入学习事件上报所需的 token / sourceRootId（后端地址不需要传） |
@@ -62,10 +63,17 @@ iframe → 父：openmaic:ready         ← 握手开始
 
 **坑提示**：不要在 `iframe.addEventListener('load', ...)` 里直接推 context —— `load` 触发时 React 还没绑好监听器，postMessage 会**静默丢失**。一律改成监听 `openmaic:ready`。
 
+=======
+| `openmaic:user-profile` | 父 → iframe | 注入学生用户信息（头像、昵称） |
+| `openmaic:learning-context` | 父 → iframe | 注入学习事件上报所需的 token / API 地址 / sourceRootId |
+| `openmaic:auth-expired` | iframe → 父 | OpenMAIC 收到 401/403 时主动告知父页"我没权限了，请刷新 token" |
+
+>>>>>>> a7382b0 (feat: 更新学习事件)
 ---
 
 ## 3. 注入用户信息 `openmaic:user-profile`
 
+<<<<<<< HEAD
 收到 `openmaic:ready` 后**立即**发，否则学生看不到自己的头像 / 昵称。
 
 ```js
@@ -73,6 +81,12 @@ window.addEventListener('message', (e) => {
   if (e.origin !== OPENMAIC_ORIGIN) return;
   if (e.data?.type !== 'openmaic:ready') return;
 
+=======
+iframe `load` 事件后**立即**发，否则学生看不到自己的头像 / 昵称。
+
+```js
+iframe.addEventListener('load', () => {
+>>>>>>> a7382b0 (feat: 更新学习事件)
   iframe.contentWindow.postMessage({
     type: 'openmaic:user-profile',
     payload: {
@@ -102,6 +116,7 @@ OpenMAIC 会上报学生学习行为事件（翻卡、答题、聊天等）。**
 
 > **后端地址不再由父页传**：OpenMAIC 通过 Next.js 同源代理 `/app/*` → 父项目真后端（地址硬编码在 [next.config.ts](next.config.ts)）。切换 test/prod 改那一行重新部署，父页对接逻辑不变。
 
+<<<<<<< HEAD
 > ⚠️ **时机**：不要用 `iframe.onload` 时推 context —— 那会比 React 挂监听器更早，postMessage 静默丢失。请监听 OpenMAIC 主动发出的握手信号 `openmaic:ready` 后再推（见示例代码）。
 
 ```js
@@ -110,6 +125,10 @@ window.addEventListener('message', (e) => {
   if (e.origin !== OPENMAIC_ORIGIN) return;
   if (e.data?.type !== 'openmaic:ready') return;
 
+=======
+```js
+iframe.addEventListener('load', () => {
+>>>>>>> a7382b0 (feat: 更新学习事件)
   iframe.contentWindow.postMessage({
     type: 'openmaic:learning-context',
     payload: {
@@ -136,7 +155,11 @@ window.addEventListener('message', (e) => {
 
 | 字段 | 默认值 | 说明 |
 |---|---|---|
+<<<<<<< HEAD
 | `sourceId` | OpenMAIC 当前 `scene.id`（每个 scene 不同） | 素材项 ID。若想用整堂课粒度，父页可显式传 `stage.id` |
+=======
+| `sourceId` | OpenMAIC 的 `stage.id`（自动取） | 素材项 ID |
+>>>>>>> a7382b0 (feat: 更新学习事件)
 | `sourceType` | `1` | 来源类型（1 = 课堂素材学习） |
 
 > **任意字段缺失** → store 的 `enabled` 字段为 `false` → 所有事件静默跳过，不会报错。
@@ -145,7 +168,11 @@ window.addEventListener('message', (e) => {
 
 ## 5. Token 失效自动刷新 `openmaic:auth-expired`
 
+<<<<<<< HEAD
 当 OpenMAIC 调 `/app/learning/event/submit` 收到 **401 / 403** 时，会主动 postMessage 通知父页。
+=======
+当 OpenMAIC 调 `/learning/event/submit` 收到 **401 / 403** 时，会主动 postMessage 通知父页。
+>>>>>>> a7382b0 (feat: 更新学习事件)
 
 **OpenMAIC 自己不做 token 刷新**（避免和父页的 refresh 逻辑冲突），由父页统一处理。
 
@@ -178,6 +205,7 @@ window.addEventListener('message', async (e) => {
 
 ```
 父页加载 iframe
+<<<<<<< HEAD
    ↓ iframe DOM 加载 + React 挂载
 iframe → 父: openmaic:ready
    ↓
@@ -187,12 +215,24 @@ iframe → 父: openmaic:ready
    ↓
 OpenMAIC 调 POST /app/learning/event/submit (Authorization: Bearer <token>)
    （同源 fetch，Next.js rewrites 转发到父项目真后端）
+=======
+   ↓ load 事件
+父页 postMessage(openmaic:learning-context: token + sourceRootId)
+   ↓
+学生在 OpenMAIC 内学习 → 触发学习事件
+   ↓
+OpenMAIC 调 POST /learning/event/submit (Authorization: Bearer <token>)
+>>>>>>> a7382b0 (feat: 更新学习事件)
    ↓
    ├── 200 OK   → 上报成功 ✓
    ├── 401/403  → OpenMAIC postMessage(openmaic:auth-expired) → 父页
    │              父页 refreshToken → postMessage(openmaic:learning-context: { token: 新 })
    │              下一条事件自动用新 token ✓
+<<<<<<< HEAD
    └── 网络错误  → 静默跳过（不影响学生体验，不重试）
+=======
+   └── 网络错误  → 静默重试 / 跳过（不影响学生体验）
+>>>>>>> a7382b0 (feat: 更新学习事件)
 ```
 
 ---
@@ -207,10 +247,17 @@ OpenMAIC 当前会上报以下事件：
 | 翻卡场景：完成最后一张 | `finish` | `{ cardIndex, totalCards, timeSpentSec }` |
 | 答题场景：提交后逐题上报 | `quiz_answered` | `{ quizId, isCorrect, timeSpentSec, answer }` |
 | AI 陪聊：学生在 chat 场景发言 | `message_sent` | `{ timeSpentSec, messageIndex, agentId, sceneId, surface: 'chat-scene' }` |
+<<<<<<< HEAD
 
 > 右侧 **讨论 Tab / 拓展 Tab**（lecture 期间的师生私聊 / 多 agent 讨论）**不上报**学习事件，避免高频噪声。只有专门的 chat 场景才计入学习记录。
 
 `messageIndex` 是 chat 场景内学生发言累计第 N 条（切场景时重置）。
+=======
+| AI 陪聊：学生在右侧 **讨论 Tab**（1v1 师生私聊）发言 | `message_sent` | `{ timeSpentSec, messageIndex, sceneId, surface: 'teacher-chat' }` |
+| AI 陪聊：学生在右侧 **拓展 Tab**（多 agent 讨论 / QA）发言 | `message_sent` | `{ timeSpentSec, messageIndex, sceneId, surface: 'group-discussion' }` |
+
+`surface` 字段可用来区分三个聊天面板；`messageIndex` 是本会话内学生发言累计第 N 条（chat 场景按 scene 重置、讨论 Tab 按 scene 重置、拓展 Tab 按 stage 重置）。
+>>>>>>> a7382b0 (feat: 更新学习事件)
 
 未来还会扩展：`page_turn`（翻 PPT）等，协议兼容。
 
@@ -220,12 +267,17 @@ OpenMAIC 当前会上报以下事件：
 {
   "eventState": "card_flip",
   "payload": { "cardIndex": 2, "totalCards": 10, "timeSpentSec": 8 },
+<<<<<<< HEAD
   "sourceId": "<OpenMAIC scene.id>",
+=======
+  "sourceId": "<OpenMAIC stage.id>",
+>>>>>>> a7382b0 (feat: 更新学习事件)
   "sourceRootId": "<父项目 lesson.id>",
   "sourceType": 1
 }
 ```
 
+<<<<<<< HEAD
 > **`sourceId` 粒度**：默认是 **scene.id**（当前场景，比如某张闪卡场景、某道答题场景、某段聊天场景），后台据此能精准定位学生在哪一节学习了什么。若父页 postMessage 时传了 `sourceId` 字段，则覆盖此默认值。
 
 ### `quiz_answered` 的 `quizId` —— 自动换成后端真实 UUID
@@ -244,6 +296,8 @@ openmaicQuizKeys[].itemId (= OpenMAIC sceneId) + questionSeq  →  openmaicQuizK
 
 > 父页无需为此做任何事，只要保证 token 有 `/lesson/info` 的访问权限即可。
 
+=======
+>>>>>>> a7382b0 (feat: 更新学习事件)
 接口规范见父项目 `learnevent.md`。
 
 ---
@@ -267,6 +321,7 @@ openmaicQuizKeys[].itemId (= OpenMAIC sceneId) + questionSeq  →  openmaicQuizK
     const OPENMAIC_ORIGIN = 'https://maic.example.com';
     const iframe = document.getElementById('openmaic');
 
+<<<<<<< HEAD
     // ============== 推送 context 给 iframe ==============
     function pushContext() {
       const user = currentUser();          // 你的用户对象
@@ -294,6 +349,36 @@ openmaicQuizKeys[].itemId (= OpenMAIC sceneId) + questionSeq  →  openmaicQuizK
         return;
       }
 
+=======
+    // ============== 初始化：注入用户信息 + 学习事件 context ==============
+    iframe.addEventListener('load', () => {
+      const user = currentUser();          // 你的用户对象
+      const lesson = currentLesson();      // 你的当前 lesson
+
+      // 1. 注入学生信息
+      iframe.contentWindow.postMessage({
+        type: 'openmaic:user-profile',
+        payload: {
+          nickname: user.nickname,
+          avatar: user.avatarUrl,
+        },
+      }, OPENMAIC_ORIGIN);
+
+      // 2. 注入学习事件 context（后端地址走 OpenMAIC 内的 LEARNING_API_BASE，父页不用传）
+      iframe.contentWindow.postMessage({
+        type: 'openmaic:learning-context',
+        payload: {
+          token: authStore.accessToken,
+          sourceRootId: lesson.id,
+        },
+      }, OPENMAIC_ORIGIN);
+    });
+
+    // ============== 监听 OpenMAIC 反向通知：token 失效 ==============
+    window.addEventListener('message', async (e) => {
+      if (e.origin !== OPENMAIC_ORIGIN) return;
+
+>>>>>>> a7382b0 (feat: 更新学习事件)
       if (e.data?.type === 'openmaic:auth-expired') {
         try {
           const newToken = await refreshAccessToken();
@@ -341,7 +426,11 @@ OpenMAIC 不读 `.env.local`，所有后端地址硬编码在 [next.config.ts](n
 |---|---|---|
 | `/api/<本地存在的路由>` | 走 OpenMAIC 自己的 Next.js 路由 | 比如 `/api/chat`、`/api/generate/*`、`/api/classroom`（filesystem 匹配优先，rewrite 不接管；[proxy.ts](proxy.ts) 注入 `x-internal-token`） |
 | `/api/<本地不存在的路由>` | `BACKEND_BASE/api/<path>` | 主后端（同事 Go 后端，OpenMAIC classroom 业务） |
+<<<<<<< HEAD
 | `/app/*` | `PARENT_APP_BASE/*` | 父项目真后端：学习事件上报 `/app/learning/event/submit`、课堂信息 `/app/lesson/info` |
+=======
+| `/app/*` | `PARENT_APP_BASE/*` | 父项目真后端，目前只走学习事件上报 `/app/learning/event/submit` |
+>>>>>>> a7382b0 (feat: 更新学习事件)
 
 **切换 test/prod 改 [next.config.ts](next.config.ts) 里的常量**：
 
@@ -358,9 +447,14 @@ const PARENT_APP_BASE = 'http://8.156.87.115:8081';  // 测试: 8.156.87.115:808
 ## 8. 注意事项
 
 ### 时序
+<<<<<<< HEAD
 - **只用握手**：所有 `postMessage` 都要在收到 `openmaic:ready` 之后发，不要赌 `iframe.onload` 的时机。`load` 触发时 React 还没绑监听器，postMessage 会静默丢失。
 - 收到 `ready` 后**立即**推 `user-profile` + `learning-context`。学生在 context 注入前的操作不会上报（store 的 `enabled=false`）。
 - iframe 刷新 / 重新装载 → OpenMAIC 会**再次发 `openmaic:ready`**，父页应该总是用同一段 listener 重推（不要只挂一次）。
+=======
+- `postMessage` **必须在 iframe `load` 事件后**发，否则 OpenMAIC 还没挂监听器，消息会丢。
+- 第一次注入 `learning-context` **前**学生若已经做了操作，那些事件会因为 `enabled=false` 跳过。**所以注入要尽量早**。
+>>>>>>> a7382b0 (feat: 更新学习事件)
 
 ### 安全
 - `postMessage` 的 `targetOrigin` 一定指定具体 origin（如 `https://maic.example.com`），**不要用 `*`**，否则 token 会被其他被嵌入站点截获。
@@ -368,7 +462,11 @@ const PARENT_APP_BASE = 'http://8.156.87.115:8081';  // 测试: 8.156.87.115:808
 
 ### Token 持久化
 - OpenMAIC 内部只把 token 放**内存**（zustand store），**不写 localStorage**，更安全。
+<<<<<<< HEAD
 - iframe 刷新 / 重载 → token 丢失。靠 `openmaic:ready` 握手会自动触发父页重推。
+=======
+- iframe 刷新 / 重载 → token 丢失。父页需要在 `iframe.load` 时重新注入。
+>>>>>>> a7382b0 (feat: 更新学习事件)
 - 同一域下 OpenMAIC 多个 iframe 不共享 token（每个 iframe 独立）。
 
 ### 跨域 Cookie / Storage
@@ -383,6 +481,7 @@ const PARENT_APP_BASE = 'http://8.156.87.115:8081';  // 测试: 8.156.87.115:808
 
 ## 9. 调试
 
+<<<<<<< HEAD
 ### 看 OpenMAIC 有没有收到 context
 在 **iframe 内** Console（右键 iframe → Inspect 进 iframe 的 DevTools）：
 
@@ -418,6 +517,23 @@ window.dispatchEvent(new MessageEvent('message', {
 }));
 // 之后再做上报动作 → Network 应能看到 /app/learning/event/submit（401 也算成功跑通）
 ```
+=======
+### 看 OpenMAIC 收到了什么
+在 iframe 内 Console 跑：
+
+```js
+// 看学习事件 store 当前状态
+const store = (await import('/_next/static/...')); // 通过 React DevTools 更方便
+
+// 或者：浏览器 Application → Storage → IndexedDB 看 OpenMAIC 缓存
+```
+
+更直接的方式：让 OpenMAIC 团队在 iframe 内开调试日志：
+```js
+localStorage.setItem('le:debug', '1');
+```
+之后所有未发出去的事件都会在 Console 打 `[LearningEvent] context not ready, skip:` 帮你定位是不是 token 没注入。
+>>>>>>> a7382b0 (feat: 更新学习事件)
 
 ### 看请求有没有发
 父页打开 OpenMAIC iframe → 右键 Inspect iframe → Network 过滤 `learning/event/submit`，能看到完整的请求/响应。
@@ -457,9 +573,13 @@ A: 协议向后兼容。新字段都是可选，旧客户端不传也行。OpenM
 ## 11. 联系
 
 技术对接：OpenMAIC 团队
+<<<<<<< HEAD
 协议版本：v1.2（2026-05-14）
 
 变更记录：
 - v1.2（2026-05-14）：`quiz_answered` 的 `quizId` 自动换成后端真实 UUID —— OpenMAIC 收到 context 后调 `/app/lesson/info` 拉 `openmaicQuizKeys` 建立 `sceneId+questionSeq → uuid` 映射。
 - v1.1（2026-05-13）：新增 `openmaic:ready` 握手；学习事件接口改走 `/app/*` 同源代理（地址硬编码在 [next.config.ts](next.config.ts)），父页不再传 `apiBaseUrl`；本地测试课堂 ID 改为 `demo1`；`sourceId` 默认由 stage.id 改为 scene.id（更细粒度，每个场景的事件可单独定位）；右侧讨论/拓展 Tab 的 `message_sent` 不再上报，只有 chat 场景上报。
 - v1.0（2026-05）：初版。
+=======
+协议版本：v1.0（2026-05）
+>>>>>>> a7382b0 (feat: 更新学习事件)

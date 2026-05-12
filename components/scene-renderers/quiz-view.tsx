@@ -694,12 +694,15 @@ export function QuizView({ questions, sceneId }: QuizViewProps) {
   const [results, setResults] = useState<QuestionResult[]>([]);
   // 学习事件：从首次开始作答到提交的总时长
   const quizStartTimeRef = useRef<number | null>(null);
+<<<<<<< HEAD
 
   // 进入 quiz 场景时补拉一次 quizKeyMap（已有映射会自动跳过）
   // 兜住「首次 fetchLessonInfo 失败、又没有后续 context 消息」的情况
   useEffect(() => {
     void fetchLessonInfo();
   }, []);
+=======
+>>>>>>> a7382b0 (feat: 更新学习事件)
 
   // Draft cache for quiz answers, keyed by sceneId to isolate across classrooms
   const {
@@ -788,6 +791,7 @@ export function QuizView({ questions, sceneId }: QuizViewProps) {
         Math.round((Date.now() - (quizStartTimeRef.current ?? Date.now())) / 1000),
       );
       const perQuestionSec = Math.round(totalSpentSec / Math.max(1, questions.length));
+<<<<<<< HEAD
       // quizKeyMap: `sceneId:questionSeq` → 后端真实 quiz uuid
       // 没拿到 uuid 就不上报这道题（课堂巡检只认 uuid，内部 id 上报了也没用）
       const quizKeyMap = useLearningEventStore.getState().quizKeyMap;
@@ -819,6 +823,20 @@ export function QuizView({ questions, sceneId }: QuizViewProps) {
           { sourceId: sceneId },
         );
       });
+=======
+      for (const q of questions) {
+        const r = allResultsMap.get(q.id);
+        if (!r) continue;
+        const userAnswer = answers[q.id];
+        const answerStr = Array.isArray(userAnswer) ? userAnswer.join(',') : (userAnswer ?? '');
+        submitLearningEvent('quiz_answered', {
+          quizId: q.id,
+          isCorrect: r.status === 'correct',
+          timeSpentSec: perQuestionSec,
+          answer: String(answerStr),
+        });
+      }
+>>>>>>> a7382b0 (feat: 更新学习事件)
 
       setPhase('reviewing');
     })();

@@ -77,13 +77,17 @@ export function ChatRenderer({ content, sceneId }: ChatRendererProps) {
     chat.sendMessage(text);
     userMsgCountRef.current += 1;
     const timeSpentSec = Math.round((Date.now() - chatStartTimeRef.current) / 1000);
-    submitLearningEvent('message_sent', {
-      timeSpentSec,
-      messageIndex: userMsgCountRef.current,
-      agentId: targetAgent.id,
-      sceneId,
-      surface: 'chat-scene',
-    });
+    submitLearningEvent(
+      'message_sent',
+      {
+        timeSpentSec,
+        messageIndex: userMsgCountRef.current,
+        agentId: targetAgent.id,
+        sceneId,
+        surface: 'chat-scene',
+      },
+      { sourceId: sceneId },
+    );
   }, [inputValue, chat, targetAgent.id, sceneId]);
 
   return (

@@ -785,12 +785,16 @@ export function QuizView({ questions, sceneId }: QuizViewProps) {
         if (!r) continue;
         const userAnswer = answers[q.id];
         const answerStr = Array.isArray(userAnswer) ? userAnswer.join(',') : (userAnswer ?? '');
-        submitLearningEvent('quiz_answered', {
-          quizId: q.id,
-          isCorrect: r.status === 'correct',
-          timeSpentSec: perQuestionSec,
-          answer: String(answerStr),
-        });
+        submitLearningEvent(
+          'quiz_answered',
+          {
+            quizId: q.id,
+            isCorrect: r.status === 'correct',
+            timeSpentSec: perQuestionSec,
+            answer: String(answerStr),
+          },
+          { sourceId: sceneId },
+        );
       }
 
       setPhase('reviewing');

@@ -557,6 +557,15 @@ export function Stage({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- Only re-run when scene changes, functions are stable refs
   }, [currentScene]);
 
+  // Chat 场景沉浸：进入 chat 场景时自动收起右侧 讨论/拓展 面板（避免分心）。
+  // 离开后不主动还原 —— 用户可以自己点开。
+  useEffect(() => {
+    if (currentScene?.type === 'chat' && !chatAreaCollapsed) {
+      setChatAreaCollapsed(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- 只对 scene type 切换响应
+  }, [currentScene?.type]);
+
   // Cleanup on unmount
   useEffect(() => {
     const audioPlayer = audioPlayerRef.current;

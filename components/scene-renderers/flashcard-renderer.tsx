@@ -59,12 +59,12 @@ export function FlashcardRenderer({ content, sceneId }: FlashcardRendererProps) 
     setIsFlipped((v) => !v);
     // 上报翻卡事件
     const timeSpentSec = Math.round((Date.now() - cardStartTimeRef.current) / 1000);
-    submitLearningEvent('card_flip', {
-      cardIndex: currentIndex,
-      totalCards: cards.length,
-      timeSpentSec,
-    });
-  }, [currentIndex, cards.length]);
+    submitLearningEvent(
+      'card_flip',
+      { cardIndex: currentIndex, totalCards: cards.length, timeSpentSec },
+      { sourceId: sceneId },
+    );
+  }, [currentIndex, cards.length, sceneId]);
 
   const prevCard = useCallback(() => {
     if (currentIndex > 0) {
@@ -77,23 +77,23 @@ export function FlashcardRenderer({ content, sceneId }: FlashcardRendererProps) 
     const timeSpentSec = Math.round((Date.now() - cardStartTimeRef.current) / 1000);
     if (currentIndex >= cards.length - 1) {
       // 完成所有卡片
-      submitLearningEvent('finish', {
-        cardIndex: currentIndex,
-        totalCards: cards.length,
-        timeSpentSec,
-      });
+      submitLearningEvent(
+        'finish',
+        { cardIndex: currentIndex, totalCards: cards.length, timeSpentSec },
+        { sourceId: sceneId },
+      );
       setShowStats(true);
     } else {
       // 翻到下一张
-      submitLearningEvent('card_flip', {
-        cardIndex: currentIndex + 1,
-        totalCards: cards.length,
-        timeSpentSec,
-      });
+      submitLearningEvent(
+        'card_flip',
+        { cardIndex: currentIndex + 1, totalCards: cards.length, timeSpentSec },
+        { sourceId: sceneId },
+      );
       setCurrentIndex((i) => i + 1);
       setIsFlipped(false);
     }
-  }, [currentIndex, cards.length]);
+  }, [currentIndex, cards.length, sceneId]);
 
   const markResult = useCallback(
     (result: 'correct' | 'wrong') => {

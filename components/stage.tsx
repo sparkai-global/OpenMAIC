@@ -557,14 +557,9 @@ export function Stage({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- Only re-run when scene changes, functions are stable refs
   }, [currentScene]);
 
-  // Chat 场景沉浸：进入 chat 场景时自动收起右侧 讨论/拓展 面板（避免分心）。
-  // 离开后不主动还原 —— 用户可以自己点开。
-  useEffect(() => {
-    if (currentScene?.type === 'chat' && !chatAreaCollapsed) {
-      setChatAreaCollapsed(true);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- 只对 scene type 切换响应
-  }, [currentScene?.type]);
+  // Chat 场景沉浸：在 chat 场景下右侧 讨论/拓展 面板整个消失（不只是收起）。
+  // 派生值同时给 canvas（让画布占满右侧）和 ChatArea（彻底隐藏）使用。
+  const hideRightPanel = currentScene?.type === 'chat';
 
   // Cleanup on unmount
   useEffect(() => {
@@ -983,7 +978,7 @@ export function Stage({
             }
             whiteboardOpen={whiteboardOpen}
             sidebarCollapsed={sidebarCollapsed}
-            chatCollapsed={chatAreaCollapsed}
+            chatCollapsed={hideRightPanel || chatAreaCollapsed}
             onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
             onToggleChat={() => setChatAreaCollapsed(!chatAreaCollapsed)}
             onPrevSlide={handlePreviousScene}
@@ -1136,7 +1131,7 @@ export function Stage({
               scenesCount={totalScenesCount}
               whiteboardOpen={whiteboardOpen}
               sidebarCollapsed={sidebarCollapsed}
-              chatCollapsed={chatAreaCollapsed}
+              chatCollapsed={hideRightPanel || chatAreaCollapsed}
               onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
               onToggleChat={() => setChatAreaCollapsed(!chatAreaCollapsed)}
               onPrevSlide={handlePreviousScene}
@@ -1154,12 +1149,12 @@ export function Stage({
         )}
       </div>
 
-      {/* Chat Area — 强制始终展开（笔记/对话栏不可收起） */}
+      {/* Chat Area — 默认强制展开；chat 场景下整面板隐藏（沉浸 1v1 对话） */}
       <ChatArea
         ref={chatAreaRef}
         width={chatAreaWidth}
         onWidthChange={setChatAreaWidth}
-        collapsed={false}
+        collapsed={hideRightPanel}
         activeBubbleId={activeBubbleId}
         onActiveBubble={(id) => setActiveBubbleId(id)}
         currentSceneId={currentSceneId}

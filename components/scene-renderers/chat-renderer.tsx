@@ -17,6 +17,7 @@ import { useUserProfileStore } from '@/lib/store/user-profile';
 import { useStageStore } from '@/lib/store/stage';
 import { useAgentRegistry } from '@/lib/orchestration/registry/store';
 import { submitLearningEvent } from '@/lib/learning-event/submit';
+import { ChatText } from '@/components/chat/chat-text';
 import type { ChatContent } from '@/lib/types/stage';
 
 interface ChatRendererProps {
@@ -174,7 +175,9 @@ export function ChatRenderer({ content, sceneId }: ChatRendererProps) {
                             : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100 rounded-bl-sm',
                         )}
                       >
-                        {m.text || (
+                        {m.text ? (
+                          <ChatText text={m.text} />
+                        ) : (
                           <span className="inline-flex gap-0.5 items-center">
                             <span
                               className="w-1 h-1 rounded-full bg-current animate-bounce"

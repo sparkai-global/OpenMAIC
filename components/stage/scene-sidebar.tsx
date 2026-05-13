@@ -299,6 +299,34 @@ export function SceneSidebar({
                           </div>
                         </div>
                       </div>
+                    ) : scene.type === 'flashcard' ? (
+                      /* Flashcard: stacked cards with a flipped one on top showing back hint */
+                      <div className="w-full h-full bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-950/30 dark:to-violet-950/20 p-1.5 flex items-center justify-center relative">
+                        {/* back card (peeking behind) */}
+                        <div className="absolute w-[58%] h-[62%] bg-white/70 dark:bg-white/5 ring-1 ring-purple-200/60 dark:ring-purple-700/30 rounded-md rotate-[-6deg] translate-x-1.5 translate-y-1" />
+                        {/* front card */}
+                        <div className="relative w-[60%] h-[64%] bg-gradient-to-br from-purple-400 to-violet-500 dark:from-purple-500 dark:to-violet-600 rounded-md shadow-sm flex flex-col items-center justify-center gap-0.5 p-1">
+                          <div className="h-0.5 w-3/5 bg-white/70 rounded-full" />
+                          <div className="h-0.5 w-2/5 bg-white/50 rounded-full" />
+                          <Layers className="w-2.5 h-2.5 text-white/80 mt-0.5" />
+                        </div>
+                      </div>
+                    ) : scene.type === 'chat' ? (
+                      /* Chat: 1v1 conversation bubbles */
+                      <div className="w-full h-full bg-gradient-to-br from-rose-50 to-pink-50 dark:from-rose-950/30 dark:to-pink-950/20 p-1.5 flex flex-col justify-end gap-1">
+                        <div className="flex items-end gap-1">
+                          <div className="w-2 h-2 rounded-full bg-rose-300 dark:bg-rose-600/70 shrink-0" />
+                          <div className="bg-white/80 dark:bg-white/10 rounded-md rounded-bl-sm px-1.5 py-0.5 flex flex-col gap-0.5 max-w-[60%]">
+                            <div className="h-0.5 w-8 bg-rose-200/80 dark:bg-rose-700/50 rounded-full" />
+                            <div className="h-0.5 w-5 bg-rose-200/60 dark:bg-rose-700/40 rounded-full" />
+                          </div>
+                        </div>
+                        <div className="flex items-end gap-1 justify-end">
+                          <div className="bg-gradient-to-br from-rose-400 to-pink-500 dark:from-rose-500 dark:to-pink-600 rounded-md rounded-br-sm px-1.5 py-0.5 max-w-[55%]">
+                            <div className="h-0.5 w-6 bg-white/80 rounded-full" />
+                          </div>
+                        </div>
+                      </div>
                     ) : scene.type === 'pbl' ? (
                       /* PBL: kanban board with 3 columns */
                       <div className="w-full h-full bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/20 p-1.5 flex flex-col">

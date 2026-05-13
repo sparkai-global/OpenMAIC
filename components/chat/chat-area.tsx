@@ -13,6 +13,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useChatSessions } from './use-chat-sessions';
 import { ChatSessionComponent } from './chat-session';
 import { LectureNotesView } from './lecture-notes-view';
+import { ChatText } from './chat-text';
 import { useTeacherChat } from '@/lib/hooks/use-teacher-chat';
 import { useUserProfileStore } from '@/lib/store/user-profile';
 import { useAgentRegistry } from '@/lib/orchestration/registry/store';
@@ -142,7 +143,9 @@ function TeacherChatLog({
                         : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100 rounded-bl-sm',
                     )}
                   >
-                    {m.text || (
+                    {m.text ? (
+                      <ChatText text={m.text} />
+                    ) : (
                       <span className="inline-flex gap-0.5 items-center">
                         <span
                           className="w-1 h-1 rounded-full bg-current animate-bounce"

@@ -41,18 +41,38 @@ iframe.contentWindow.postMessage({ type, payload }, OPENMAIC_ORIGIN);
 
 | 消息 type | 方向 | 用途 |
 |---|---|---|
+| `openmaic:ready` | iframe → 父 | **握手信号**。React 挂好 listener 后主动发，父页收到后再推 context 才安全 |
 | `openmaic:user-profile` | 父 → iframe | 注入学生用户信息（头像、昵称） |
-| `openmaic:learning-context` | 父 → iframe | 注入学习事件上报所需的 token / API 地址 / sourceRootId |
+| `openmaic:learning-context` | 父 → iframe | 注入学习事件上报所需的 token / sourceRootId（后端地址不需要传） |
 | `openmaic:auth-expired` | iframe → 父 | OpenMAIC 收到 401/403 时主动告知父页"我没权限了，请刷新 token" |
+
+### 关键时序
+
+```
+iframe 装载 (load 事件)            ← 此时 React 还没挂监听器，不能推 context
+        ↓
+React 挂载、绑 message listener
+        ↓
+iframe → 父：openmaic:ready         ← 握手开始
+        ↓
+父 → iframe：openmaic:user-profile + openmaic:learning-context
+        ↓
+学生开始学习，事件正常上报 ✓
+```
+
+**坑提示**：不要在 `iframe.addEventListener('load', ...)` 里直接推 context —— `load` 触发时 React 还没绑好监听器，postMessage 会**静默丢失**。一律改成监听 `openmaic:ready`。
 
 ---
 
 ## 3. 注入用户信息 `openmaic:user-profile`
 
-iframe `load` 事件后**立即**发，否则学生看不到自己的头像 / 昵称。
+收到 `openmaic:ready` 后**立即**发，否则学生看不到自己的头像 / 昵称。
 
 ```js
-iframe.addEventListener('load', () => {
+window.addEventListener('message', (e) => {
+  if (e.origin !== OPENMAIC_ORIGIN) return;
+  if (e.data?.type !== 'openmaic:ready') return;
+
   iframe.contentWindow.postMessage({
     type: 'openmaic:user-profile',
     payload: {
@@ -82,8 +102,14 @@ OpenMAIC 会上报学生学习行为事件（翻卡、答题、聊天等）。**
 
 > **后端地址不再由父页传**：OpenMAIC 通过 Next.js 同源代理 `/app/*` → 父项目真后端（地址硬编码在 [next.config.ts](next.config.ts)）。切换 test/prod 改那一行重新部署，父页对接逻辑不变。
 
+> ⚠️ **时机**：不要用 `iframe.onload` 时推 context —— 那会比 React 挂监听器更早，postMessage 静默丢失。请监听 OpenMAIC 主动发出的握手信号 `openmaic:ready` 后再推（见示例代码）。
+
 ```js
-iframe.addEventListener('load', () => {
+// 父页监听 OpenMAIC ready 后再推 context
+window.addEventListener('message', (e) => {
+  if (e.origin !== OPENMAIC_ORIGIN) return;
+  if (e.data?.type !== 'openmaic:ready') return;
+
   iframe.contentWindow.postMessage({
     type: 'openmaic:learning-context',
     payload: {
@@ -119,7 +145,7 @@ iframe.addEventListener('load', () => {
 
 ## 5. Token 失效自动刷新 `openmaic:auth-expired`
 
-当 OpenMAIC 调 `/learning/event/submit` 收到 **401 / 403** 时，会主动 postMessage 通知父页。
+当 OpenMAIC 调 `/app/learning/event/submit` 收到 **401 / 403** 时，会主动 postMessage 通知父页。
 
 **OpenMAIC 自己不做 token 刷新**（避免和父页的 refresh 逻辑冲突），由父页统一处理。
 
@@ -152,18 +178,21 @@ window.addEventListener('message', async (e) => {
 
 ```
 父页加载 iframe
-   ↓ load 事件
-父页 postMessage(openmaic:learning-context: token + sourceRootId)
+   ↓ iframe DOM 加载 + React 挂载
+iframe → 父: openmaic:ready
+   ↓
+父 → iframe: openmaic:learning-context { token, sourceRootId }
    ↓
 学生在 OpenMAIC 内学习 → 触发学习事件
    ↓
-OpenMAIC 调 POST /learning/event/submit (Authorization: Bearer <token>)
+OpenMAIC 调 POST /app/learning/event/submit (Authorization: Bearer <token>)
+   （同源 fetch，Next.js rewrites 转发到父项目真后端）
    ↓
    ├── 200 OK   → 上报成功 ✓
    ├── 401/403  → OpenMAIC postMessage(openmaic:auth-expired) → 父页
    │              父页 refreshToken → postMessage(openmaic:learning-context: { token: 新 })
    │              下一条事件自动用新 token ✓
-   └── 网络错误  → 静默重试 / 跳过（不影响学生体验）
+   └── 网络错误  → 静默跳过（不影响学生体验，不重试）
 ```
 
 ---
@@ -220,33 +249,32 @@ OpenMAIC 当前会上报以下事件：
     const OPENMAIC_ORIGIN = 'https://maic.example.com';
     const iframe = document.getElementById('openmaic');
 
-    // ============== 初始化：注入用户信息 + 学习事件 context ==============
-    iframe.addEventListener('load', () => {
+    // ============== 推送 context 给 iframe ==============
+    function pushContext() {
       const user = currentUser();          // 你的用户对象
       const lesson = currentLesson();      // 你的当前 lesson
 
-      // 1. 注入学生信息
       iframe.contentWindow.postMessage({
         type: 'openmaic:user-profile',
-        payload: {
-          nickname: user.nickname,
-          avatar: user.avatarUrl,
-        },
+        payload: { nickname: user.nickname, avatar: user.avatarUrl },
       }, OPENMAIC_ORIGIN);
 
-      // 2. 注入学习事件 context（后端地址走 OpenMAIC 内的 LEARNING_API_BASE，父页不用传）
       iframe.contentWindow.postMessage({
         type: 'openmaic:learning-context',
-        payload: {
-          token: authStore.accessToken,
-          sourceRootId: lesson.id,
-        },
+        payload: { token: authStore.accessToken, sourceRootId: lesson.id },
       }, OPENMAIC_ORIGIN);
-    });
+    }
 
-    // ============== 监听 OpenMAIC 反向通知：token 失效 ==============
+    // ============== 监听 OpenMAIC 的反向通知 ==============
     window.addEventListener('message', async (e) => {
       if (e.origin !== OPENMAIC_ORIGIN) return;
+
+      // 握手：OpenMAIC 挂载好 listener 后会发 ready，此时再推 context 才稳
+      // （iframe.onload 时机太早，React 还没绑监听器，postMessage 会丢）
+      if (e.data?.type === 'openmaic:ready') {
+        pushContext();
+        return;
+      }
 
       if (e.data?.type === 'openmaic:auth-expired') {
         try {
@@ -312,8 +340,9 @@ const PARENT_APP_BASE = 'http://8.156.87.115:8081';  // 测试: 8.156.87.115:808
 ## 8. 注意事项
 
 ### 时序
-- `postMessage` **必须在 iframe `load` 事件后**发，否则 OpenMAIC 还没挂监听器，消息会丢。
-- 第一次注入 `learning-context` **前**学生若已经做了操作，那些事件会因为 `enabled=false` 跳过。**所以注入要尽量早**。
+- **只用握手**：所有 `postMessage` 都要在收到 `openmaic:ready` 之后发，不要赌 `iframe.onload` 的时机。`load` 触发时 React 还没绑监听器，postMessage 会静默丢失。
+- 收到 `ready` 后**立即**推 `user-profile` + `learning-context`。学生在 context 注入前的操作不会上报（store 的 `enabled=false`）。
+- iframe 刷新 / 重新装载 → OpenMAIC 会**再次发 `openmaic:ready`**，父页应该总是用同一段 listener 重推（不要只挂一次）。
 
 ### 安全
 - `postMessage` 的 `targetOrigin` 一定指定具体 origin（如 `https://maic.example.com`），**不要用 `*`**，否则 token 会被其他被嵌入站点截获。
@@ -321,7 +350,7 @@ const PARENT_APP_BASE = 'http://8.156.87.115:8081';  // 测试: 8.156.87.115:808
 
 ### Token 持久化
 - OpenMAIC 内部只把 token 放**内存**（zustand store），**不写 localStorage**，更安全。
-- iframe 刷新 / 重载 → token 丢失。父页需要在 `iframe.load` 时重新注入。
+- iframe 刷新 / 重载 → token 丢失。靠 `openmaic:ready` 握手会自动触发父页重推。
 - 同一域下 OpenMAIC 多个 iframe 不共享 token（每个 iframe 独立）。
 
 ### 跨域 Cookie / Storage
@@ -336,21 +365,41 @@ const PARENT_APP_BASE = 'http://8.156.87.115:8081';  // 测试: 8.156.87.115:808
 
 ## 9. 调试
 
-### 看 OpenMAIC 收到了什么
-在 iframe 内 Console 跑：
+### 看 OpenMAIC 有没有收到 context
+在 **iframe 内** Console（右键 iframe → Inspect 进 iframe 的 DevTools）：
 
 ```js
-// 看学习事件 store 当前状态
-const store = (await import('/_next/static/...')); // 通过 React DevTools 更方便
-
-// 或者：浏览器 Application → Storage → IndexedDB 看 OpenMAIC 缓存
-```
-
-更直接的方式：让 OpenMAIC 团队在 iframe 内开调试日志：
-```js
+// 1. 打开学习事件调试日志
 localStorage.setItem('le:debug', '1');
+// 2. 刷新 iframe，做任何会上报的动作（翻闪卡、答题、聊天发言）
+// 3. 看 Console：
+//    [LearningEvent] context not ready, skip: card_flip {...}    ← 父页没推 context
 ```
-之后所有未发出去的事件都会在 Console 打 `[LearningEvent] context not ready, skip:` 帮你定位是不是 token 没注入。
+
+如果反复看到 `context not ready, skip`，说明父页要么没监听 `openmaic:ready`，要么 token / sourceRootId 没传上来。**注意**：token 不写 localStorage，DevTools 里看不到，只在内存 zustand store。
+
+### 测试父页握手是否正常
+在父页 Console 加：
+
+```js
+window.addEventListener('message', (e) => {
+  if (e.data?.type?.startsWith('openmaic:')) {
+    console.log('[OpenMAIC]', e.data);
+  }
+});
+```
+
+预期能看到 `[OpenMAIC] {type: "openmaic:ready", payload: {classroomId: ...}}`。看不到说明 iframe 还没挂载完。
+
+### 强行造一次 context 验证 OpenMAIC 链路
+直接在 iframe Console 派发假消息：
+
+```js
+window.dispatchEvent(new MessageEvent('message', {
+  data: { type: 'openmaic:learning-context', payload: { token: 'fake', sourceRootId: 'fake' } }
+}));
+// 之后再做上报动作 → Network 应能看到 /app/learning/event/submit（401 也算成功跑通）
+```
 
 ### 看请求有没有发
 父页打开 OpenMAIC iframe → 右键 Inspect iframe → Network 过滤 `learning/event/submit`，能看到完整的请求/响应。
@@ -390,4 +439,8 @@ A: 协议向后兼容。新字段都是可选，旧客户端不传也行。OpenM
 ## 11. 联系
 
 技术对接：OpenMAIC 团队
-协议版本：v1.0（2026-05）
+协议版本：v1.1（2026-05-13）
+
+变更记录：
+- v1.1（2026-05-13）：新增 `openmaic:ready` 握手；学习事件接口改走 `/app/*` 同源代理（地址硬编码在 [next.config.ts](next.config.ts)），父页不再传 `apiBaseUrl`；本地测试课堂 ID 改为 `demo1`。
+- v1.0（2026-05）：初版。

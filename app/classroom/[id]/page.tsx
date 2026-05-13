@@ -60,8 +60,22 @@ export default function ClassroomDetailPage() {
       }
     };
     window.addEventListener('message', handler);
+
+    // 握手：listener 绑好后，主动通知父页可以发 context 了
+    // 父页应监听 message，收到 openmaic:ready 后 postMessage(openmaic:learning-context, openmaic:user-profile)
+    if (window.parent && window.parent !== window) {
+      try {
+        window.parent.postMessage(
+          { type: 'openmaic:ready', payload: { classroomId } },
+          '*',
+        );
+      } catch {
+        /* 跨域受限或没有父页，忽略 */
+      }
+    }
+
     return () => window.removeEventListener('message', handler);
-  }, []);
+  }, [classroomId]);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

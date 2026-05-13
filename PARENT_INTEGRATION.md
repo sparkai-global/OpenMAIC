@@ -136,7 +136,7 @@ window.addEventListener('message', (e) => {
 
 | 字段 | 默认值 | 说明 |
 |---|---|---|
-| `sourceId` | OpenMAIC 的 `stage.id`（自动取） | 素材项 ID |
+| `sourceId` | OpenMAIC 当前 `scene.id`（每个 scene 不同） | 素材项 ID。若想用整堂课粒度，父页可显式传 `stage.id` |
 | `sourceType` | `1` | 来源类型（1 = 课堂素材学习） |
 
 > **任意字段缺失** → store 的 `enabled` 字段为 `false` → 所有事件静默跳过，不会报错。
@@ -207,10 +207,10 @@ OpenMAIC 当前会上报以下事件：
 | 翻卡场景：完成最后一张 | `finish` | `{ cardIndex, totalCards, timeSpentSec }` |
 | 答题场景：提交后逐题上报 | `quiz_answered` | `{ quizId, isCorrect, timeSpentSec, answer }` |
 | AI 陪聊：学生在 chat 场景发言 | `message_sent` | `{ timeSpentSec, messageIndex, agentId, sceneId, surface: 'chat-scene' }` |
-| AI 陪聊：学生在右侧 **讨论 Tab**（1v1 师生私聊）发言 | `message_sent` | `{ timeSpentSec, messageIndex, sceneId, surface: 'teacher-chat' }` |
-| AI 陪聊：学生在右侧 **拓展 Tab**（多 agent 讨论 / QA）发言 | `message_sent` | `{ timeSpentSec, messageIndex, sceneId, surface: 'group-discussion' }` |
 
-`surface` 字段可用来区分三个聊天面板；`messageIndex` 是本会话内学生发言累计第 N 条（chat 场景按 scene 重置、讨论 Tab 按 scene 重置、拓展 Tab 按 stage 重置）。
+> 右侧 **讨论 Tab / 拓展 Tab**（lecture 期间的师生私聊 / 多 agent 讨论）**不上报**学习事件，避免高频噪声。只有专门的 chat 场景才计入学习记录。
+
+`messageIndex` 是 chat 场景内学生发言累计第 N 条（切场景时重置）。
 
 未来还会扩展：`page_turn`（翻 PPT）等，协议兼容。
 
@@ -220,11 +220,13 @@ OpenMAIC 当前会上报以下事件：
 {
   "eventState": "card_flip",
   "payload": { "cardIndex": 2, "totalCards": 10, "timeSpentSec": 8 },
-  "sourceId": "<OpenMAIC stage.id>",
+  "sourceId": "<OpenMAIC scene.id>",
   "sourceRootId": "<父项目 lesson.id>",
   "sourceType": 1
 }
 ```
+
+> **`sourceId` 粒度**：默认是 **scene.id**（当前场景，比如某张闪卡场景、某道答题场景、某段聊天场景），后台据此能精准定位学生在哪一节学习了什么。若父页 postMessage 时传了 `sourceId` 字段，则覆盖此默认值。
 
 接口规范见父项目 `learnevent.md`。
 
@@ -442,5 +444,5 @@ A: 协议向后兼容。新字段都是可选，旧客户端不传也行。OpenM
 协议版本：v1.1（2026-05-13）
 
 变更记录：
-- v1.1（2026-05-13）：新增 `openmaic:ready` 握手；学习事件接口改走 `/app/*` 同源代理（地址硬编码在 [next.config.ts](next.config.ts)），父页不再传 `apiBaseUrl`；本地测试课堂 ID 改为 `demo1`。
+- v1.1（2026-05-13）：新增 `openmaic:ready` 握手；学习事件接口改走 `/app/*` 同源代理（地址硬编码在 [next.config.ts](next.config.ts)），父页不再传 `apiBaseUrl`；本地测试课堂 ID 改为 `demo1`；`sourceId` 默认由 stage.id 改为 scene.id（更细粒度，每个场景的事件可单独定位）；右侧讨论/拓展 Tab 的 `message_sent` 不再上报，只有 chat 场景上报。
 - v1.0（2026-05）：初版。

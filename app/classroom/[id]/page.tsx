@@ -8,6 +8,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useUserProfileStore } from '@/lib/store/user-profile';
 import { useLearningEventStore } from '@/lib/learning-event/store';
+import { fetchLessonInfo } from '@/lib/learning-event/lesson-info';
 import { useSceneGenerator } from '@/lib/hooks/use-scene-generator';
 import { useMediaGenerationStore } from '@/lib/store/media-generation';
 import { useWhiteboardHistoryStore } from '@/lib/store/whiteboard-history';
@@ -56,6 +57,8 @@ export default function ClassroomDetailPage() {
           sourceId: sourceId ?? null,
           ...(typeof sourceType === 'number' ? { sourceType } : {}),
         });
+        // 拉取课堂信息，建立 quiz sceneId:seq → 真实 uuid 映射（已有映射会自动跳过）
+        void fetchLessonInfo();
         return;
       }
     };

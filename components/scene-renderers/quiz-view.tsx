@@ -23,6 +23,8 @@ import type { QuizQuestion } from '@/lib/types/stage';
 import { useDraftCache } from '@/lib/hooks/use-draft-cache';
 import { SpeechButton } from '@/components/audio/speech-button';
 import { submitLearningEvent } from '@/lib/learning-event/submit';
+import { useLearningEventStore } from '@/lib/learning-event/store';
+import { fetchLessonInfo } from '@/lib/learning-event/lesson-info';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -693,6 +695,12 @@ export function QuizView({ questions, sceneId }: QuizViewProps) {
   // 学习事件：从首次开始作答到提交的总时长
   const quizStartTimeRef = useRef<number | null>(null);
 
+  // 进入 quiz 场景时补拉一次 quizKeyMap（已有映射会自动跳过）
+  // 兜住「首次 fetchLessonInfo 失败、又没有后续 context 消息」的情况
+  useEffect(() => {
+    void fetchLessonInfo();
+  }, []);
+
   // Draft cache for quiz answers, keyed by sceneId to isolate across classrooms
   const {
     cachedValue: cachedAnswers,
@@ -780,22 +788,37 @@ export function QuizView({ questions, sceneId }: QuizViewProps) {
         Math.round((Date.now() - (quizStartTimeRef.current ?? Date.now())) / 1000),
       );
       const perQuestionSec = Math.round(totalSpentSec / Math.max(1, questions.length));
-      for (const q of questions) {
+      // quizKeyMap: `sceneId:questionSeq` → 后端真实 quiz uuid
+      // 没拿到 uuid 就不上报这道题（课堂巡检只认 uuid，内部 id 上报了也没用）
+      const quizKeyMap = useLearningEventStore.getState().quizKeyMap;
+      questions.forEach((q, idx) => {
         const r = allResultsMap.get(q.id);
-        if (!r) continue;
+        if (!r) return;
+        const realQuizId = quizKeyMap[`${sceneId}:${idx + 1}`];
+        if (!realQuizId) {
+          if (
+            typeof window !== 'undefined' &&
+            window.localStorage?.getItem('le:debug') === '1'
+          ) {
+            console.log(
+              `[LearningEvent] quiz_answered skip: no uuid for ${sceneId}:${idx + 1}`,
+            );
+          }
+          return;
+        }
         const userAnswer = answers[q.id];
         const answerStr = Array.isArray(userAnswer) ? userAnswer.join(',') : (userAnswer ?? '');
         submitLearningEvent(
           'quiz_answered',
           {
-            quizId: q.id,
+            quizId: realQuizId,
             isCorrect: r.status === 'correct',
             timeSpentSec: perQuestionSec,
             answer: String(answerStr),
           },
           { sourceId: sceneId },
         );
-      }
+      });
 
       setPhase('reviewing');
     })();

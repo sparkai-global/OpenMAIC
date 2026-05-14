@@ -228,6 +228,22 @@ OpenMAIC 当前会上报以下事件：
 
 > **`sourceId` 粒度**：默认是 **scene.id**（当前场景，比如某张闪卡场景、某道答题场景、某段聊天场景），后台据此能精准定位学生在哪一节学习了什么。若父页 postMessage 时传了 `sourceId` 字段，则覆盖此默认值。
 
+### `quiz_answered` 的 `quizId` —— 自动换成后端真实 UUID
+
+OpenMAIC 收到 `openmaic:learning-context` 后，会用 token 调一次 `GET /app/lesson/info?lessonId=<sourceRootId>`，读取返回里的 `openmaicQuizKeys`，建立映射：
+
+```
+openmaicQuizKeys[].itemId (= OpenMAIC sceneId) + questionSeq  →  openmaicQuizKeys[].id (后端真实 quiz UUID)
+```
+
+之后 `quiz_answered` 上报时，`payload.quizId` **就是这个真实 UUID**（课堂巡检 / SignalCollector 按 UUID 对账）。
+
+**没有 UUID 就不上报**：若 `/lesson/info` 拉取失败、或某道题在 `openmaicQuizKeys` 里没有对应项，该题的 `quiz_answered` **直接跳过**（内部 id 上报了也对不上账，没意义）。课堂播放、答题交互本身**完全不受影响**，只是这一条上报丢失。
+
+拉取时机：收到 `openmaic:learning-context` 后立即异步拉取（fire-and-forget，不阻塞页面）；进入 quiz 场景时再补拉一次兜底（已拉到则跳过）。
+
+> 父页无需为此做任何事，只要保证 token 有 `/lesson/info` 的访问权限即可。
+
 接口规范见父项目 `learnevent.md`。
 
 ---
@@ -325,7 +341,7 @@ OpenMAIC 不读 `.env.local`，所有后端地址硬编码在 [next.config.ts](n
 |---|---|---|
 | `/api/<本地存在的路由>` | 走 OpenMAIC 自己的 Next.js 路由 | 比如 `/api/chat`、`/api/generate/*`、`/api/classroom`（filesystem 匹配优先，rewrite 不接管；[proxy.ts](proxy.ts) 注入 `x-internal-token`） |
 | `/api/<本地不存在的路由>` | `BACKEND_BASE/api/<path>` | 主后端（同事 Go 后端，OpenMAIC classroom 业务） |
-| `/app/*` | `PARENT_APP_BASE/*` | 父项目真后端，目前只走学习事件上报 `/app/learning/event/submit` |
+| `/app/*` | `PARENT_APP_BASE/*` | 父项目真后端：学习事件上报 `/app/learning/event/submit`、课堂信息 `/app/lesson/info` |
 
 **切换 test/prod 改 [next.config.ts](next.config.ts) 里的常量**：
 
@@ -441,8 +457,9 @@ A: 协议向后兼容。新字段都是可选，旧客户端不传也行。OpenM
 ## 11. 联系
 
 技术对接：OpenMAIC 团队
-协议版本：v1.1（2026-05-13）
+协议版本：v1.2（2026-05-14）
 
 变更记录：
+- v1.2（2026-05-14）：`quiz_answered` 的 `quizId` 自动换成后端真实 UUID —— OpenMAIC 收到 context 后调 `/app/lesson/info` 拉 `openmaicQuizKeys` 建立 `sceneId+questionSeq → uuid` 映射。
 - v1.1（2026-05-13）：新增 `openmaic:ready` 握手；学习事件接口改走 `/app/*` 同源代理（地址硬编码在 [next.config.ts](next.config.ts)），父页不再传 `apiBaseUrl`；本地测试课堂 ID 改为 `demo1`；`sourceId` 默认由 stage.id 改为 scene.id（更细粒度，每个场景的事件可单独定位）；右侧讨论/拓展 Tab 的 `message_sent` 不再上报，只有 chat 场景上报。
 - v1.0（2026-05）：初版。

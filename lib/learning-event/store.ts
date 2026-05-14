@@ -23,7 +23,14 @@ export interface LearningEventContext {
 }
 
 interface LearningEventStore extends LearningEventContext {
+  /**
+   * `sceneId:questionSeq` → 后端真实 quiz UUID。
+   * 由 fetchLessonInfo() 调 /app/lesson/info 拉取 openmaicQuizKeys 后填充。
+   * quiz_answered 上报时用它把 OpenMAIC 内部 quizId 换成真实 uuid（课堂巡检对账用）。
+   */
+  quizKeyMap: Record<string, string>;
   setContext: (ctx: Partial<LearningEventContext>) => void;
+  setQuizKeyMap: (map: Record<string, string>) => void;
   reset: () => void;
 }
 
@@ -40,11 +47,13 @@ const initial: LearningEventContext = {
 
 export const useLearningEventStore = create<LearningEventStore>((set) => ({
   ...initial,
+  quizKeyMap: {},
   setContext: (ctx) =>
     set((prev) => {
       const next = { ...prev, ...ctx };
       next.enabled = Boolean(next.token && next.sourceRootId);
       return next;
     }),
-  reset: () => set({ ...initial }),
+  setQuizKeyMap: (map) => set({ quizKeyMap: map }),
+  reset: () => set({ ...initial, quizKeyMap: {} }),
 }));

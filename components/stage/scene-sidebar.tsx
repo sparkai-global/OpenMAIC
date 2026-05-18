@@ -27,6 +27,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { fetchWithTeacherToken } from '@/lib/auth/teacher-token';
 import { useI18n } from '@/lib/hooks/use-i18n';
 import type { SceneType, SlideContent, InteractiveContent } from '@/lib/types/stage';
 import { PENDING_SCENE_ID } from '@/lib/store/stage';
@@ -533,10 +534,16 @@ export function SceneSidebar({
                 setIsDeleting(true);
                 try {
                   if (classroomId) {
-                    const res = await fetch(
+                    // 走教师 token 封装：自动带 Authorization 头，401 自动触发全局过期弹窗
+                    const res = await fetchWithTeacherToken(
                       `/api/classroom?id=${encodeURIComponent(classroomId)}&sceneId=${encodeURIComponent(target.id)}`,
                       { method: 'DELETE' },
                     );
+                    if (res.status === 401) {
+                      // 401 已由 fetchWithTeacherToken 触发会话过期弹窗，这里只关本地确认框
+                      setSceneToDelete(null);
+                      return;
+                    }
                     if (!res.ok) {
                       console.error('[SceneSidebar] DELETE /api/classroom failed:', res.status);
                       alert(`删除失败：HTTP ${res.status}`);

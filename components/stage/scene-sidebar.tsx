@@ -13,11 +13,22 @@ import {
   RefreshCw,
   Layers,
   MessageSquare,
+  Trash2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ThumbnailSlide } from '@/components/slide-renderer/components/ThumbnailSlide';
 import { ThumbnailInteractive } from '@/components/slide-renderer/components/ThumbnailInteractive';
 import { useStageStore, useCanvasStore } from '@/lib/store';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { useI18n } from '@/lib/hooks/use-i18n';
 import type { SceneType, SlideContent, InteractiveContent } from '@/lib/types/stage';
 import { PENDING_SCENE_ID } from '@/lib/store/stage';
@@ -49,6 +60,9 @@ export function SceneSidebar({
 
   const [retryingOutlineId, setRetryingOutlineId] = useState<string | null>(null);
   const [isEmbedded, setIsEmbedded] = useState(false);
+  const [sceneToDelete, setSceneToDelete] = useState<{ id: string; title: string } | null>(
+    null,
+  );
 
   useEffect(() => {
     try {
@@ -197,8 +211,8 @@ export function SceneSidebar({
                 )}
               >
                 {/* Scene Header */}
-                <div className="flex justify-between items-center px-2 pt-0.5">
-                  <div className="flex items-center gap-2 max-w-full">
+                <div className="flex justify-between items-center px-2 pt-0.5 gap-1">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
                     <span
                       className={cn(
                         'text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center shrink-0',
@@ -221,6 +235,22 @@ export function SceneSidebar({
                       {scene.title}
                     </span>
                   </div>
+                  {/* 删除按钮：仅独立访问（非 iframe）可见，hover 时显示 */}
+                  {!isEmbedded && (
+                    <button
+                      type="button"
+                      data-testid="scene-delete"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSceneToDelete({ id: scene.id, title: scene.title });
+                      }}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity w-5 h-5 shrink-0 rounded flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30"
+                      title="删除此场景"
+                      aria-label="删除此场景"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  )}
                 </div>
 
                 {/* Thumbnail */}
@@ -514,6 +544,36 @@ export function SceneSidebar({
         {/* Spacer to push toggle button area */}
         <div className="mt-auto" />
       </div>
+
+      {/* 删除场景确认弹窗 */}
+      <AlertDialog
+        open={sceneToDelete !== null}
+        onOpenChange={(open) => !open && setSceneToDelete(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>删除场景「{sceneToDelete?.title}」？</AlertDialogTitle>
+            <AlertDialogDescription>
+              删除后该场景将<strong>永久消失</strong>，无法恢复。该场景生成时关联的 OSS
+              音频、图片等素材文件不会被清理。确认继续？
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-500 hover:bg-red-600 text-white"
+              onClick={() => {
+                if (sceneToDelete) {
+                  useStageStore.getState().deleteScene(sceneToDelete.id);
+                }
+                setSceneToDelete(null);
+              }}
+            >
+              确认删除
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -17,10 +17,7 @@ import { useUserProfileStore } from '@/lib/store/user-profile';
 import { useStageStore } from '@/lib/store/stage';
 import { useAgentRegistry } from '@/lib/orchestration/registry/store';
 import { submitLearningEvent } from '@/lib/learning-event/submit';
-<<<<<<< HEAD
 import { ChatText } from '@/components/chat/chat-text';
-=======
->>>>>>> a7382b0 (feat: 更新学习事件)
 import type { ChatContent } from '@/lib/types/stage';
 
 interface ChatRendererProps {
@@ -80,7 +77,6 @@ export function ChatRenderer({ content, sceneId }: ChatRendererProps) {
     chat.sendMessage(text);
     userMsgCountRef.current += 1;
     const timeSpentSec = Math.round((Date.now() - chatStartTimeRef.current) / 1000);
-<<<<<<< HEAD
     submitLearningEvent(
       'message_sent',
       {
@@ -92,15 +88,6 @@ export function ChatRenderer({ content, sceneId }: ChatRendererProps) {
       },
       { sourceId: sceneId },
     );
-=======
-    submitLearningEvent('message_sent', {
-      timeSpentSec,
-      messageIndex: userMsgCountRef.current,
-      agentId: targetAgent.id,
-      sceneId,
-      surface: 'chat-scene',
-    });
->>>>>>> a7382b0 (feat: 更新学习事件)
   }, [inputValue, chat, targetAgent.id, sceneId]);
 
   return (
@@ -192,13 +179,9 @@ export function ChatRenderer({ content, sceneId }: ChatRendererProps) {
                             : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100 rounded-bl-sm',
                         )}
                       >
-<<<<<<< HEAD
                         {m.text ? (
                           <ChatText text={m.text} />
                         ) : (
-=======
-                        {m.text || (
->>>>>>> a7382b0 (feat: 更新学习事件)
                           <span className="inline-flex gap-0.5 items-center">
                             <span
                               className="w-1 h-1 rounded-full bg-current animate-bounce"

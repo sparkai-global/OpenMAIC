@@ -135,8 +135,10 @@ export async function DELETE(request: NextRequest) {
       baseUrl,
     );
 
+    // userId is injected by middleware after Spark JWT verification.
+    const userId = request.headers.get('x-spark-user-id') ?? 'unknown';
     log.info(
-      `Scene deleted [classroomId=${id}, sceneId=${sceneId}, remaining=${remainingScenes.length}]`,
+      `[scene_delete] userId=${userId} sceneId=${sceneId} classroomId=${id} time=${new Date().toISOString()}`,
     );
 
     return apiSuccess({

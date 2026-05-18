@@ -7,6 +7,8 @@ import { loadImageMapping } from '@/lib/utils/image-storage';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useUserProfileStore } from '@/lib/store/user-profile';
+import { setTeacherToken } from '@/lib/auth/teacher-token';
+import { TeacherSessionGuard } from '@/components/auth/teacher-session-guard';
 import { useSceneGenerator } from '@/lib/hooks/use-scene-generator';
 import { useMediaGenerationStore } from '@/lib/store/media-generation';
 import { useWhiteboardHistoryStore } from '@/lib/store/whiteboard-history';
@@ -32,6 +34,19 @@ export default function ClassroomDetailPage() {
     if (nickname) store.setNickname(nickname);
     if (avatar) store.setAvatar(avatar);
     if (bio) store.setBio(bio);
+
+    // 教师端 token：仅独立访问（非 iframe）时从 URL 取并存 localStorage
+    // iframe 学生端走 postMessage 注入的另一套，不动这里
+    const token = searchParams.get('token');
+    if (token) {
+      let isEmbedded = true;
+      try {
+        isEmbedded = window.self !== window.top;
+      } catch {
+        /* 跨域沙箱 → 视为 iframe，不存 */
+      }
+      if (!isEmbedded) setTeacherToken(token);
+    }
   }, [searchParams]);
 
   useEffect(() => {
@@ -233,6 +248,8 @@ export default function ClassroomDetailPage() {
             <Stage onRetryOutline={retrySingleOutline} />
           )}
         </div>
+        {/* 教师 token 401 时弹窗，确认后关闭页面 */}
+        <TeacherSessionGuard />
       </MediaStageProvider>
     </ThemeProvider>
   );

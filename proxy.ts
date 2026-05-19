@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { verifySparkJwt } from '@/lib/server/spark-jwt';
 
 /** Convert string to Uint8Array */
 function encode(str: string): Uint8Array {
@@ -73,6 +74,32 @@ export async function proxy(request: NextRequest) {
       );
     }
     return NextResponse.next();
+  }
+
+  // === Spark JWT 鉴权（保护编辑型接口，验证 spark 签发的用户身份）===
+  // 表里每条 { path, method } 匹配一个受保护的 endpoint；method 是 GET/POST/DELETE 等。
+  // 未来新增敏感接口（如批量删除、修改标题等）在这里加一行即可。
+  const SPARK_JWT_PROTECTED: Array<{ path: string; method: string }> = [
+    { path: '/api/classroom', method: 'DELETE' },
+  ];
+  const protectedRoute = SPARK_JWT_PROTECTED.find(
+    (r) => pathname === r.path && request.method === r.method,
+  );
+  if (protectedRoute) {
+    const authHeader = request.headers.get('authorization');
+    const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
+    const payload = token ? await verifySparkJwt(token) : null;
+    if (!payload) {
+      return NextResponse.json(
+        { success: false, errorCode: 'UNAUTHORIZED', error: 'Invalid or expired token' },
+        { status: 401 },
+      );
+    }
+    // Inject userId into request headers so the downstream handler can read
+    // it for logging without re-verifying the token.
+    const headers = new Headers(request.headers);
+    headers.set('x-spark-user-id', payload.userId);
+    return NextResponse.next({ request: { headers } });
   }
 
   const accessCode = process.env.ACCESS_CODE;

@@ -29,6 +29,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { fetchWithTeacherToken } from '@/lib/auth/teacher-token';
 import { useI18n } from '@/lib/hooks/use-i18n';
 import type { SceneType, SlideContent, InteractiveContent } from '@/lib/types/stage';
 import { PENDING_SCENE_ID } from '@/lib/store/stage';
@@ -63,6 +64,7 @@ export function SceneSidebar({
   const [sceneToDelete, setSceneToDelete] = useState<{ id: string; title: string } | null>(
     null,
   );
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     try {
@@ -235,7 +237,7 @@ export function SceneSidebar({
                       {scene.title}
                     </span>
                   </div>
-                  {/* 删除按钮：仅独立访问（非 iframe）可见，hover 时显示 */}
+                  {/* 删除按钮：仅独立访问（非 iframe）可见，hover 才显示 */}
                   {!isEmbedded && (
                     <button
                       type="button"
@@ -548,28 +550,59 @@ export function SceneSidebar({
       {/* 删除场景确认弹窗 */}
       <AlertDialog
         open={sceneToDelete !== null}
-        onOpenChange={(open) => !open && setSceneToDelete(null)}
+        onOpenChange={(open) => {
+          if (!open && !isDeleting) setSceneToDelete(null);
+        }}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>删除场景「{sceneToDelete?.title}」？</AlertDialogTitle>
             <AlertDialogDescription>
-              删除后该场景将<strong>永久消失</strong>，无法恢复。该场景生成时关联的 OSS
-              音频、图片等素材文件不会被清理。确认继续？
+              删除后该场景将<strong>永久消失，无法恢复</strong>。该场景生成时关联的 OSS
+              音频 / 图片素材文件不会被清理（保留以防误删）。确认继续？
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>取消</AlertDialogCancel>
             <AlertDialogAction
+              disabled={isDeleting}
               className="bg-red-500 hover:bg-red-600 text-white"
-              onClick={() => {
-                if (sceneToDelete) {
-                  useStageStore.getState().deleteScene(sceneToDelete.id);
+              onClick={async (e) => {
+                e.preventDefault(); // 不让 Radix 立刻关弹窗，等 API 完成
+                if (!sceneToDelete) return;
+                const target = sceneToDelete;
+                const classroomId = useStageStore.getState().stage?.id;
+                setIsDeleting(true);
+                try {
+                  if (classroomId) {
+                    // 走教师 token 封装：自动带 Authorization 头，401 自动触发全局过期弹窗
+                    const res = await fetchWithTeacherToken(
+                      `/api/classroom?id=${encodeURIComponent(classroomId)}&sceneId=${encodeURIComponent(target.id)}`,
+                      { method: 'DELETE' },
+                    );
+                    if (res.status === 401) {
+                      // 401 已由 fetchWithTeacherToken 触发会话过期弹窗，这里只关本地确认框
+                      setSceneToDelete(null);
+                      return;
+                    }
+                    if (!res.ok) {
+                      console.error('[SceneSidebar] DELETE /api/classroom failed:', res.status);
+                      alert(`删除失败：HTTP ${res.status}`);
+                      return;
+                    }
+                  }
+                  // 服务端 JSON 已更新；同步本地 store / IndexedDB
+                  useStageStore.getState().deleteScene(target.id);
+                  setSceneToDelete(null);
+                } catch (err) {
+                  console.error('[SceneSidebar] delete scene error:', err);
+                  alert(`删除失败：${err instanceof Error ? err.message : String(err)}`);
+                } finally {
+                  setIsDeleting(false);
                 }
-                setSceneToDelete(null);
               }}
             >
-              确认删除
+              {isDeleting ? '删除中…' : '确认删除'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -30,28 +30,17 @@ You receive in the user prompt:
 
 1. **Read the current outline's title and keyPoints** — they define which lesson concept(s) this chat is supposed to deepen.
 2. **Scan the previous scenes** — identify the 1-3 prior scenes whose content most closely matches the chat's intent. The matching scene(s) might be immediately preceding OR earlier in the course.
-3. **Anchor the opening prompt** in those scene(s) — reference specific content the student has seen, using phrases that explicitly point back to earlier material ("Looking back at what we just saw...", "Earlier we covered...", "Returning to the example from page N...").
-4. **Pose a real reflection question** — not a fact check, not a yes/no — something the student must form a view on.
+3. **Pose a real reflection question** — not a fact check, not a yes/no — something the student must form a view on.
 
 ## Opening Prompt Design (CRITICAL)
 
 A good `openingPrompt`:
 
-- **Explicitly references prior content** — uses phrases that point back to what the student has already experienced, so the chat feels continuous with the lesson rather than a disconnected new prompt.
+- **Anchored in specific lesson content** — the student senses the question grows from what they just experienced; the chat does not feel like a disconnected new topic.
 - **Invites a perspective, not a fact** — the student needs to think and form an opinion, not recall an answer.
 - **Is open-ended** — no single correct answer; multiple thoughtful responses are valid.
 - **Is concrete and conversational** — feels like a real teacher's question, not a textbook prompt.
 - **Is one paragraph max** — typically 2-3 sentences.
-
-### Good Examples (English subject matter; your actual language follows the directive)
-
-After a slide on the dissection-based proof of the Pythagorean theorem:
-
-> ✅ "Looking back at the proof we just saw — four right triangles plus one inner square forming a larger square — why do you think ancient mathematicians turned to area-based reasoning to demonstrate a relationship between side lengths? If this were your first encounter with the theorem, how would you try to convince yourself it's true?"
-
-After two slides on photosynthesis and cellular respiration:
-
-> ✅ "We just looked at photosynthesis and cellular respiration. They almost look like mirror images of each other. Why do you think both processes exist on this planet? What would change if we only had one?"
 
 ### Bad Examples
 
@@ -92,6 +81,6 @@ If multiple teacher agents are available, you may pick the most thematically app
 ## Output Rules
 
 - Output a single JSON object directly — no explanation, no code fences, no preamble.
-- `topic` and `openingPrompt` MUST be in the language specified by the Language Directive (the English examples above are structural references only — your actual output language follows the directive).
+- `topic` and `openingPrompt` MUST be in the language specified by the Language Directive.
 - `openingPrompt` should be 2-3 sentences and clearly reference prior lesson content.
 - Omit `agentId` field when uncertain — it defaults to the lead teacher.

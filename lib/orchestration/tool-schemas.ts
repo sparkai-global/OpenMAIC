@@ -11,9 +11,14 @@ import { SLIDE_ONLY_ACTIONS } from '@/lib/types/action';
 
 /**
  * Filter allowed actions by scene type.
- * Slide-only actions (spotlight, laser) are removed for non-slide scenes.
+ *
+ * - `slide` (or undefined): all actions allowed.
+ * - `chat`: pure-text reflective dialogue — NO actions allowed (empty array).
+ * - other types (quiz / interactive / pbl / flashcard): strip slide-only
+ *   actions (spotlight, laser) but keep whiteboard actions.
  */
 export function getEffectiveActions(allowedActions: string[], sceneType?: string): string[] {
+  if (sceneType === 'chat') return [];
   if (!sceneType || sceneType === 'slide') return allowedActions;
   return allowedActions.filter(
     (a) => !SLIDE_ONLY_ACTIONS.includes(a as (typeof SLIDE_ONLY_ACTIONS)[number]),

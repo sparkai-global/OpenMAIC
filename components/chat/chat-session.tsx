@@ -9,6 +9,7 @@ import { useI18n } from '@/lib/hooks/use-i18n';
 import { AvatarDisplay } from '@/components/ui/avatar-display';
 import { CircleStop } from 'lucide-react';
 import { InlineActionTag } from './inline-action-tag';
+import { ChatText } from './chat-text';
 import { useUserProfileStore } from '@/lib/store/user-profile';
 
 /** Extended message part type covering standard + custom action parts */
@@ -126,7 +127,7 @@ const MessageBubble = memo(function MessageBubble({
 
             return (
               <span key={`${message.id}-${i}`}>
-                {text}
+                <ChatText text={text} />
                 {isLive && isLast && (
                   <span className="inline-block w-1.5 h-1.5 rounded-full bg-current opacity-50 animate-pulse ml-1 align-middle" />
                 )}

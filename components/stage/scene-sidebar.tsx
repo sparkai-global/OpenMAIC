@@ -11,11 +11,25 @@ import {
   Globe,
   AlertCircle,
   RefreshCw,
+  Layers,
+  MessageSquare,
+  Trash2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ThumbnailSlide } from '@/components/slide-renderer/components/ThumbnailSlide';
 import { ThumbnailInteractive } from '@/components/slide-renderer/components/ThumbnailInteractive';
 import { useStageStore, useCanvasStore } from '@/lib/store';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { fetchWithTeacherToken } from '@/lib/auth/teacher-token';
 import { useI18n } from '@/lib/hooks/use-i18n';
 import type { SceneType, SlideContent, InteractiveContent } from '@/lib/types/stage';
 import { PENDING_SCENE_ID } from '@/lib/store/stage';
@@ -47,6 +61,10 @@ export function SceneSidebar({
 
   const [retryingOutlineId, setRetryingOutlineId] = useState<string | null>(null);
   const [isEmbedded, setIsEmbedded] = useState(false);
+  const [sceneToDelete, setSceneToDelete] = useState<{ id: string; title: string } | null>(
+    null,
+  );
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     try {
@@ -106,11 +124,13 @@ export function SceneSidebar({
   );
 
   const getSceneTypeIcon = (type: SceneType) => {
-    const icons = {
+    const icons: Record<SceneType, typeof BookOpen> = {
       slide: BookOpen,
       quiz: PieChart,
       interactive: MousePointer2,
       pbl: Cpu,
+      flashcard: Layers,
+      chat: MessageSquare,
     };
     return icons[type] || BookOpen;
   };
@@ -137,13 +157,14 @@ export function SceneSidebar({
       )}
 
       <div className={cn('flex flex-col w-full h-full overflow-hidden', collapsed && 'hidden')}>
-        {/* Logo Header */}
-        <div className="h-10 flex items-center justify-between shrink-0 relative mt-3 mb-1 px-3">
-          {isEmbedded ? (
-            <div className="flex items-center gap-2 px-1.5 -mx-1.5 py-1 -my-1">
-              <img src="/logo-horizontal.png" alt="OpenMAIC" className="h-6" />
-            </div>
-          ) : (
+        {/* Logo Header —— iframe 模式下不显示 logo，只保留收起按钮 */}
+        <div
+          className={cn(
+            'h-10 flex items-center shrink-0 relative mt-3 mb-1 px-3',
+            isEmbedded ? 'justify-end' : 'justify-between',
+          )}
+        >
+          {!isEmbedded && (
             <button
               onClick={() => router.push('/')}
               className="flex items-center gap-2 cursor-pointer rounded-lg px-1.5 -mx-1.5 py-1 -my-1 hover:bg-gray-100/80 dark:hover:bg-gray-800/60 active:scale-[0.97] transition-all duration-150"
@@ -192,8 +213,8 @@ export function SceneSidebar({
                 )}
               >
                 {/* Scene Header */}
-                <div className="flex justify-between items-center px-2 pt-0.5">
-                  <div className="flex items-center gap-2 max-w-full">
+                <div className="flex justify-between items-center px-2 pt-0.5 gap-1">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
                     <span
                       className={cn(
                         'text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center shrink-0',
@@ -216,6 +237,22 @@ export function SceneSidebar({
                       {scene.title}
                     </span>
                   </div>
+                  {/* 删除按钮：仅独立访问（非 iframe）可见，hover 才显示 */}
+                  {!isEmbedded && (
+                    <button
+                      type="button"
+                      data-testid="scene-delete"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSceneToDelete({ id: scene.id, title: scene.title });
+                      }}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity w-5 h-5 shrink-0 rounded flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30"
+                      title="删除此场景"
+                      aria-label="删除此场景"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  )}
                 </div>
 
                 {/* Thumbnail */}
@@ -291,6 +328,34 @@ export function SceneSidebar({
                           </div>
                           <div className="flex-1 bg-emerald-100/40 dark:bg-emerald-800/20 rounded flex items-center justify-center border border-emerald-200/40 dark:border-emerald-700/20">
                             <Globe className="w-4 h-4 text-emerald-300/80 dark:text-emerald-600/50" />
+                          </div>
+                        </div>
+                      </div>
+                    ) : scene.type === 'flashcard' ? (
+                      /* Flashcard: stacked cards with a flipped one on top showing back hint */
+                      <div className="w-full h-full bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-950/30 dark:to-violet-950/20 p-1.5 flex items-center justify-center relative">
+                        {/* back card (peeking behind) */}
+                        <div className="absolute w-[58%] h-[62%] bg-white/70 dark:bg-white/5 ring-1 ring-purple-200/60 dark:ring-purple-700/30 rounded-md rotate-[-6deg] translate-x-1.5 translate-y-1" />
+                        {/* front card */}
+                        <div className="relative w-[60%] h-[64%] bg-gradient-to-br from-purple-400 to-violet-500 dark:from-purple-500 dark:to-violet-600 rounded-md shadow-sm flex flex-col items-center justify-center gap-0.5 p-1">
+                          <div className="h-0.5 w-3/5 bg-white/70 rounded-full" />
+                          <div className="h-0.5 w-2/5 bg-white/50 rounded-full" />
+                          <Layers className="w-2.5 h-2.5 text-white/80 mt-0.5" />
+                        </div>
+                      </div>
+                    ) : scene.type === 'chat' ? (
+                      /* Chat: 1v1 conversation bubbles */
+                      <div className="w-full h-full bg-gradient-to-br from-rose-50 to-pink-50 dark:from-rose-950/30 dark:to-pink-950/20 p-1.5 flex flex-col justify-end gap-1">
+                        <div className="flex items-end gap-1">
+                          <div className="w-2 h-2 rounded-full bg-rose-300 dark:bg-rose-600/70 shrink-0" />
+                          <div className="bg-white/80 dark:bg-white/10 rounded-md rounded-bl-sm px-1.5 py-0.5 flex flex-col gap-0.5 max-w-[60%]">
+                            <div className="h-0.5 w-8 bg-rose-200/80 dark:bg-rose-700/50 rounded-full" />
+                            <div className="h-0.5 w-5 bg-rose-200/60 dark:bg-rose-700/40 rounded-full" />
+                          </div>
+                        </div>
+                        <div className="flex items-end gap-1 justify-end">
+                          <div className="bg-gradient-to-br from-rose-400 to-pink-500 dark:from-rose-500 dark:to-pink-600 rounded-md rounded-br-sm px-1.5 py-0.5 max-w-[55%]">
+                            <div className="h-0.5 w-6 bg-white/80 rounded-full" />
                           </div>
                         </div>
                       </div>
@@ -481,6 +546,67 @@ export function SceneSidebar({
         {/* Spacer to push toggle button area */}
         <div className="mt-auto" />
       </div>
+
+      {/* 删除场景确认弹窗 */}
+      <AlertDialog
+        open={sceneToDelete !== null}
+        onOpenChange={(open) => {
+          if (!open && !isDeleting) setSceneToDelete(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>删除场景「{sceneToDelete?.title}」？</AlertDialogTitle>
+            <AlertDialogDescription>
+              删除后该场景将<strong>永久消失，无法恢复</strong>。该场景生成时关联的 OSS
+              音频 / 图片素材文件不会被清理（保留以防误删）。确认继续？
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>取消</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={isDeleting}
+              className="bg-red-500 hover:bg-red-600 text-white"
+              onClick={async (e) => {
+                e.preventDefault(); // 不让 Radix 立刻关弹窗，等 API 完成
+                if (!sceneToDelete) return;
+                const target = sceneToDelete;
+                const classroomId = useStageStore.getState().stage?.id;
+                setIsDeleting(true);
+                try {
+                  if (classroomId) {
+                    // 走教师 token 封装：自动带 Authorization 头，401 自动触发全局过期弹窗
+                    const res = await fetchWithTeacherToken(
+                      `/api/classroom?id=${encodeURIComponent(classroomId)}&sceneId=${encodeURIComponent(target.id)}`,
+                      { method: 'DELETE' },
+                    );
+                    if (res.status === 401) {
+                      // 401 已由 fetchWithTeacherToken 触发会话过期弹窗，这里只关本地确认框
+                      setSceneToDelete(null);
+                      return;
+                    }
+                    if (!res.ok) {
+                      console.error('[SceneSidebar] DELETE /api/classroom failed:', res.status);
+                      alert(`删除失败：HTTP ${res.status}`);
+                      return;
+                    }
+                  }
+                  // 服务端 JSON 已更新；同步本地 store / IndexedDB
+                  useStageStore.getState().deleteScene(target.id);
+                  setSceneToDelete(null);
+                } catch (err) {
+                  console.error('[SceneSidebar] delete scene error:', err);
+                  alert(`删除失败：${err instanceof Error ? err.message : String(err)}`);
+                } finally {
+                  setIsDeleting(false);
+                }
+              }}
+            >
+              {isDeleting ? '删除中…' : '确认删除'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

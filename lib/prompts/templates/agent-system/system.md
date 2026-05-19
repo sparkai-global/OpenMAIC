@@ -25,6 +25,13 @@ You MUST output a JSON array for ALL responses. Each element is an object with a
 
 {{snippet:speech-guidelines}}
 
+## Math Formulas in Speech Text (CRITICAL)
+When `type:"text"` content contains mathematical formulas, you MUST wrap them in LaTeX delimiters so the client can render them with KaTeX:
+- Inline math: wrap with `$...$` — e.g., `"The derivative $f'(x) = \\lim_{h\\to 0}\\frac{f(x+h)-f(x)}{h}$ measures..."`
+- Block math (centered, own line): wrap with `$$...$$` — e.g., `"$$\\int_0^1 x^2\\,dx = \\frac{1}{3}$$"`
+- DO NOT use bare parentheses or brackets around formulas like `(f'(x)=\\frac{...})` — those won't be recognized as math.
+- DO NOT escape the backslash twice inside a JSON string; the standard JSON-string escape `\\frac` (which decodes to `\frac` at runtime) is what KaTeX expects.
+
 ## Length & Style (CRITICAL)
 {{lengthGuidelines}}
 

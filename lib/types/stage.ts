@@ -4,7 +4,7 @@ import type { Action } from '@/lib/types/action';
 import type { PBLProjectConfig } from '@/lib/pbl/types';
 import type { WidgetType, WidgetConfig, TeacherAction } from '@/lib/types/widgets';
 
-export type SceneType = 'slide' | 'quiz' | 'interactive' | 'pbl';
+export type SceneType = 'slide' | 'quiz' | 'interactive' | 'pbl' | 'flashcard' | 'chat';
 
 export type StageMode = 'autonomous' | 'playback';
 
@@ -77,7 +77,13 @@ export interface Scene {
 /**
  * Scene content based on type
  */
-export type SceneContent = SlideContent | QuizContent | InteractiveContent | PBLContent;
+export type SceneContent =
+  | SlideContent
+  | QuizContent
+  | InteractiveContent
+  | PBLContent
+  | FlashcardContent
+  | ChatContent;
 
 /**
  * Slide content - PPTist Canvas data
@@ -133,6 +139,41 @@ export interface InteractiveContent {
 export interface PBLContent {
   type: 'pbl';
   projectConfig: PBLProjectConfig;
+}
+
+/**
+ * Flashcard content — Anki-style review cards.
+ * Always inserted immediately after a contentful scene; cards must be
+ * derived from that preceding scene's actual content (anti-hallucination).
+ */
+export interface FlashcardContent {
+  type: 'flashcard';
+  cards: FlashcardItem[];
+}
+
+export interface FlashcardItem {
+  /** Front side: the term, prompt, or question to recall. */
+  front: string;
+  /** Back side: the full answer / definition, grounded in source material. */
+  back: string;
+  /** Optional hint that nudges recall without directly revealing the answer. */
+  hint?: string;
+}
+
+/**
+ * Chat content — 1-on-1 reflective discussion with the teacher.
+ * Reuses the teacherOnly discussion mechanism. The opening prompt
+ * references one or more previous slide scenes and invites student
+ * participation; the discussion continues until the student exits.
+ */
+export interface ChatContent {
+  type: 'chat';
+  /** Discussion topic — defines what this chat is about. */
+  topic: string;
+  /** Teacher's opening line — auto-displayed when scene starts. */
+  openingPrompt: string;
+  /** Agent that drives the chat. Defaults to the lead teacher when omitted. */
+  agentId?: string;
 }
 
 // Re-export generation types for convenience

@@ -56,10 +56,14 @@ interface DiscussionContext {
 
 const FORMAT_EXAMPLE_SLIDE = `[{"type":"action","name":"spotlight","params":{"elementId":"img_1"}},{"type":"text","content":"Your natural speech to students"}]`;
 const FORMAT_EXAMPLE_WB = `[{"type":"action","name":"wb_open","params":{}},{"type":"text","content":"Your natural speech to students"}]`;
+const FORMAT_EXAMPLE_CHAT = `[{"type":"text","content":"Your conversational reply to the student"}]`;
 
 const ORDERING_SLIDE = `- spotlight/laser actions should appear BEFORE the corresponding text object (point first, then speak)
 - whiteboard actions can interleave WITH text objects (draw while speaking)`;
 const ORDERING_WB = `- whiteboard actions can interleave WITH text objects (draw while speaking)`;
+const ORDERING_CHAT = `- This is a pure-text reflective chat with a single student. Output ONLY type:"text" items.
+- Do NOT output any type:"action" items — no spotlight, no laser, no whiteboard (wb_*), no discussion. Your only tool here is conversation.
+- Keep replies short, warm, and focused on what the student just said. One thought per message.`;
 
 const SPOTLIGHT_EXAMPLES = `[{"type":"action","name":"spotlight","params":{"elementId":"img_1"}},{"type":"text","content":"Photosynthesis is the process by which plants convert light energy into chemical energy. Take a look at this diagram."},{"type":"text","content":"During this process, plants absorb carbon dioxide and water to produce glucose and oxygen."}]
 
@@ -150,6 +154,9 @@ export function buildStructuredPrompt(
   const effectiveActions = getEffectiveActions(agentConfig.allowedActions, sceneType);
   const hasSlideActions =
     effectiveActions.includes('spotlight') || effectiveActions.includes('laser');
+  // chat scenes are pure-text reflective dialogue — strip every action/whiteboard
+  // hint from the prompt so the agent doesn't try to draw or spotlight here.
+  const isChatScene = sceneType === 'chat';
 
   const vars = {
     agentName: agentConfig.name,
@@ -158,16 +165,26 @@ export function buildStructuredPrompt(
     studentProfileSection: buildStudentProfileSection(userProfile),
     peerContext: buildPeerContextSection(agentResponses, agentConfig.name),
     languageConstraint: buildLanguageConstraint(storeState.stage?.languageDirective),
-    formatExample: hasSlideActions ? FORMAT_EXAMPLE_SLIDE : FORMAT_EXAMPLE_WB,
-    orderingPrinciples: hasSlideActions ? ORDERING_SLIDE : ORDERING_WB,
-    spotlightExamples: hasSlideActions ? SPOTLIGHT_EXAMPLES : '',
-    actionDescriptions: getActionDescriptions(effectiveActions),
-    slideActionGuidelines: hasSlideActions ? SLIDE_ACTION_GUIDELINES : '',
-    mutualExclusionNote: hasSlideActions ? MUTUAL_EXCLUSION_NOTE : '',
+    formatExample: isChatScene
+      ? FORMAT_EXAMPLE_CHAT
+      : hasSlideActions
+        ? FORMAT_EXAMPLE_SLIDE
+        : FORMAT_EXAMPLE_WB,
+    orderingPrinciples: isChatScene
+      ? ORDERING_CHAT
+      : hasSlideActions
+        ? ORDERING_SLIDE
+        : ORDERING_WB,
+    spotlightExamples: isChatScene ? '' : hasSlideActions ? SPOTLIGHT_EXAMPLES : '',
+    actionDescriptions: isChatScene ? '' : getActionDescriptions(effectiveActions),
+    slideActionGuidelines: isChatScene ? '' : hasSlideActions ? SLIDE_ACTION_GUIDELINES : '',
+    mutualExclusionNote: isChatScene ? '' : hasSlideActions ? MUTUAL_EXCLUSION_NOTE : '',
     stateContext: buildStateContext(storeState),
-    virtualWhiteboardContext: buildVirtualWhiteboardContext(storeState, whiteboardLedger),
+    virtualWhiteboardContext: isChatScene
+      ? ''
+      : buildVirtualWhiteboardContext(storeState, whiteboardLedger),
     lengthGuidelines: buildLengthGuidelines(agentConfig.role),
-    whiteboardGuidelines: buildWhiteboardGuidelines(agentConfig.role),
+    whiteboardGuidelines: isChatScene ? '' : buildWhiteboardGuidelines(agentConfig.role),
     discussionContextSection: buildDiscussionContextSection(discussionContext, agentResponses, teacherOnly ?? undefined),
   };
 

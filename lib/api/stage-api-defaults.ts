@@ -14,6 +14,8 @@ import type {
   QuizContent,
   InteractiveContent,
   PBLContent,
+  FlashcardContent,
+  ChatContent,
 } from '@/lib/types/stage';
 
 // ==================== Utility Functions ====================
@@ -107,6 +109,27 @@ export function createDefaultPBLContent(): PBLContent {
 }
 
 /**
+ * Create default FlashcardContent
+ */
+export function createDefaultFlashcardContent(): FlashcardContent {
+  return {
+    type: 'flashcard',
+    cards: [],
+  };
+}
+
+/**
+ * Create default ChatContent
+ */
+export function createDefaultChatContent(): ChatContent {
+  return {
+    type: 'chat',
+    topic: '',
+    openingPrompt: '',
+  };
+}
+
+/**
  * Create default Content based on type
  */
 export function createDefaultContent(type: SceneType): SceneContent {
@@ -119,6 +142,10 @@ export function createDefaultContent(type: SceneType): SceneContent {
       return createDefaultInteractiveContent();
     case 'pbl':
       return createDefaultPBLContent();
+    case 'flashcard':
+      return createDefaultFlashcardContent();
+    case 'chat':
+      return createDefaultChatContent();
     default:
       throw new Error(`Unknown scene type: ${type}`);
   }

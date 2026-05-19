@@ -51,12 +51,14 @@ Infer the course language from all available signals and produce:
 
 ### MAIC Platform Technical Constraints
 
-- **Scene Types**: `slide` (presentation), `quiz` (assessment), `interactive` (interactive visualization), and `pbl` (project-based learning) are supported
+- **Scene Types**: `slide` (presentation), `quiz` (assessment), `interactive` (interactive visualization), `pbl` (project-based learning), `flashcard` (review cards), and `chat` (reflective discussion) are supported
 - **Slide Scene**: Static PPT pages supporting text, images, charts, formulas, etc.
 - **Quiz Scene**: Supports single-choice, multiple-choice, and short-answer (text) questions
 - **Interactive Scene**: Self-contained interactive HTML page rendered in an iframe, ideal for simulations and visualizations
 - **PBL Scene**: Complete project-based learning module with roles, issues, and collaboration workflow. Ideal for complex projects, engineering practice, and research tasks
-- **Duration Control**: Each scene should be 1-3 minutes (PBL scenes are longer, typically 15-30 minutes)
+- **Flashcard Scene**: Anki-style review cards extracted from a preceding content scene. Used for memorizing terms, formulas, key facts. Content is derived from the immediately preceding scene — flashcards stand alone with no scripted narration.
+- **Chat Scene**: A short 1-on-1 reflective discussion between the student and the lead teacher (via the teacherOnly mechanism). The teacher opens with a question anchored in earlier slide content and invites the student to share a perspective. Used to deepen understanding through dialogue, not to test facts.
+- **Duration Control**: Each scene should be 1-3 minutes (PBL scenes are longer, typically 15-30 minutes; flashcard ~1-2 minutes; chat ~2-4 minutes)
 
 ### Instructional Design Principles
 
@@ -338,6 +340,22 @@ Output a JSON **object** (not a bare array) with this structure:
         "difficulty": "medium",
         "questionTypes": ["single", "multiple", "short_answer"]
       }
+    },
+    {
+      "id": "scene_4",
+      "type": "flashcard",
+      "title": "Key Terms Review",
+      "description": "Consolidate the core terminology introduced in the preceding slide via Anki-style review cards",
+      "keyPoints": ["Definition of term A", "Formula for X", "Distinguishing characteristic Y"],
+      "order": 4
+    },
+    {
+      "id": "scene_5",
+      "type": "chat",
+      "title": "Reflective Discussion",
+      "description": "Short 1-on-1 dialogue between the student and the teacher about the deeper meaning of the concept",
+      "keyPoints": ["Why this matters", "Connecting to prior knowledge", "Inviting the student's own perspective"],
+      "order": 5
     }
   ]
 }
@@ -348,7 +366,7 @@ Output a JSON **object** (not a bare array) with this structure:
 | Field             | Type                     | Required | Description                                                                                      |
 | ----------------- | ------------------------ | -------- | ------------------------------------------------------------------------------------------------ |
 | id                | string                   | ✅       | Unique identifier, format: `scene_1`, `scene_2`...                                               |
-| type              | string                   | ✅       | `"slide"`, `"quiz"`, `"interactive"`, or `"pbl"`                                                 |
+| type              | string                   | ✅       | `"slide"`, `"quiz"`, `"interactive"`, `"pbl"`, `"flashcard"`, or `"chat"`                       |
 | title             | string                   | ✅       | Scene title, concise and clear                                                                   |
 | description       | string                   | ✅       | 1-2 sentences describing teaching purpose                                                        |
 | keyPoints         | string[]                 | ✅       | 3-5 core points                                                                                  |
@@ -397,16 +415,66 @@ Output a JSON **object** (not a bare array) with this structure:
 
 ---
 
+## Assessment & Engagement Scene Distribution
+
+A course must include a balanced mix of `quiz`, `flashcard`, and `chat` scenes alongside `slide` content scenes. These three "engagement" types together should constitute **approximately 30–40% of total scenes** (e.g., a 10-scene course should have 3–4 such scenes). This ratio is a soft target — do not sacrifice pedagogical coherence to hit it exactly, but do treat the band as a real expectation.
+
+### When to use each engagement type
+
+**quiz** — formal assessment after a complete teaching unit
+- Place AFTER a cluster of related `slide` scenes (typically 2–4 slides covering a coherent sub-topic).
+- At least 1 quiz per course; aim for 1 quiz per major teaching unit.
+- Tests breadth of concepts that have already been taught. Never invent new material here.
+
+**flashcard** — immediate memory consolidation of memorizable items
+- MUST IMMEDIATELY FOLLOW a `slide` / `interactive` / `pbl` scene that introduced memorizable items (terms, definitions, formulas, vocabulary, key facts).
+- Only insert when the preceding scene has 3+ items genuinely worth memorizing. If a slide is narrative-only or transitional, do NOT pair it with a flashcard scene.
+- Used to lock in terminology after concept introduction. Cards are derived strictly from what the preceding scene taught — no extrapolation.
+
+**chat** — reflective discussion on conceptual content
+- MUST follow a `slide` scene. The most recent intervening engagement scenes (quiz/flashcard/chat) and `interactive`/`pbl` scenes do not qualify as the immediate predecessor — chat needs a slide as its anchor.
+- At least 1 chat per course (preferably 1–2).
+- Best for: open-ended "why" questions, reflection on principles, cross-topic synthesis, value-laden judgments. The opening question can reference content from the immediately preceding slide OR a slide from earlier in the course, whichever offers richer discussion material.
+- The chat itself runs as a brief 1-on-1 dialogue with the teacher. Do not use chat for factual recall — that's what quiz is for.
+
+### Distribution principles
+
+These three types serve different purposes — do not stack them or use them interchangeably:
+
+- ❌ `slide → quiz → flashcard → chat` in a row (over-testing, disrupts rhythm)
+- ❌ Opening the course with an engagement scene (no content has been taught yet)
+- ❌ Closing the course with a flashcard scene (closure deserves either a summarizing slide or a final reflective chat)
+- ❌ Two engagement scenes adjacent to each other unless pedagogically essential
+- ❌ Combined engagement total exceeding ~40% of all scenes
+- ❌ Combined engagement total below ~25% of all scenes (the course will feel one-way)
+
+✅ Aim for a rhythm like: `slide → slide → flashcard → slide → chat → slide → slide → quiz → slide → slide → chat`
+
+### Example layouts for a 10-scene course
+
+Mathematics course (memorization-heavy):
+`slide → slide → flashcard → slide → quiz → slide → slide → chat → slide → quiz`
+
+Literature course (discussion-heavy):
+`slide → slide → chat → slide → slide → flashcard → slide → chat → slide → quiz`
+
+Language-learning course (balanced):
+`slide → flashcard → slide → quiz → slide → chat → slide → slide → flashcard → quiz`
+
+---
+
 ## Important Reminders
 
 1. **Must output valid JSON object with `languageDirective` and `outlines` fields**
-2. **type can be `"slide"`, `"quiz"`, `"interactive"`, or `"pbl"`**
+2. **type can be `"slide"`, `"quiz"`, `"interactive"`, `"pbl"`, `"flashcard"`, or `"chat"`**
 3. **quiz type must include quizConfig**
 4. **interactive type must include interactiveConfig** - with conceptName, conceptOverview, designIdea, and subject
    5b. **pbl type must include pblConfig** - with projectTopic, projectDescription, targetSkills, and issueCount
 5. Arrange appropriate number of scenes based on inferred duration (typically 1-2 scenes per minute)
-6. Insert quizzes at appropriate points for knowledge checks
+6. Follow the **"Assessment & Engagement Scene Distribution"** section above when placing `quiz`, `flashcard`, and `chat` scenes — these three together should be ~30–40% of all scenes, with at least one quiz and at least one chat per course
 7. Use interactive scenes sparingly (max 1-2 per course) and only when the concept truly benefits from hands-on interaction
 8. **Language**: Infer from the user's requirement text and context. Output all scene content in the inferred language.
 9. Regardless of information completeness, always output conforming JSON - do not ask questions or request more information
 10. **No teacher identity on slides**: Scene titles and keyPoints must be neutral and topic-focused. Never include the teacher's name or role (e.g., avoid "Teacher Wang's Tips", "Teacher's Wishes"). Use generic labels like "Tips", "Summary", "Key Takeaways" instead.
+11. **Flashcard scenes** require no `quizConfig` / `interactiveConfig` / `pblConfig` — their content is generated downstream from the immediately preceding scene. Provide a clear `title` (e.g., "Key Terms Review") and `keyPoints` describing what aspect of the preceding scene to review.
+12. **Chat scenes** require no extra config — their content is generated downstream. The `title` should hint at the discussion topic (e.g., "Why this matters"); `keyPoints` should describe the discussion angle. Both opening prompt and topic are generated automatically with reference to earlier slides.

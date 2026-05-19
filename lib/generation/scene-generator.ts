@@ -14,6 +14,8 @@ import type {
   GeneratedQuizContent,
   GeneratedInteractiveContent,
   GeneratedPBLContent,
+  GeneratedFlashcardContent,
+  GeneratedChatContent,
   ScientificModel,
   PdfImage,
   ImageMapping,
@@ -39,7 +41,7 @@ import {
   formatImagePlaceholder,
 } from './prompt-formatters';
 import type { PPTElement, Slide, SlideBackground, SlideTheme } from '@/lib/types/slides';
-import type { QuizQuestion } from '@/lib/types/stage';
+import type { QuizQuestion, Scene } from '@/lib/types/stage';
 import type {
   Action,
   SpeechAction,
@@ -75,6 +77,13 @@ export interface SceneContentOptions {
    * Quiz dispatcher filters this for type==='slide' to build learnedContent.
    */
   previousOutlines?: SceneOutline[];
+  /**
+   * Fully generated scenes that come BEFORE this scene in the course.
+   * Used by flashcard / chat generation, which need access to the preceding
+   * scene's actual content (canvas text + speech) — not just outline keypoints.
+   * Other scene types ignore this field.
+   */
+  previousScenes?: Scene[];
 }
 
 export interface SceneActionsOptions {
@@ -171,22 +180,38 @@ async function generateSingleScene(
   aiCall: AICallFn,
   languageDirective?: string,
   previousOutlines?: SceneOutline[],
+  previousScenes?: Scene[],
 ): Promise<string | null> {
-  // Step 3.1: Generate content
+  // Step 3.1: Generate content (with 1 retry for flashcard/chat per design)
   log.info(`Step 3.1: Generating content for: ${outline.title}`);
-  const content = await generateSceneContent(outline, aiCall, {
+  const needsRetry = outline.type === 'flashcard' || outline.type === 'chat';
+  let content = await generateSceneContent(outline, aiCall, {
     languageDirective,
     previousOutlines,
+    previousScenes,
   });
+  if (!content && needsRetry) {
+    log.warn(`Retrying content generation once for ${outline.type} scene: ${outline.title}`);
+    content = await generateSceneContent(outline, aiCall, {
+      languageDirective,
+      previousOutlines,
+      previousScenes,
+    });
+  }
   if (!content) {
     log.error(`Failed to generate content for: ${outline.title}`);
     return null;
   }
 
-  // Step 3.2: Generate Actions
-  log.info(`Step 3.2: Generating actions for: ${outline.title}`);
-  const actions = await generateSceneActions(outline, content, aiCall, { languageDirective });
-  log.info(`Generated ${actions.length} actions for: ${outline.title}`);
+  // Step 3.2: Generate Actions (flashcard / chat have no scripted actions)
+  let actions: Action[] = [];
+  if (outline.type !== 'flashcard' && outline.type !== 'chat') {
+    log.info(`Step 3.2: Generating actions for: ${outline.title}`);
+    actions = await generateSceneActions(outline, content, aiCall, { languageDirective });
+    log.info(`Generated ${actions.length} actions for: ${outline.title}`);
+  } else {
+    log.info(`Skipping actions for ${outline.type} scene: ${outline.title}`);
+  }
 
   // Create complete Scene
   return createSceneWithActions(outline, content, actions, api);
@@ -296,6 +321,8 @@ export async function generateSceneContent(
   | GeneratedQuizContent
   | GeneratedInteractiveContent
   | GeneratedPBLContent
+  | GeneratedFlashcardContent
+  | GeneratedChatContent
   | null
 > {
   const {
@@ -306,6 +333,7 @@ export async function generateSceneContent(
     generatedMediaMapping,
     agents,
     languageDirective,
+    previousScenes,
   } = options;
 
   // Unified path for interactive scenes (both normal and ultra mode)
@@ -351,6 +379,10 @@ export async function generateSceneContent(
       return generateQuizContent(outline, aiCall, options.previousOutlines);
     case 'pbl':
       return generatePBLSceneContent(outline, languageModel);
+    case 'flashcard':
+      return generateFlashcardContent(outline, aiCall, previousScenes, languageDirective);
+    case 'chat':
+      return generateChatContent(outline, aiCall, previousScenes, agents, languageDirective);
     default:
       return null;
   }
@@ -880,6 +912,198 @@ function normalizeQuizAnswer(question: Record<string, unknown>): string[] | unde
 }
 
 /**
+ * Generate flashcard content from the immediately preceding scene.
+ *
+ * Cards are extracted from the previous scene's actual content (canvas text +
+ * speech) to prevent hallucination. Returns null when the source scene cannot
+ * support the minimum 3 cards or when AI parsing fails; the caller decides
+ * whether to retry or skip.
+ */
+async function generateFlashcardContent(
+  outline: SceneOutline,
+  aiCall: AICallFn,
+  previousScenes?: Scene[],
+  languageDirective?: string,
+): Promise<GeneratedFlashcardContent | null> {
+  const source = previousScenes && previousScenes.length > 0 ? previousScenes.at(-1) : undefined;
+  if (!source) {
+    log.warn(`Flashcard "${outline.title}" has no preceding scene — cannot extract cards`);
+    return null;
+  }
+
+  // Extract visible text from the source scene's canvas (slide / interactive / pbl)
+  const sourceVisualContent = extractSceneVisualText(source);
+  const sourceSpeechContent = extractSceneSpeechText(source);
+  const sourceKeyPointsFromOutline =
+    (previousScenes && previousScenes.length > 0 ? previousScenes.at(-1) : undefined)?.title || '';
+
+  const prompts = buildPrompt(PROMPT_IDS.FLASHCARD_CONTENT, {
+    title: outline.title,
+    description: outline.description || '',
+    keyPoints: (outline.keyPoints || []).map((p, i) => `${i + 1}. ${p}`).join('\n'),
+    sourceTitle: source.title,
+    sourceDescription: '',
+    sourceKeyPoints: sourceKeyPointsFromOutline,
+    sourceVisualContent: sourceVisualContent || '(no visual content)',
+    sourceSpeechContent: sourceSpeechContent || '(no speech recorded)',
+    languageDirective: languageDirective || '',
+  });
+
+  if (!prompts) return null;
+
+  log.debug(`Generating flashcard content for: ${outline.title}`);
+  const response = await aiCall(prompts.system, prompts.user);
+  const cards = parseJsonResponse<Array<{ front: string; back: string; hint?: string }>>(response);
+
+  if (!cards || !Array.isArray(cards)) {
+    log.error(`Failed to parse flashcard response for: ${outline.title}`);
+    return null;
+  }
+
+  // Filter out malformed cards
+  const valid = cards.filter(
+    (c) => c && typeof c.front === 'string' && c.front.trim() && typeof c.back === 'string' && c.back.trim(),
+  );
+
+  if (valid.length < 3) {
+    log.warn(
+      `Flashcard "${outline.title}" produced only ${valid.length} valid cards (min 3) — skipping`,
+    );
+    return null;
+  }
+
+  // Cap at 5 cards
+  const capped = valid.slice(0, 5);
+
+  log.debug(`Got ${capped.length} flashcards for: ${outline.title}`);
+  return { cards: capped };
+}
+
+/**
+ * Generate chat scene content (topic + opening prompt).
+ *
+ * The opening prompt is anchored in one or more previous slide scenes,
+ * chosen by the LLM based on relevance to the chat's outline title/intent.
+ * Reuses the teacherOnly discussion mechanism downstream.
+ */
+async function generateChatContent(
+  outline: SceneOutline,
+  aiCall: AICallFn,
+  previousScenes?: Scene[],
+  agents?: AgentInfo[],
+  languageDirective?: string,
+): Promise<GeneratedChatContent | null> {
+  // Filter previous scenes to slide-type only (chat only references slide content)
+  const referencableSlides = (previousScenes || []).filter((s) => s.type === 'slide');
+  if (referencableSlides.length === 0) {
+    log.warn(`Chat "${outline.title}" has no preceding slide scenes to reference — skipping`);
+    return null;
+  }
+
+  const teacherAgents = (agents || [])
+    .filter((a) => a.role === 'teacher')
+    .map((a) => `- ${a.id} (${a.name}): ${a.persona || '(no persona)'}`)
+    .join('\n');
+
+  // Build a compact representation of each previous slide for LLM scanning
+  const previousScenesText = referencableSlides
+    .slice(-5) // limit to most recent 5 slides to keep prompt size bounded
+    .map((s, i) => {
+      const visualText = extractSceneVisualText(s);
+      const speechText = extractSceneSpeechText(s);
+      const visualSummary = visualText ? visualText.slice(0, 300) : '';
+      const speechSummary = speechText ? speechText.slice(0, 500) : '';
+      return [
+        `## Scene ${s.order ?? i + 1}: ${s.title}`,
+        visualSummary ? `Visual: ${visualSummary}` : '',
+        speechSummary ? `Speech: ${speechSummary}` : '',
+      ]
+        .filter(Boolean)
+        .join('\n');
+    })
+    .join('\n\n');
+
+  const prompts = buildPrompt(PROMPT_IDS.CHAT_CONTENT, {
+    title: outline.title,
+    description: outline.description || '',
+    keyPoints: (outline.keyPoints || []).map((p, i) => `${i + 1}. ${p}`).join('\n'),
+    teacherAgents: teacherAgents || '(no agent info — use lead teacher)',
+    previousScenes: previousScenesText,
+    languageDirective: languageDirective || '',
+  });
+
+  if (!prompts) return null;
+
+  log.debug(`Generating chat content for: ${outline.title}`);
+  const response = await aiCall(prompts.system, prompts.user);
+  const parsed = parseJsonResponse<{ topic?: string; openingPrompt?: string; agentId?: string }>(
+    response,
+  );
+
+  if (!parsed || typeof parsed !== 'object') {
+    log.error(`Failed to parse chat response for: ${outline.title}`);
+    return null;
+  }
+
+  const topic = typeof parsed.topic === 'string' && parsed.topic.trim() ? parsed.topic.trim() : '';
+  const openingPrompt =
+    typeof parsed.openingPrompt === 'string' && parsed.openingPrompt.trim()
+      ? parsed.openingPrompt.trim()
+      : '';
+
+  if (!topic || !openingPrompt) {
+    log.warn(`Chat "${outline.title}" missing topic or openingPrompt — skipping`);
+    return null;
+  }
+
+  const result: GeneratedChatContent = { topic, openingPrompt };
+  if (typeof parsed.agentId === 'string' && parsed.agentId.trim()) {
+    result.agentId = parsed.agentId.trim();
+  }
+
+  log.debug(`Got chat content for: ${outline.title} (topic: ${topic.slice(0, 40)}...)`);
+  return result;
+}
+
+/**
+ * Extract visible text from a generated scene's content for use as flashcard
+ * / chat context. Returns concatenated text-like elements; empty when the
+ * scene has no text representation.
+ */
+function extractSceneVisualText(scene: Scene): string {
+  const content = scene.content as { type?: string; canvas?: { elements?: unknown[] } };
+  if (content?.type !== 'slide' || !content.canvas?.elements) return '';
+
+  const parts: string[] = [];
+  for (const el of content.canvas.elements) {
+    const e = el as { type?: string; content?: string; latex?: string };
+    if (e.type === 'text' && typeof e.content === 'string') {
+      // Strip HTML tags for cleaner extraction
+      const stripped = e.content.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+      if (stripped) parts.push(stripped);
+    } else if (e.type === 'latex' && typeof e.latex === 'string') {
+      parts.push(`[Formula: ${e.latex}]`);
+    }
+  }
+  return parts.join('\n');
+}
+
+/**
+ * Concatenate speech action texts from a scene; empty when no speech actions.
+ */
+function extractSceneSpeechText(scene: Scene): string {
+  if (!scene.actions || scene.actions.length === 0) return '';
+  const parts: string[] = [];
+  for (const a of scene.actions) {
+    const action = a as { type?: string; text?: string };
+    if (action.type === 'speech' && typeof action.text === 'string' && action.text.trim()) {
+      parts.push(action.text.trim());
+    }
+  }
+  return parts.join('\n');
+}
+
+/**
  * Generate PBL project content
  * Uses the agentic loop from lib/pbl/generate-pbl.ts
  */
@@ -1149,7 +1373,9 @@ export async function generateSceneActions(
     | GeneratedSlideContent
     | GeneratedQuizContent
     | GeneratedInteractiveContent
-    | GeneratedPBLContent,
+    | GeneratedPBLContent
+    | GeneratedFlashcardContent
+    | GeneratedChatContent,
   aiCall: AICallFn,
   options: SceneActionsOptions = {},
 ): Promise<Action[]> {
@@ -1580,7 +1806,9 @@ export function createSceneWithActions(
     | GeneratedSlideContent
     | GeneratedQuizContent
     | GeneratedInteractiveContent
-    | GeneratedPBLContent,
+    | GeneratedPBLContent
+    | GeneratedFlashcardContent
+    | GeneratedChatContent,
   actions: Action[],
   api: ReturnType<typeof createStageAPI>,
 ): string | null {
@@ -1665,6 +1893,36 @@ export function createSceneWithActions(
       actions,
     });
 
+    return sceneResult.success ? (sceneResult.data ?? null) : null;
+  }
+
+  if (outline.type === 'flashcard' && 'cards' in content) {
+    const sceneResult = api.scene.create({
+      type: 'flashcard',
+      title: outline.title,
+      order: outline.order,
+      content: {
+        type: 'flashcard',
+        cards: content.cards,
+      },
+      actions,
+    });
+    return sceneResult.success ? (sceneResult.data ?? null) : null;
+  }
+
+  if (outline.type === 'chat' && 'topic' in content) {
+    const sceneResult = api.scene.create({
+      type: 'chat',
+      title: outline.title,
+      order: outline.order,
+      content: {
+        type: 'chat',
+        topic: content.topic,
+        openingPrompt: content.openingPrompt,
+        ...(content.agentId ? { agentId: content.agentId } : {}),
+      },
+      actions,
+    });
     return sceneResult.success ? (sceneResult.data ?? null) : null;
   }
 

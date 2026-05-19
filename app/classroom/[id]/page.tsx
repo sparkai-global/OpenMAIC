@@ -7,6 +7,10 @@ import { loadImageMapping } from '@/lib/utils/image-storage';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useUserProfileStore } from '@/lib/store/user-profile';
+import { useLearningEventStore } from '@/lib/learning-event/store';
+import { fetchLessonInfo } from '@/lib/learning-event/lesson-info';
+import { setTeacherToken } from '@/lib/auth/teacher-token';
+import { TeacherSessionGuard } from '@/components/auth/teacher-session-guard';
 import { useSceneGenerator } from '@/lib/hooks/use-scene-generator';
 import { useMediaGenerationStore } from '@/lib/store/media-generation';
 import { useWhiteboardHistoryStore } from '@/lib/store/whiteboard-history';
@@ -32,20 +36,64 @@ export default function ClassroomDetailPage() {
     if (nickname) store.setNickname(nickname);
     if (avatar) store.setAvatar(avatar);
     if (bio) store.setBio(bio);
+
+    // 教师端 token：仅独立访问（非 iframe）时从 URL 取并存 localStorage
+    // iframe 学生端走 postMessage 注入的另一套，不动这里
+    const token = searchParams.get('token');
+    if (token) {
+      let isEmbedded = true;
+      try {
+        isEmbedded = window.self !== window.top;
+      } catch {
+        /* 跨域沙箱 → 视为 iframe，不存 */
+      }
+      if (!isEmbedded) setTeacherToken(token);
+    }
   }, [searchParams]);
 
   useEffect(() => {
     const handler = (e: MessageEvent) => {
-      if (e.data?.type !== 'openmaic:user-profile') return;
-      const { nickname, avatar, bio } = e.data.payload ?? {};
-      const store = useUserProfileStore.getState();
-      if (typeof nickname === 'string') store.setNickname(nickname);
-      if (typeof avatar === 'string') store.setAvatar(avatar);
-      if (typeof bio === 'string') store.setBio(bio);
+      // 用户信息注入
+      if (e.data?.type === 'openmaic:user-profile') {
+        const { nickname, avatar, bio } = e.data.payload ?? {};
+        const store = useUserProfileStore.getState();
+        if (typeof nickname === 'string') store.setNickname(nickname);
+        if (typeof avatar === 'string') store.setAvatar(avatar);
+        if (typeof bio === 'string') store.setBio(bio);
+        return;
+      }
+      // 学习事件上报 context 注入（token / sourceRootId 等）
+      // apiBaseUrl 不再由父页传入，改走 next.config.ts 里硬编码的同源代理 /app/* → 父项目后端
+      if (e.data?.type === 'openmaic:learning-context') {
+        const { token, sourceRootId, sourceId, sourceType } = e.data.payload ?? {};
+        useLearningEventStore.getState().setContext({
+          token: token ?? null,
+          sourceRootId: sourceRootId ?? null,
+          sourceId: sourceId ?? null,
+          ...(typeof sourceType === 'number' ? { sourceType } : {}),
+        });
+        // 拉取课堂信息，建立 quiz sceneId:seq → 真实 uuid 映射（已有映射会自动跳过）
+        void fetchLessonInfo();
+        return;
+      }
     };
     window.addEventListener('message', handler);
+
+    // 握手：listener 绑好后，主动通知父页可以发 context 了
+    // 父页应监听 message，收到 openmaic:ready 后 postMessage(openmaic:learning-context, openmaic:user-profile)
+    if (window.parent && window.parent !== window) {
+      try {
+        window.parent.postMessage(
+          { type: 'openmaic:ready', payload: { classroomId } },
+          '*',
+        );
+      } catch {
+        /* 跨域受限或没有父页，忽略 */
+      }
+    }
+
     return () => window.removeEventListener('message', handler);
-  }, []);
+  }, [classroomId]);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -233,6 +281,8 @@ export default function ClassroomDetailPage() {
             <Stage onRetryOutline={retrySingleOutline} />
           )}
         </div>
+        {/* 教师 token 401 时弹窗，确认后关闭页面 */}
+        <TeacherSessionGuard />
       </MediaStageProvider>
     </ThemeProvider>
   );

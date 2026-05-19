@@ -13,9 +13,11 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useChatSessions } from './use-chat-sessions';
 import { ChatSessionComponent } from './chat-session';
 import { LectureNotesView } from './lecture-notes-view';
+import { ChatText } from './chat-text';
 import { useTeacherChat } from '@/lib/hooks/use-teacher-chat';
 import { useUserProfileStore } from '@/lib/store/user-profile';
 import { useAgentRegistry } from '@/lib/orchestration/registry/store';
+import { submitLearningEvent } from '@/lib/learning-event/submit';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface ChatAreaProps {
@@ -141,7 +143,9 @@ function TeacherChatLog({
                         : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100 rounded-bl-sm',
                     )}
                   >
-                    {m.text || (
+                    {m.text ? (
+                      <ChatText text={m.text} />
+                    ) : (
                       <span className="inline-flex gap-0.5 items-center">
                         <span
                           className="w-1 h-1 rounded-full bg-current animate-bounce"
@@ -265,6 +269,20 @@ export const ChatArea = forwardRef<ChatAreaRef, ChatAreaProps>(
     // 默认收起：固定高度 + 渐隐遮罩，只看到最后一段
     const [notesCollapsed, setNotesCollapsed] = useState(true);
     const [inputValue, setInputValue] = useState('');
+
+    // 学习事件计时：讨论 Tab 跟着 scene 切换重置；拓展 Tab 跟着 stage 重置（多 agent 跨 scene 持续）
+    const teacherChatStartRef = useRef<number>(Date.now());
+    const teacherMsgCountRef = useRef<number>(0);
+    const groupChatStartRef = useRef<number>(Date.now());
+    const groupMsgCountRef = useRef<number>(0);
+    useEffect(() => {
+      teacherChatStartRef.current = Date.now();
+      teacherMsgCountRef.current = 0;
+    }, [currentSceneId]);
+    useEffect(() => {
+      groupChatStartRef.current = Date.now();
+      groupMsgCountRef.current = 0;
+    }, [stageId]);
     const notesScrollRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLTextAreaElement>(null);
     const isDraggingRef = useRef(false);
@@ -391,16 +409,31 @@ export const ChatArea = forwardRef<ChatAreaRef, ChatAreaProps>(
       const text = inputValue.trim();
       if (!text) return;
       // 讨论 Tab → 师生独立聊天（流式中禁止重发）
+      // 注意：讨论 / 拓展 Tab 都不上报 message_sent 学习事件（只 chat 场景上报）
       if (activeTab === 'lecture') {
         if (teacherChat.isStreaming) return;
         setInputValue('');
         teacherChat.sendMessage(text);
+        teacherMsgCountRef.current += 1;
+        submitLearningEvent('message_sent', {
+          timeSpentSec: Math.round((Date.now() - teacherChatStartRef.current) / 1000),
+          messageIndex: teacherMsgCountRef.current,
+          sceneId: currentSceneId ?? null,
+          surface: 'teacher-chat',
+        });
         return;
       }
       // 拓展 Tab → sendMessage（active discussion 自动复用，否则新开 qa）
       setInputValue('');
       sendMessage(text);
-    }, [inputValue, sendMessage, activeTab, teacherChat]);
+      groupMsgCountRef.current += 1;
+      submitLearningEvent('message_sent', {
+        timeSpentSec: Math.round((Date.now() - groupChatStartRef.current) / 1000),
+        messageIndex: groupMsgCountRef.current,
+        sceneId: currentSceneId ?? null,
+        surface: 'group-discussion',
+      });
+    }, [inputValue, sendMessage, activeTab, teacherChat, currentSceneId]);
 
     useImperativeHandle(ref, () => ({
       createSession,

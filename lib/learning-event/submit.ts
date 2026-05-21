@@ -61,6 +61,8 @@ export async function submitLearningEvent(
         sourceId,
         sourceRootId: ctx.sourceRootId,
         sourceType,
+        // 内容来源固定标识：标明这条事件来自 OpenMAIC
+        contentProvider: 'open_maic',
       }),
     });
 

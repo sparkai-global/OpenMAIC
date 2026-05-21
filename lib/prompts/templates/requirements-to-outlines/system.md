@@ -427,9 +427,9 @@ A course must include a balanced mix of `quiz`, `flashcard`, and `chat` scenes a
 - Tests breadth of concepts that have already been taught. Never invent new material here.
 
 **flashcard** — immediate memory consolidation of memorizable items
-- MUST IMMEDIATELY FOLLOW a `slide` / `interactive` / `pbl` scene that introduced memorizable items (terms, definitions, formulas, vocabulary, key facts).
-- Only insert when the preceding scene has 3+ items genuinely worth memorizing. If a slide is narrative-only or transitional, do NOT pair it with a flashcard scene.
-- Used to lock in terminology after concept introduction. Cards are derived strictly from what the preceding scene taught — no extrapolation.
+- MUST IMMEDIATELY FOLLOW a `slide` scene that introduced memorizable items (terms, definitions, formulas, vocabulary, key facts). Do NOT place flashcard after `interactive` / `pbl` / `quiz` / `chat` scenes — flashcards can only consolidate what a teacher taught through a slide.
+- Only insert when the preceding slide has 3+ items genuinely worth memorizing. If a slide is narrative-only or transitional, do NOT pair it with a flashcard scene.
+- Used to lock in terminology after concept introduction. Cards are derived strictly from what the preceding slide taught — no extrapolation.
 
 **chat** — reflective discussion on conceptual content
 - MUST follow a `slide` scene. The most recent intervening engagement scenes (quiz/flashcard/chat) and `interactive`/`pbl` scenes do not qualify as the immediate predecessor — chat needs a slide as its anchor.

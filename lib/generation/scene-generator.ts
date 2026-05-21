@@ -925,9 +925,16 @@ async function generateFlashcardContent(
   previousScenes?: Scene[],
   languageDirective?: string,
 ): Promise<GeneratedFlashcardContent | null> {
-  const source = previousScenes && previousScenes.length > 0 ? previousScenes.at(-1) : undefined;
+  // Flashcard cards must be extracted from a slide scene. Other scene types
+  // (interactive / pbl / quiz / chat) either lack canvas text we can read or
+  // contain UI-instruction speech (e.g. "drag the task here") that the model
+  // would otherwise treat as memorizable content. Explicitly skip back to the
+  // most recent slide preceding this flashcard.
+  const source = previousScenes
+    ?.filter((s) => s.content.type === 'slide')
+    ?.at(-1);
   if (!source) {
-    log.warn(`Flashcard "${outline.title}" has no preceding scene — cannot extract cards`);
+    log.warn(`Flashcard "${outline.title}" has no preceding slide scene — cannot extract cards`);
     return null;
   }
 

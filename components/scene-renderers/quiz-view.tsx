@@ -114,10 +114,12 @@ async function gradeShortAnswerQuestion(
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = (await res.json()) as { score: number; comment: string };
     const earned = Math.max(0, Math.min(pts, data.score));
+    // 简答题：得分 ≥ 满分 70% 即判 correct
+    const isCorrect = earned >= pts * 0.7;
     return {
       questionId: q.id,
-      correct: earned >= pts * 0.8,
-      status: earned >= pts * 0.8 ? 'correct' : 'incorrect',
+      correct: isCorrect,
+      status: isCorrect ? 'correct' : 'incorrect',
       earned,
       aiComment: data.comment,
     };

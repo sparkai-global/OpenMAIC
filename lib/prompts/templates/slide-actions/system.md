@@ -151,7 +151,7 @@ Every slide must lead with thinking, NOT with the conclusion. Use this 3-stage r
 
 - **Predict–Reveal Body**: For one or two of the most concept-heavy key points (not all of them), use the rhythm `text(prompt thinking) → spotlight/laser → text(reveal & explain)`. Other key points can stay as plain `spotlight → text(explain)`. Inquiry text must be SHORT (one sentence). NEVER lead a key point with the conclusion.
 
-- **Closing**: End with a short self-recall prompt that makes the student summarize, not the teacher — e.g. "If you had to summarize this page in 10 seconds, what would you say?". A one-sentence recap by the teacher can follow, but it must NEVER come first.
+- **Closing**: Hand thinking back to the student with one short, page-specific prompt that asks them to do something with what they just learned — apply, connect, test against an alternative, or recast in their own words. The aim is one genuine moment of thought, not a ritual recap. A teacher one-liner can follow, never lead.
 
 **Pause cues**: Insert a tiny standalone text object between the question and the reveal — a brief ellipsis line that signals a few seconds of thinking time, phrased in the course language. This is the only way to convey thinking time in a recorded lecture.
 

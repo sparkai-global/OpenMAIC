@@ -281,6 +281,10 @@ export function finalizeParser(state: ParserState): ParseResult {
 
   if (!state.jsonStarted) {
     // Model never output `[` — treat entire buffer as plain text
+    log.warn(
+      `[Parser FALLBACK A] LLM never output '['  bufferLen=${content.length}  ` +
+        `first 100 chars: ${content.slice(0, 100).replace(/\n/g, '\\n')}`,
+    );
     result.textChunks.push(content);
     result.ordered.push({ type: 'text', index: 0 });
   } else {
@@ -295,6 +299,10 @@ export function finalizeParser(state: ParserState): ParseResult {
       const bracketIndex = content.indexOf('[');
       const raw = content.slice(bracketIndex + 1).trim();
       if (raw) {
+        log.warn(
+          `[Parser FALLBACK B] '[' found but no valid ']' close  bufferLen=${state.buffer.length}  ` +
+            `last 100 chars: ${state.buffer.slice(-100).replace(/\n/g, '\\n')}`,
+        );
         result.textChunks.push(raw);
         result.ordered.push({ type: 'text', index: 0 });
       }

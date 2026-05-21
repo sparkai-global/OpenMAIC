@@ -78,6 +78,23 @@ const SLIDE_ACTION_GUIDELINES = `- spotlight: Use to focus attention on ONE key 
 const MUTUAL_EXCLUSION_NOTE = `- IMPORTANT — Whiteboard / Canvas mutual exclusion: The whiteboard and slide canvas are mutually exclusive. When the whiteboard is OPEN, the slide canvas is hidden — spotlight and laser actions targeting slide elements will have NO visible effect. If you need to use spotlight or laser, call wb_close first to reveal the slide canvas. Conversely, if the whiteboard is CLOSED, wb_draw_* actions still work (they implicitly open the whiteboard), but be aware that doing so hides the slide canvas.
 - Prefer variety: mix spotlights, laser, and whiteboard for engaging teaching. Don't use the same action type repeatedly.`;
 
+// Whiteboard example arrays — previously hardcoded inside `agent-system/system.md`
+// "### Good Examples" block. Extracted so chat scenes can suppress them via the
+// `{{whiteboardExamples}}` template variable. Uses String.raw to preserve the
+// literal `\\frac` / `\\pm` / `\\sqrt` byte sequences expected by the .md template
+// (markdown is fed to the LLM as raw text, so backslashes must stay doubled).
+const WHITEBOARD_EXAMPLES = String.raw`[{"type":"action","name":"wb_open","params":{}},{"type":"action","name":"wb_draw_text","params":{"content":"Step 1: 6CO₂ + 6H₂O → C₆H₁₂O₆ + 6O₂","x":100,"y":100,"fontSize":24}},{"type":"text","content":"Look at this chemical equation — notice how the reactants and products correspond."}]
+
+[{"type":"action","name":"wb_open","params":{}},{"type":"action","name":"wb_draw_latex","params":{"latex":"\\frac{-b \\pm \\sqrt{b^2-4ac}}{2a}","x":100,"y":80,"width":500}},{"type":"text","content":"This is the quadratic formula — it can solve any quadratic equation."},{"type":"action","name":"wb_draw_table","params":{"x":100,"y":250,"width":500,"height":150,"data":[["Variable","Meaning"],["a","Coefficient of x²"],["b","Coefficient of x"],["c","Constant term"]]}},{"type":"text","content":"Each variable's meaning is shown in the table."}]`;
+
+// Whiteboard action usage guidance — previously hardcoded inside `agent-system/system.md`
+// "## Action Usage Guidelines" block, right after `{{slideActionGuidelines}}`. Extracted
+// so chat scenes can suppress them via the `{{whiteboardActionsGuide}}` template variable.
+const WHITEBOARD_ACTIONS_GUIDE = `- Whiteboard actions (wb_open, wb_draw_text, wb_draw_shape, wb_draw_chart, wb_draw_latex, wb_draw_table, wb_draw_line, wb_draw_code, wb_edit_code, wb_delete, wb_clear, wb_close): Use when explaining concepts that benefit from diagrams, formulas, data charts, tables, connecting lines, code demonstrations, or step-by-step derivations. Use wb_draw_latex for math formulas, wb_draw_chart for data visualization, wb_draw_table for structured data, wb_draw_code for code demonstrations.
+- WHITEBOARD CLOSE RULE (CRITICAL): Do NOT call wb_close at the end of your response. Leave the whiteboard OPEN so students can read what you drew. Only call wb_close when you specifically need to return to the slide canvas (e.g., to use spotlight or laser on slide elements). Frequent open/close is distracting.
+- wb_delete: Use to remove a specific element by its ID (shown in brackets like [id:xxx] in the whiteboard state). Prefer this over wb_clear when only one or a few elements need to be removed.
+- wb_draw_code / wb_edit_code: To modify an existing code block, ALWAYS use wb_edit_code (insert_after, insert_before, delete_lines, replace_lines) instead of deleting the code element and re-creating it. wb_edit_code produces smooth line-level animations; deleting and re-drawing loses the animation continuity. Only use wb_draw_code for creating a brand-new code block.`;
+
 // ==================== Private helpers ====================
 
 function buildStudentProfileSection(userProfile?: { nickname?: string; bio?: string }): string {
@@ -176,8 +193,10 @@ export function buildStructuredPrompt(
         ? ORDERING_SLIDE
         : ORDERING_WB,
     spotlightExamples: isChatScene ? '' : hasSlideActions ? SPOTLIGHT_EXAMPLES : '',
+    whiteboardExamples: isChatScene ? '' : WHITEBOARD_EXAMPLES,
     actionDescriptions: isChatScene ? '' : getActionDescriptions(effectiveActions),
     slideActionGuidelines: isChatScene ? '' : hasSlideActions ? SLIDE_ACTION_GUIDELINES : '',
+    whiteboardActionsGuide: isChatScene ? '' : WHITEBOARD_ACTIONS_GUIDE,
     mutualExclusionNote: isChatScene ? '' : hasSlideActions ? MUTUAL_EXCLUSION_NOTE : '',
     stateContext: buildStateContext(storeState),
     virtualWhiteboardContext: isChatScene

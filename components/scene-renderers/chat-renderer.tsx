@@ -30,9 +30,9 @@ export function ChatRenderer({ content, sceneId }: ChatRendererProps) {
   const userAvatar = useUserProfileStore((s) => s.avatar);
   const userNickname = useUserProfileStore((s) => s.nickname);
 
-  // 每个 chat 场景独立的会话存储
+  // 每个 chat 场景独立的会话存储；单聊对象固定为 scene 指定的 agent
   const storageKey = stageId ? `chatScene:${stageId}:${sceneId}` : null;
-  const chat = useTeacherChat({ storageKey });
+  const chat = useTeacherChat({ storageKey, agentId: content.agentId || 'default-1' });
 
   // 获取指定 agent 的信息
   const targetAgent = useMemo(() => {

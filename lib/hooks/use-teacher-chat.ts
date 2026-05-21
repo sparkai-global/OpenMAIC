@@ -30,11 +30,18 @@ export interface TeacherChatMessage {
 interface UseTeacherChatOptions {
   /** 用于 localStorage 隔离，建议传 classroomId */
   storageKey?: string | null;
+  /**
+   * 单聊对象的 agentId。
+   * - 素材聊天（chat 场景）传 scene.content.agentId
+   * - 不传则自动取课堂里第一个 teacher 角色的 agent
+   * 无论哪种，最终发给 /api/chat 的 agentIds 恒为长度 1（单聊）。
+   */
+  agentId?: string | null;
 }
 
 const STORAGE_PREFIX = 'teacherChat:';
 
-export function useTeacherChat({ storageKey }: UseTeacherChatOptions = {}) {
+export function useTeacherChat({ storageKey, agentId }: UseTeacherChatOptions = {}) {
   const fullKey = storageKey ? `${STORAGE_PREFIX}${storageKey}` : null;
 
   const [messages, setMessages] = useState<TeacherChatMessage[]>(() => {
@@ -103,12 +110,19 @@ export function useTeacherChat({ storageKey }: UseTeacherChatOptions = {}) {
 
       try {
         const registry = useAgentRegistry.getState();
-        // 严格按 teacherOnly 规范：放所有 teacher role 的 agent
-        const teacherIds: string[] = [];
-        for (const [id, agent] of Object.entries(registry.agents)) {
-          if (agent.role === 'teacher') teacherIds.push(id);
+        // 单聊：agentIds 恒为长度 1。
+        // 优先用调用方指定的 agentId；否则取课堂里第一个 teacher 角色；再兜底 default-1。
+        let singleAgentId = agentId ?? null;
+        if (!singleAgentId) {
+          for (const [id, agent] of Object.entries(registry.agents)) {
+            if (agent.role === 'teacher') {
+              singleAgentId = id;
+              break;
+            }
+          }
         }
-        if (teacherIds.length === 0) teacherIds.push('default-1');
+        if (!singleAgentId) singleAgentId = 'default-1';
+        const teacherIds: string[] = [singleAgentId];
 
         const modelConfig = getCurrentModelConfig();
         const userProfile = useUserProfileStore.getState();
@@ -298,7 +312,7 @@ export function useTeacherChat({ storageKey }: UseTeacherChatOptions = {}) {
         abortRef.current = null;
       }
     },
-    [isStreaming],
+    [isStreaming, agentId],
   );
 
   const stop = useCallback(() => {

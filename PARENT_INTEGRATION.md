@@ -222,9 +222,12 @@ OpenMAIC 当前会上报以下事件：
   "payload": { "cardIndex": 2, "totalCards": 10, "timeSpentSec": 8 },
   "sourceId": "<OpenMAIC scene.id>",
   "sourceRootId": "<父项目 lesson.id>",
-  "sourceType": 1
+  "sourceType": 1,
+  "contentProvider": "open_maic"
 }
 ```
+
+> `contentProvider` 固定为 `"open_maic"`，标识事件来源是 OpenMAIC，供后端区分不同内容提供方。
 
 > **`sourceId` 粒度**：默认是 **scene.id**（当前场景，比如某张闪卡场景、某道答题场景、某段聊天场景），后台据此能精准定位学生在哪一节学习了什么。若父页 postMessage 时传了 `sourceId` 字段，则覆盖此默认值。
 
@@ -457,9 +460,10 @@ A: 协议向后兼容。新字段都是可选，旧客户端不传也行。OpenM
 ## 11. 联系
 
 技术对接：OpenMAIC 团队
-协议版本：v1.2（2026-05-14）
+协议版本：v1.3（2026-05-15）
 
 变更记录：
+- v1.3（2026-05-15）：学习事件请求体新增固定字段 `contentProvider: "open_maic"`。
 - v1.2（2026-05-14）：`quiz_answered` 的 `quizId` 自动换成后端真实 UUID —— OpenMAIC 收到 context 后调 `/app/lesson/info` 拉 `openmaicQuizKeys` 建立 `sceneId+questionSeq → uuid` 映射。
 - v1.1（2026-05-13）：新增 `openmaic:ready` 握手；学习事件接口改走 `/app/*` 同源代理（地址硬编码在 [next.config.ts](next.config.ts)），父页不再传 `apiBaseUrl`；本地测试课堂 ID 改为 `demo1`；`sourceId` 默认由 stage.id 改为 scene.id（更细粒度，每个场景的事件可单独定位）；右侧讨论/拓展 Tab 的 `message_sent` 不再上报，只有 chat 场景上报。
 - v1.0（2026-05）：初版。

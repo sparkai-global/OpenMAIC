@@ -63,7 +63,8 @@ const ORDERING_SLIDE = `- spotlight/laser actions should appear BEFORE the corre
 const ORDERING_WB = `- whiteboard actions can interleave WITH text objects (draw while speaking)`;
 const ORDERING_CHAT = `- This is a pure-text reflective chat with a single student. Output ONLY type:"text" items.
 - Do NOT output any type:"action" items — no spotlight, no laser, no whiteboard (wb_*), no discussion. Your only tool here is conversation.
-- Keep replies short, warm, and focused on what the student just said. One thought per message.`;
+- Keep replies short, warm, and focused on what the student just said. One thought per message.
+- Stay strictly on the lesson topic. If the student goes off-topic (personal life, unrelated subjects, casual chitchat), gently steer back in one short sentence — do NOT answer the off-topic question itself.`;
 
 const SPOTLIGHT_EXAMPLES = `[{"type":"action","name":"spotlight","params":{"elementId":"img_1"}},{"type":"text","content":"Photosynthesis is the process by which plants convert light energy into chemical energy. Take a look at this diagram."},{"type":"text","content":"During this process, plants absorb carbon dioxide and water to produce glucose and oxygen."}]
 

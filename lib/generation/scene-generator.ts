@@ -29,6 +29,7 @@ import { createStageAPI } from '@/lib/api/stage-api';
 import { generatePBLContent } from '@/lib/pbl/generate-pbl';
 import { buildPrompt, PROMPT_IDS } from '@/lib/prompts';
 import { postProcessInteractiveHtml } from './interactive-post-processor';
+import { validateGeneratedHtml, MAX_ERRORS_REPORTED } from './html-validator';
 import { parseActionsFromStructuredOutput } from './action-parser';
 import { parseJsonResponse } from './json-repair';
 import {
@@ -1290,12 +1291,61 @@ async function generateWidgetContent(
   }
 
   log.info(`Generating ${widgetType} widget for: ${outline.title}`);
-  const response = await aiCall(prompts.system, prompts.user);
-  const html = extractHtml(response);
+
+  // Validator-driven retry loop: regenerate up to MAX_RETRIES times if HTML fails validation.
+  const MAX_RETRIES = 3;
+  let html: string | null = null;
+  let userPrompt = prompts.user;
+  let validationPassed = false;
+
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    const response = await aiCall(prompts.system, userPrompt);
+    html = extractHtml(response);
+
+    if (!html) {
+      log.warn(`Widget ${widgetType} attempt ${attempt}/${MAX_RETRIES}: extractHtml failed, retrying`);
+      continue;
+    }
+
+    const validation = validateGeneratedHtml(html, widgetType);
+    if (validation.passed) {
+      log.info(`Widget ${widgetType} validation passed on attempt ${attempt}`);
+      validationPassed = true;
+      break;
+    }
+
+    log.warn(
+      `Widget ${widgetType} attempt ${attempt}/${MAX_RETRIES} validation failed (${validation.totalErrorCount} issue${validation.totalErrorCount > 1 ? 's' : ''}), retrying`,
+    );
+
+    if (validation.totalErrorCount > MAX_ERRORS_REPORTED) {
+      log.warn(
+        `Widget ${widgetType} validation found ${validation.totalErrorCount} issues, truncated to ${MAX_ERRORS_REPORTED} in retry prompt`,
+      );
+    }
+
+    const errorList = validation.errors.map((e, i) => `${i + 1}. ${e}`).join('\n');
+    const truncationNote =
+      validation.totalErrorCount > MAX_ERRORS_REPORTED
+        ? `\n(Note: ${validation.totalErrorCount - MAX_ERRORS_REPORTED} additional issues exist but are not listed. Please also review the code holistically.)`
+        : '';
+
+    userPrompt =
+      prompts.user +
+      `\n\n---\nYour previous attempt had the following issues. Please fix ALL of them and regenerate the complete HTML:\n${errorList}${truncationNote}`;
+  }
 
   if (!html) {
-    log.error(`Failed to extract HTML from ${widgetType} response for: ${outline.title}`);
+    log.error(
+      `Widget ${widgetType} (${outline.title}): extractHtml failed for all ${MAX_RETRIES} attempts, returning null`,
+    );
     return null;
+  }
+
+  if (!validationPassed) {
+    log.error(
+      `Widget ${widgetType} (${outline.title}): validation failed all ${MAX_RETRIES} attempts, using last generated HTML as fallback`,
+    );
   }
 
   // Extract widget config from HTML if present

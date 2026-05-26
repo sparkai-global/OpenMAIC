@@ -1300,12 +1300,16 @@ async function generateWidgetContent(
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     const response = await aiCall(prompts.system, userPrompt);
-    html = extractHtml(response);
+    const extracted = extractHtml(response);
 
-    if (!html) {
+    if (!extracted) {
       log.warn(`Widget ${widgetType} attempt ${attempt}/${MAX_RETRIES}: extractHtml failed, retrying`);
       continue;
     }
+
+    // Only overwrite html when extraction succeeded, so previous successful
+    // attempts remain available as fallback if a later attempt fails to extract.
+    html = extracted;
 
     const validation = validateGeneratedHtml(html, widgetType);
     if (validation.passed) {

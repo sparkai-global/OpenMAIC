@@ -62,8 +62,21 @@ export function validateGeneratedHtml(html: string, widgetType?: string): Valida
   }
 
   // Check #2: draggable elements missing touch-action: none — browser hijacks gesture as scroll
-  const hasDraggable =
-    /class=["'][^"']*\bdraggable\b/.test(html) || /\bdraggable=["']true["']/.test(html);
+  // Note: \b treats - as a word boundary, so naive \bdraggable\b would falsely match
+  // class names like "not-draggable" / "draggable-item" and attributes like data-draggable.
+  // We tokenize class lists and use a stricter lookbehind for the attribute form.
+  const hasDraggableClass = [...html.matchAll(/class=["']([^"']*)["']/g)].some(([, classes]) =>
+    classes.split(/\s+/).includes('draggable'),
+  );
+  const hasDraggableAttr = /(?<![-\w])draggable=["']true["']/.test(html);
+  const hasDraggable = hasDraggableClass || hasDraggableAttr;
+  // HEURISTIC: we only check whether touch-action: none appears anywhere in the document,
+  // not whether it actually applies to the draggable element. So a widget that sets
+  // touch-action: none on .button but forgets it on the actually-draggable .canvas will
+  // pass this check despite still having the bug. Strict checking would require a CSS
+  // parser + selector matching, which is out of scope for Layer 1 (regex). This is best
+  // effort: catches the "completely forgot touch-action" case, misses the "wrong selector"
+  // case.
   const hasTouchActionNone = /touch-action\s*:\s*none/.test(html);
   if (hasDraggable && !hasTouchActionNone) {
     errors.push(

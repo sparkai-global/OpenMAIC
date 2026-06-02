@@ -1,11 +1,19 @@
 import type { NextConfig } from 'next';
 
+// 应用版本号 —— 每次 commit / push 前手动改这里。
+// 进入课堂时 Console 会打印 `[OpenMAIC] vX.X.X (yyyy-MM-dd HH:mm)`，
+// 用于在 iframe / 部署机上快速比对当前跑的是哪个版本。
+const APP_VERSION = '2026-06-02 12:43';
+
 const nextConfig: NextConfig = {
   output: process.env.VERCEL ? undefined : 'standalone',
   transpilePackages: ['mathml2omml', 'pptxgenjs'],
   serverExternalPackages: ['ali-oss'],
   experimental: {
     proxyClientMaxBodySize: '200mb',
+  },
+  env: {
+    NEXT_PUBLIC_APP_VERSION: APP_VERSION,
   },
   async headers() {
     return [

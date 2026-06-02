@@ -27,6 +27,14 @@ export default function ClassroomDetailPage() {
 
   const { loadFromStorage } = useStageStore();
 
+  // 进入课堂时打印版本号 —— 用于确认部署版本（next.config.ts 里 APP_VERSION 常量）
+  useEffect(() => {
+    console.log(
+      `%c[OpenMAIC] v${process.env.NEXT_PUBLIC_APP_VERSION ?? 'unknown'}`,
+      'color:#8b5cf6;font-weight:bold;font-size:12px',
+    );
+  }, []);
+
   useEffect(() => {
     if (!searchParams) return;
     const nickname = searchParams.get('nickname');

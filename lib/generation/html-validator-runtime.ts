@@ -58,14 +58,36 @@ export async function validateGeneratedHtmlRuntime(
     const page = await context.newPage();
 
     // ─── 1. Capture runtime errors during page load ────────────────────────
+    // Filter errors specific to the about:blank context Playwright uses for
+    // setContent — localStorage/sessionStorage access fails here but works
+    // in real iframe deployment. Match only browser-specific phrases for this
+    // failure mode so real "null reference" bugs that happen to mention
+    // localStorage are still reported.
+    const isLayer2EnvironmentArtifact = (msg: string) =>
+      /(localStorage|sessionStorage)/i.test(msg) &&
+      /(SecurityError|Access is denied for this document|operation is insecure)/i.test(msg);
+
+    // When init code crashes on an env artifact, downstream checks (Start
+    // click, drag smoke test) get misleading results because the game state
+    // is half-initialized. Track this so we can skip those checks.
+    let envArtifactCount = 0;
+
     page.on('pageerror', (err) => {
+      if (isLayer2EnvironmentArtifact(err.message)) {
+        envArtifactCount++;
+        return;
+      }
       errors.push(`JavaScript error during page load: ${err.message}`);
     });
 
     page.on('console', (msg) => {
-      if (msg.type() === 'error') {
-        errors.push(`Console error during load: ${msg.text().substring(0, 200)}`);
+      if (msg.type() !== 'error') return;
+      const text = msg.text();
+      if (isLayer2EnvironmentArtifact(text)) {
+        envArtifactCount++;
+        return;
       }
+      errors.push(`Console error during load: ${text.substring(0, 200)}`);
     });
 
     // Resources that browsers auto-request and are not part of widget HTML —
@@ -86,6 +108,14 @@ export async function validateGeneratedHtmlRuntime(
 
     // ─── 2. Load the HTML ──────────────────────────────────────────────────
     await page.setContent(html, { waitUntil: 'networkidle', timeout: 30000 });
+
+    // Pages that allow scrolling can legitimately have content outside the
+    // initial viewport; viewport-overflow checks would be false positives.
+    const pageScrollable = await page.evaluate(() => {
+      const htmlOv = getComputedStyle(document.documentElement).overflow;
+      const bodyOv = getComputedStyle(document.body).overflow;
+      return htmlOv !== 'hidden' && bodyOv !== 'hidden';
+    });
 
     // ─── 3. CRITICAL: pointer-events: none breaking interaction ────────────
     // Two checks:
@@ -184,8 +214,13 @@ export async function validateGeneratedHtmlRuntime(
         const rect = el.getBoundingClientRect();
         if (rect.height < 200) continue;
         for (const child of el.querySelectorAll('*')) {
+          // Skip SVG descendants — their "overflow" is by design (viewBox/pan/zoom),
+          // and Canvas content lives in its own coordinate system.
+          if (child.closest('svg') || child.tagName === 'CANVAS') continue;
           const cr = child.getBoundingClientRect();
-          if (cr.bottom > rect.bottom + 1 && cr.width > 0 && cr.height > 0) {
+          // 50px threshold avoids sub-pixel rounding, decorative border/shadow
+          // bleed, and minor CSS noise that LLM cannot meaningfully fix.
+          if (cr.bottom > rect.bottom + 50 && cr.width > 0 && cr.height > 0) {
             out.push({
               container: el.tagName.toLowerCase() + (el.id ? '#' + el.id : ''),
               child: child.tagName.toLowerCase() + (child.id ? '#' + child.id : ''),
@@ -228,9 +263,9 @@ export async function validateGeneratedHtmlRuntime(
           `<button>"${text}"</button> has zero size (width=${box.width.toFixed(0)}, height=${box.height.toFixed(0)})`,
         );
       }
-      if (box.x + box.width > 1280 || box.y + box.height > 720) {
+      if (!pageScrollable && (box.x + box.width > 1280 || box.y + box.height > 720)) {
         errors.push(
-          `<button>"${text}"</button> outside 1280x720 viewport at (${box.x.toFixed(0)}, ${box.y.toFixed(0)})`,
+          `<button>"${text}"</button> outside 1280x720 viewport at (${box.x.toFixed(0)}, ${box.y.toFixed(0)}) on a non-scrollable page (html/body overflow:hidden)`,
         );
       }
     }
@@ -241,6 +276,10 @@ export async function validateGeneratedHtmlRuntime(
     const startBtn = await page.$(
       '.start-btn, .startBtn, .start-button, [data-action="start"], [onclick^="startGame("], [onclick="startGame()"]',
     );
+    // If no Start button exists, assume the game is interactive immediately.
+    // If Start exists, gameStarted is true only after a successful click that
+    // produced an observable state change.
+    let gameStarted = !startBtn;
     if (startBtn) {
       const tilesBefore = await page.evaluate(() =>
         document.querySelectorAll('.tile, .draggable, .token, [draggable="true"]').length,
@@ -256,7 +295,15 @@ export async function validateGeneratedHtmlRuntime(
       const startBtnHidden = await startBtn.evaluate(
         (el) => (el as HTMLElement).offsetParent === null,
       );
-      if (errors.length === errsBeforeStart && tilesAfter === tilesBefore && !startBtnHidden) {
+      gameStarted = startBtnHidden || tilesAfter > tilesBefore;
+      // Skip "no state change" report when env artifact may have crashed init —
+      // the game state is unreliable in that path.
+      if (
+        envArtifactCount === 0 &&
+        errors.length === errsBeforeStart &&
+        tilesAfter === tilesBefore &&
+        !startBtnHidden
+      ) {
         errors.push(
           `Start button clicked but produced no observable state change (no JS error, no new tile/draggable elements). The start handler may not be wired up — verify it sets the gameStarted flag and hides the start screen.`,
         );
@@ -276,6 +323,10 @@ export async function validateGeneratedHtmlRuntime(
       ).find((el) => !el.closest(dropSel));
       const drop = document.querySelector(dropSel);
       if (!tile || !drop) return null;
+      // Tag the specific tile we are about to drag so the post-drag check
+      // can verify whether THIS tile (not some other tile that already
+      // happened to overlap a drop zone) ended up inside a zone.
+      tile.setAttribute('data-l2-tracking', '1');
       const t = tile.getBoundingClientRect();
       const d = drop.getBoundingClientRect();
       return {
@@ -285,7 +336,11 @@ export async function validateGeneratedHtmlRuntime(
         toY: d.y + d.height / 2,
       };
     }, DROP_ZONE_SELECTOR);
-    if (dragTarget) {
+    // Skip drag test if game never started OR if env artifacts crashed init.
+    // Drag handlers usually check game.active before processing, so a half-
+    // initialized game would always report drag failure — but it's a cascade,
+    // not a real bug.
+    if (dragTarget && gameStarted && envArtifactCount === 0) {
       const errsBeforeDrag = errors.length;
       await page.mouse.move(dragTarget.fromX, dragTarget.fromY);
       await page.mouse.down();
@@ -294,8 +349,24 @@ export async function validateGeneratedHtmlRuntime(
       await page.waitForTimeout(300);
       const dropOccupied = await page.evaluate(
         (dropSel) => {
+          // Only the specific tile that was just dragged is checked — avoids
+          // false-positive "success" caused by other tiles already sitting on
+          // top of a drop zone (e.g., pre-placed hint tiles).
+          const tracked = document.querySelector('[data-l2-tracking="1"]');
+          if (!tracked) return false;
+          // (a) Tile is now a DOM descendant of a drop zone.
+          if (tracked.closest(dropSel)) return true;
+          // (b) Tile's center now sits inside a drop zone's bounding box
+          // (common pattern: tile stays at game-area level, repositioned to
+          // visually overlay a slot).
+          const tr = tracked.getBoundingClientRect();
+          const cx = tr.left + tr.width / 2;
+          const cy = tr.top + tr.height / 2;
           for (const zone of document.querySelectorAll(dropSel)) {
-            if (zone.querySelector('.tile, .draggable, .token, [draggable="true"]')) return true;
+            const zr = zone.getBoundingClientRect();
+            if (cx >= zr.left && cx <= zr.right && cy >= zr.top && cy <= zr.bottom) {
+              return true;
+            }
           }
           return false;
         },
@@ -315,9 +386,11 @@ export async function validateGeneratedHtmlRuntime(
     const mobileBtns = await page.$$('button');
     for (const btn of mobileBtns.slice(0, 5)) {
       const box = await btn.boundingBox();
-      if (box && box.x + box.width > 375) {
+      if (box && box.x + box.width > 375 && !pageScrollable) {
         const text = ((await btn.textContent()) || '').trim().substring(0, 30) || '(no text)';
-        errors.push(`Mobile viewport (iPhone 375px): <button>"${text}"</button> overflows`);
+        errors.push(
+          `Mobile viewport (iPhone 375px): <button>"${text}"</button> overflows on a non-scrollable page`,
+        );
       }
     }
 

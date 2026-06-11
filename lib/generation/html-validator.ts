@@ -265,6 +265,9 @@ export async function validateGeneratedHtml(
     log.info(
       `Layer 1 only: ${layer1.totalErrorCount} issue(s)${process.env.VALIDATOR_LAYER2 === 'false' ? ' (Layer 2 disabled)' : ' (skipping Layer 2 due to critical Layer 1 error)'}`,
     );
+    layer1.errors.forEach((e, i) =>
+      log.info(`  [${i + 1}] ${e.substring(0, 240)}${e.length > 240 ? '...' : ''}`),
+    );
     return layer1;
   }
 
@@ -278,6 +281,9 @@ export async function validateGeneratedHtml(
 
     log.info(
       `Layer 1 + Layer 2: ${layer1.totalErrorCount} structural + ${layer2.totalErrorCount} runtime issue(s)`,
+    );
+    combinedErrors.forEach((e, i) =>
+      log.info(`  [${i + 1}] ${e.substring(0, 240)}${e.length > 240 ? '...' : ''}`),
     );
 
     return {

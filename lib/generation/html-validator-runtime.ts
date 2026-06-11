@@ -1,5 +1,5 @@
 /**
- * HTML Validator — Layer 2 (Runtime DOM + axe-core checks)
+ * HTML Validator — Layer 2 (Runtime DOM checks)
  *
  * Renders generated widget HTML in a headless Chromium and inspects the live
  * DOM. Catches bugs that Layer 1 (regex) cannot see:
@@ -9,35 +9,16 @@
  *     inherited from a parent container — silently un-clickable)
  *   - Zero-sized or off-viewport interactive elements
  *   - Mobile-viewport layout breakage
- *   - Accessibility issues (button without name, low contrast, etc.) via
- *     axe-core (the industry-standard a11y scanner used by Microsoft / Google)
  *
  * Each error message is concrete and actionable so the retry LLM call has
  * enough specifics to fix it.
  */
 
 import { chromium, type Browser, type BrowserContext } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
 import { createLogger } from '@/lib/logger';
 import type { ValidationResult } from './html-validator';
 
 const log = createLogger('html-validator-runtime');
-
-/**
- * axe-core rules that are designed for full-page documents and do not apply
- * to OpenMAIC widget HTML (which is embedded inside iframes and is not a
- * standalone page). Suppress to avoid noise.
- */
-const AXE_DISABLED_RULES = [
-  'landmark-one-main', // widget is not a full page
-  'page-has-heading-one', // widget does not need <h1>
-  'region', // widget content does not need landmark wrappers
-  'document-title', // widget may have no <title>
-  'html-has-lang', // widget HTML root may omit lang
-];
-
-/** Cap on how many axe violations get surfaced to the LLM (avoid prompt bloat). */
-const MAX_AXE_VIOLATIONS = 5;
 
 // Module-level browser cache — launching Chromium takes ~1s, so reuse across calls.
 let cachedBrowser: Browser | null = null;
@@ -340,25 +321,6 @@ export async function validateGeneratedHtmlRuntime(
       }
     }
 
-    // Switch back to desktop viewport for axe-core scan
-    await page.setViewportSize({ width: 1280, height: 720 });
-    await page.waitForTimeout(300);
-
-    // ─── 6. axe-core accessibility scan ────────────────────────────────────
-    try {
-      const axeResults = await new AxeBuilder({ page })
-        .disableRules(AXE_DISABLED_RULES)
-        .analyze();
-
-      for (const v of axeResults.violations.slice(0, MAX_AXE_VIOLATIONS)) {
-        const sample = v.nodes[0]?.html?.substring(0, 100) ?? '';
-        errors.push(
-          `Accessibility (${v.id}): ${v.help} — ${v.nodes.length} element(s) affected. Sample: ${sample}`,
-        );
-      }
-    } catch (axeErr) {
-      log.warn(`axe-core scan failed (non-fatal): ${(axeErr as Error).message}`);
-    }
   } catch (err) {
     const msg = (err as Error).message;
     if (msg.toLowerCase().includes('timeout')) {

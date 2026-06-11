@@ -1293,7 +1293,7 @@ async function generateWidgetContent(
   log.info(`Generating ${widgetType} widget for: ${outline.title}`);
 
   // Validator-driven retry loop: regenerate up to MAX_RETRIES times if HTML fails validation.
-  const MAX_RETRIES = 3;
+  const MAX_RETRIES = 2;
   let html: string | null = null;
   let userPrompt = prompts.user;
   let validationPassed = false;
@@ -1311,7 +1311,7 @@ async function generateWidgetContent(
     // attempts remain available as fallback if a later attempt fails to extract.
     html = extracted;
 
-    const validation = validateGeneratedHtml(html, widgetType);
+    const validation = await validateGeneratedHtml(html, widgetType);
     if (validation.passed) {
       log.info(`Widget ${widgetType} validation passed on attempt ${attempt}`);
       validationPassed = true;

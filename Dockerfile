@@ -15,6 +15,9 @@ RUN apk add --no-cache python3 build-base g++ cairo-dev pango-dev jpeg-dev gifli
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY packages/ ./packages/
 
+# Skip Playwright's bundled Chromium download — Alpine uses system chromium via apk
+ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+
 RUN pnpm install --frozen-lockfile
 
 # ---- Stage 3: Builder ----
@@ -35,7 +38,12 @@ ENV NODE_ENV=production
 ENV HOSTNAME=0.0.0.0
 ENV PORT=3000
 
-RUN apk add --no-cache libc6-compat cairo pango jpeg giflib librsvg
+RUN apk add --no-cache libc6-compat cairo pango jpeg giflib librsvg \
+    chromium nss freetype harfbuzz ca-certificates ttf-freefont \
+    wqy-zenhei font-noto-emoji
+
+# Point Playwright (Layer 2 validator) at the system chromium installed via apk
+ENV PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs

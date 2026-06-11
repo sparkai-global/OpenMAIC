@@ -48,10 +48,13 @@ export interface ValidationResult {
 /**
  * Run all Layer 1 regex checks on HTML. Returns passed=true if no issues.
  *
+ * This is the fast static-analysis layer — runs in milliseconds, no rendering.
+ * Called by validateGeneratedHtml() below as the first step.
+ *
  * @param widgetType Optional widget type. When provided, enables type-specific
  *   checks (e.g., Three.js completeness for visualization3d).
  */
-export function validateGeneratedHtml(html: string, widgetType?: string): ValidationResult {
+function runLayer1Checks(html: string, widgetType?: string): ValidationResult {
   const errors: string[] = [];
 
   // Check #1: mouse events without pointer events — drag fails on touch devices
@@ -221,4 +224,71 @@ export function validateGeneratedHtml(html: string, widgetType?: string): Valida
     errors: reportedErrors,
     totalErrorCount,
   };
+}
+
+/**
+ * Errors from Layer 1 that mean "the HTML is so broken that rendering it
+ * won't tell us anything new". We skip Layer 2 when these are present.
+ */
+function hasCriticalLayer1Error(errors: string[]): boolean {
+  return errors.some(
+    (e) =>
+      e.includes('JavaScript syntax error') ||
+      e.includes('<html> tag should appear exactly once') ||
+      e.includes('<body> tag should appear exactly once'),
+  );
+}
+
+/**
+ * Validate generated widget HTML using Layer 1 (regex, fast) then Layer 2
+ * (headless Chromium + axe-core, slower but catches runtime/render bugs).
+ *
+ * Layer 2 is skipped when:
+ *   - Layer 1 found a critical error that would prevent rendering
+ *   - Environment variable VALIDATOR_LAYER2 is set to 'false'
+ *   - Layer 2 throws (graceful degradation — Layer 1 result is still returned)
+ *
+ * The combined error list (capped to MAX_ERRORS_REPORTED) is fed back to the
+ * LLM as part of the retry prompt by scene-generator.ts.
+ *
+ * @param widgetType Optional widget type. Enables type-specific checks.
+ */
+export async function validateGeneratedHtml(
+  html: string,
+  widgetType?: string,
+): Promise<ValidationResult> {
+  // Step 1: Layer 1 regex checks (always)
+  const layer1 = runLayer1Checks(html, widgetType);
+
+  // Skip Layer 2 when Layer 1 found a fatal structural issue or it is disabled.
+  if (hasCriticalLayer1Error(layer1.errors) || process.env.VALIDATOR_LAYER2 === 'false') {
+    log.info(
+      `Layer 1 only: ${layer1.totalErrorCount} issue(s)${process.env.VALIDATOR_LAYER2 === 'false' ? ' (Layer 2 disabled)' : ' (skipping Layer 2 due to critical Layer 1 error)'}`,
+    );
+    return layer1;
+  }
+
+  // Step 2: Layer 2 runtime checks (Playwright + axe-core)
+  try {
+    const { validateGeneratedHtmlRuntime } = await import('./html-validator-runtime');
+    const layer2 = await validateGeneratedHtmlRuntime(html, widgetType);
+
+    const combinedErrors = [...layer1.errors, ...layer2.errors];
+    const combinedTotal = layer1.totalErrorCount + layer2.totalErrorCount;
+
+    log.info(
+      `Layer 1 + Layer 2: ${layer1.totalErrorCount} structural + ${layer2.totalErrorCount} runtime issue(s)`,
+    );
+
+    return {
+      passed: layer1.passed && layer2.passed,
+      errors: combinedErrors.slice(0, MAX_ERRORS_REPORTED),
+      totalErrorCount: combinedTotal,
+    };
+  } catch (err) {
+    log.warn(
+      `Layer 2 unavailable, falling back to Layer 1 only: ${(err as Error).message}`,
+    );
+    return layer1;
+  }
 }

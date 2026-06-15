@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   PanelLeftClose,
   PieChart,
@@ -53,6 +53,10 @@ export function SceneSidebar({
 }: SceneSidebarProps) {
   const { t } = useI18n();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  // 课堂已发布（URL ?published=true）→ 锁定，禁止删除 scene
+  // iframe 场景下根本不会有这个 query，所以 isPublished 自然为 false
+  const isPublished = searchParams?.get('published') === 'true';
   const { scenes, currentSceneId, setCurrentSceneId, generatingOutlines, generationStatus } =
     useStageStore();
   const failedOutlines = useStageStore.use.failedOutlines();
@@ -237,8 +241,8 @@ export function SceneSidebar({
                       {scene.title}
                     </span>
                   </div>
-                  {/* 删除按钮：仅独立访问（非 iframe）可见，hover 才显示 */}
-                  {!isEmbedded && (
+                  {/* 删除按钮：仅独立访问（非 iframe）且课堂未发布（无 ?published=true）才显示 */}
+                  {!isEmbedded && !isPublished && (
                     <button
                       type="button"
                       data-testid="scene-delete"

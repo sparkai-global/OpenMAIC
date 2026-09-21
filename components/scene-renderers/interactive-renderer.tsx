@@ -13,7 +13,7 @@ interface InteractiveRendererProps {
 export function InteractiveRenderer({ content, sceneId }: InteractiveRendererProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const [containerSize, setContainerSize] = useState({
+  const [containerSize, setContainerSize] = useState<{ width: number; height: number }>({
     width: INTERACTIVE_PAD_VIEWPORT.width,
     height: INTERACTIVE_PAD_VIEWPORT.height,
   });

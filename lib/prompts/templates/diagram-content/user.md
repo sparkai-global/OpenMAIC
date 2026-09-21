@@ -20,7 +20,7 @@ Generate a complete HTML diagram with:
 2. **Edges with arrows** connecting nodes (calculate endpoints from node dimensions)
 3. **Step-by-step reveal** (下一步/上一步)
 4. **High contrast**: White nodes on dark background, light edge labels
-5. **Mobile-friendly**: Collapsible sidebar, doesn't block diagram
+5. **Tablet-first**: stable 1024×576 pad layout; details panel doesn't block diagram
 6. **First node visible** on load
 
 Embed config in `<script type="application/json" id="widget-config">`.

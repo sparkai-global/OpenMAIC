@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState, useEffect } from 'react';
 import type { InteractiveContent } from '@/lib/types/stage';
-import { patchHtmlForIframe } from '@/lib/utils/iframe';
+import { INTERACTIVE_PAD_VIEWPORT, patchHtmlForIframe } from '@/lib/utils/iframe';
 
 interface ThumbnailInteractiveProps {
   /** Interactive content to render */
@@ -21,7 +21,7 @@ interface ThumbnailInteractiveProps {
 export function ThumbnailInteractive({
   content,
   size,
-  viewportSize = 1000,
+  viewportSize = INTERACTIVE_PAD_VIEWPORT.width,
 }: ThumbnailInteractiveProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -52,8 +52,9 @@ export function ThumbnailInteractive({
     [isVisible, content.html],
   );
 
-  // Calculate thumbnail height (16:9 aspect ratio)
-  const height = size * 0.5625;
+  const viewportHeight =
+    viewportSize * (INTERACTIVE_PAD_VIEWPORT.height / INTERACTIVE_PAD_VIEWPORT.width);
+  const height = viewportHeight * scale;
 
   return (
     <div
@@ -74,7 +75,7 @@ export function ThumbnailInteractive({
           className="origin-top-left"
           style={{
             width: `${viewportSize}px`,
-            height: `${viewportSize * 0.5625}px`,
+            height: `${viewportHeight}px`,
             transform: `scale(${scale})`,
             pointerEvents: 'none', // Prevent interaction in thumbnail
           }}

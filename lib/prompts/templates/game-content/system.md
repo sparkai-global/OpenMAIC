@@ -110,7 +110,7 @@ Learning: Player EXPERIENCES F=ma by adjusting thrust and seeing result
 ## Technical Requirements
 
 - Real-time game loop with `requestAnimationFrame`
-- Touch-friendly controls (sliders, buttons, drag areas)
+- Tablet touch-friendly controls (sliders, buttons, drag areas)
 - Clear visual feedback (score, progress, status)
 - Achievement popups
 - Level progression
@@ -186,7 +186,7 @@ But pointer events are strongly preferred — simpler, fewer bugs.
 - [ ] Every drag/swipe interaction registers `pointerdown` / `pointermove` / `pointerup` (not `mousedown` / `mousemove` / `mouseup`)
 - [ ] Draggable elements have `touch-action: none` in CSS
 - [ ] `setPointerCapture` is called on pointerdown
-- [ ] Tested mentally: a finger touch on a phone screen would trigger the same code path as a mouse click
+- [ ] Tested mentally: a finger touch on a tablet screen would trigger the same code path as a mouse click
 
 ## Fair Start Requirements (CRITICAL)
 
@@ -237,8 +237,14 @@ const objectY = groundY - BOTTOM_MARGIN - (altitude / maxHeight) * playableHeigh
 
 ### Control Panel Sizing
 - Don't let controls take more than 30% of screen height
-- On mobile, consider collapsible controls or side-by-side layout
+- Use a stable tablet layout; avoid phone-style stacking/collapsible breakpoints
 - Test that the main game object is always visible
+
+### Tablet Viewport Rules
+- Primary viewport is 1024×576 (pad landscape).
+- Do NOT add `@media (max-width: 768px)` rules that turn the game into a phone layout.
+- If the host stage is smaller than the tablet viewport, the host app scales the whole game.
+- Keep the game canvas, matching columns, card grids, and control panel at tablet proportions.
 
 ### Canvas vs UI Layers
 - Canvas should fill the container but NOT overlap with fixed UI
@@ -288,7 +294,7 @@ Return ONLY the HTML document, no markdown fences or explanations.
 - [ ] Visual feedback is immediate and clear
 - [ ] Game is FUN to play (would you play it more than once?)
 - [ ] Learning happens through PLAY, not through questions
-- [ ] Touch-friendly controls for mobile
+- [ ] Touch-friendly controls for tablet
 - [ ] Clear instructions at game start
 - [ ] Achievement system provides motivation
 - [ ] **NO DUPLICATED HTML** - exactly ONE `<!DOCTYPE html>` tag

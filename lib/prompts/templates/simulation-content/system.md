@@ -10,7 +10,7 @@ Your output must be a complete HTML document with:
 2. **Embedded widget configuration** in a `<script type="application/json" id="widget-config">` tag
 3. **Interactive controls** for variables
 4. **Canvas or SVG visualization**
-5. **Mobile-responsive design**
+5. **Tablet-first fixed layout**
 6. **postMessage listener** for teacher actions (REQUIRED)
 
 ## Widget Config Schema
@@ -109,26 +109,22 @@ To make highlight/annotation work, use consistent IDs for controls:
 
 ## CRITICAL Design Requirements
 
-### 1. Mobile Layout - NO OVERLAP
-- **Control panel MUST NOT overlap with canvas on mobile**
-- Use one of these mobile-safe layouts:
-  - **Stacked layout**: Control panel on top, canvas below (with proper spacing)
-  - **Bottom sheet**: Control panel slides up from bottom on mobile
-  - **Side drawer**: Collapsible panel that doesn't block canvas
-- Test viewport widths: 320px, 375px, 414px, 768px
-- Use `min-height` for canvas to ensure it's visible on mobile
-- Control panel should be collapsible on mobile if large
+### 1. Tablet Layout - NO PHONE BREAKPOINT
+- **Primary viewport is 1024×576 (pad landscape).**
+- Do NOT use phone-style breakpoints that stack the whole UI when width is under 768px.
+- Keep controls and canvas in a stable tablet layout. If the host stage is smaller, the host app scales the entire widget.
+- Control panel MUST NOT overlap with canvas.
+- Use a compact side panel or top toolbar plus a large canvas area.
+- Avoid CSS/JS branches such as `@media (max-width: 768px)` that turn the widget into a phone layout.
 
-Example mobile-safe layout:
+Example tablet-safe layout:
 ```html
-<body class="flex flex-col min-h-screen md:flex-row">
-  <!-- Mobile: Full-width, collapsible control panel -->
-  <div id="controls" class="w-full md:w-80 shrink-0 overflow-auto max-h-[40vh] md:max-h-screen">
+<body class="app-shell">
+  <div id="controls" class="control-panel">
     <!-- Controls here -->
-    <button onclick="toggleControls()" class="md:hidden">Hide Controls</button>
   </div>
   <!-- Canvas area gets remaining space -->
-  <div class="flex-1 min-h-[300px] relative">
+  <div class="canvas-panel">
     <canvas id="canvas"></canvas>
   </div>
 </body>
@@ -189,7 +185,7 @@ function updateButton(text) {
 This simulation will run on tablets. Touch must work as the **default** input — mouse is secondary.
 
 - Minimum touch target: 44x44px for buttons
-- Sliders: Increase thumb size for mobile (min 24px)
+- Sliders: Increase thumb size for tablet touch (min 24px)
 - Add `touch-action: manipulation` to prevent double-tap zoom on tap targets
 - Use `touch-action: none` on canvas / draggable elements for custom gesture handling
 
@@ -250,9 +246,9 @@ Use `pointerdown` / `pointermove` / `pointerup` and track pointers in a `Map<poi
 
 ### 5. Canvas Sizing
 - Use `ResizeObserver` or window resize event
-- Canvas should fill available space but respect `max-height`
-- Don't use fixed pixel dimensions
-- Account for control panel height on mobile
+- Canvas should fill the tablet layout's available canvas panel
+- Use the actual container size for drawing resolution; do not switch to a phone layout based on width
+- Reserve stable space for controls and HUD
 
 ### 6. Visual Feedback
 - Clear indication when simulation starts/pauses/ends
@@ -310,7 +306,7 @@ Use `pointerdown` / `pointermove` / `pointerup` and track pointers in a `Map<poi
 
 ### 9. Presets
 - Each preset should clearly describe what it demonstrates
-- Preset buttons should be touch-friendly (larger on mobile)
+- Preset buttons should be touch-friendly (larger for tablet touch)
 - Applying a preset should reset the simulation
 
 ### 10. Accessibility
@@ -330,7 +326,7 @@ Use `pointerdown` / `pointermove` / `pointerup` and track pointers in a `Map<poi
 | Bug | Cause | Solution |
 |-----|-------|----------|
 | Reset doesn't work | Button calls wrong function | Ensure reset function resets ALL state variables |
-| Canvas overlap on mobile | Fixed positioning | Use flex/grid with proper responsive classes |
+| Canvas overlap | Fixed positioning without safe zones | Use a stable tablet grid/flex layout with reserved control space |
 | Simulation stuck | Missing `ended` state | Track `ended` separately from `running` |
 | Button does nothing | State logic error | Clear state machine with defined transitions |
 | Touch issues | Small touch targets | Min 44px touch targets, larger sliders |
@@ -361,14 +357,14 @@ const objectY = baseY - BOTTOM_MARGIN - (value / maxValue) * playableHeight;
 
 ## Quality Checklist (verify before output)
 
-- [ ] Control panel does NOT overlap canvas on mobile (test 320px width)
+- [ ] Control panel does NOT overlap canvas in a 1024×576 tablet viewport
 - [ ] Reset button returns simulation to EXACT initial state
 - [ ] Button text matches button action correctly
 - [ ] Touch targets are at least 44px
-- [ ] Canvas resizes properly on window resize
+- [ ] Canvas resizes properly on window resize without switching to a phone layout
 - [ ] State machine is clear (running/paused/ended)
 - [ ] All state variables reset on resetSimulation()
-- [ ] Works on both desktop and mobile browsers
+- [ ] Works on tablet browsers with touch input
 - [ ] **NO DUPLICATED HTML** - exactly ONE `<!DOCTYPE html>` tag
 - [ ] Simulation objects are visible and not hidden under UI overlays
 - [ ] **Visible animation: Objects visibly move/rotate when simulation runs**

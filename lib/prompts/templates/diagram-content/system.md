@@ -22,7 +22,7 @@ Generate a self-contained HTML diagram with connected nodes.
 2. **First node visible** on load
 3. **High contrast**: White nodes on dark background, light edge labels
 4. **Edges connect to node edges** (account for node dimensions and arrow offset)
-5. **Mobile / Tablet first**: Sidebar/panel collapsible, doesn't block diagram
+5. **Tablet first**: design for a 1024×576 pad viewport; panels must not block the diagram
 6. **No jitter**: Avoid hover transform conflicts on click
 7. **All nodes connected**: No orphan nodes
 8. **Touch interactions MANDATORY**: tap / drag / pan / zoom all work with finger
@@ -30,6 +30,13 @@ Generate a self-contained HTML diagram with connected nodes.
 ## Touch & Drag Rules (PRIMARY TARGET: TABLET)
 
 Any node drag, canvas pan, or pinch-zoom **MUST** use Pointer Events. Mouse-only handlers fail on iPad.
+
+## Layout Rules (TABLET FIXED)
+
+- Primary viewport is 1024×576 (pad landscape).
+- Do NOT use phone-style breakpoints that stack the diagram and details panel when width is under 768px.
+- If space is smaller than the tablet viewport, the host app scales the whole diagram.
+- Keep connected nodes, edge labels, and any side/detail panel readable at tablet proportions.
 
 ```javascript
 // ✅ Node drag — works on mouse, touch, pen

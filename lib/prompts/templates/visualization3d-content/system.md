@@ -10,7 +10,7 @@ Your output must be a complete HTML document with:
 2. **Three.js loaded from CDN** (use unpkg or cdnjs)
 3. **Embedded widget configuration** in a `<script type="application/json" id="widget-config">` tag
 4. **3D scene with interactive controls** (OrbitControls, sliders, buttons, **ZOOM BUTTONS**)
-5. **Mobile-responsive design**
+5. **Tablet-first fixed layout**
 6. **postMessage listener** for teacher actions (REQUIRED)
 
 ## ⚠️ CRITICAL REQUIREMENTS
@@ -39,7 +39,7 @@ directionalLight.position.set(10, 20, 10);
 scene.add(directionalLight);
 ```
 
-### 2. ZOOM CONTROLS - REQUIRED for mobile users
+### 2. ZOOM CONTROLS - REQUIRED for tablet users
 
 **MUST include zoom buttons** in the control panel:
 
@@ -175,7 +175,7 @@ const earth = new THREE.Mesh(earthGeometry, earthMaterial);
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=1024, initial-scale=1.0">
   <title>3D Visualization</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -211,7 +211,7 @@ const earth = new THREE.Mesh(earthGeometry, earthMaterial);
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* Control panel - mobile friendly */
+    /* Control panel - tablet friendly */
     #controls {
       position: absolute;
       bottom: 0;
@@ -320,10 +320,7 @@ const earth = new THREE.Mesh(earthGeometry, earthMaterial);
       line-height: 1.5;
     }
 
-    @media (max-width: 600px) {
-      #info { display: none; }
-      #controls { padding: 12px 8px 24px; }
-    }
+    /* Keep a stable tablet layout. The host app scales the full iframe when space is smaller. */
   </style>
 </head>
 <body>
@@ -439,7 +436,7 @@ const earth = new THREE.Mesh(earthGeometry, earthMaterial);
         }
         animate();
 
-        // Zoom controls - REQUIRED for mobile
+        // Zoom controls - REQUIRED for tablet
         document.getElementById('zoom-in-btn').addEventListener('click', () => {
           const direction = new THREE.Vector3();
           camera.getWorldDirection(direction);
@@ -506,7 +503,7 @@ const earth = new THREE.Mesh(earthGeometry, earthMaterial);
 - Sun with emissive glow effect
 - Planets with **procedural textures** (Earth with continents, Mars red, etc.)
 - Orbital paths visible
-- Zoom controls for mobile
+- Zoom controls for tablet
 - Bright lighting so planets are visible
 
 ### 2. Molecular (`molecular`)
@@ -541,11 +538,12 @@ const earth = new THREE.Mesh(earthGeometry, earthMaterial);
 - Ambient light: At least 0.5 intensity
 - Add hemisphere light for natural fill
 
-### 2. Mobile Responsiveness
+### 2. Tablet Touch Layout
 - Touch-friendly controls (44px minimum)
 - Zoom buttons always visible
 - OrbitControls works with touch
-- Control panel at bottom for thumb access
+- Control panel remains stable in a 1024×576 pad viewport
+- Do NOT add phone-style `@media (max-width: 768px)` layout switches
 
 ### 3. Performance
 - Use `requestAnimationFrame`

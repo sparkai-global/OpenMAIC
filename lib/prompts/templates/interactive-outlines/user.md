@@ -69,7 +69,7 @@ Choose widgets based on the content:
 ## Widget Design Principles (IMPORTANT)
 
 ### Simulation Widget
-- Mobile-friendly: Controls MUST NOT overlap canvas
+- Tablet-first: controls MUST NOT overlap canvas in a 1024×576 pad viewport
 - Reset button MUST work correctly
 - Touch-friendly controls (44px min)
 

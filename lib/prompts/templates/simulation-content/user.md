@@ -30,11 +30,11 @@ Generate a complete, interactive HTML simulation with these MANDATORY features:
 3. **Canvas visualization** with proper sizing
 4. **Preset buttons** for common scenarios
 
-### Mobile Responsiveness (CRITICAL)
-1. **Control panel MUST NOT overlap canvas on mobile**
-2. Use `flex-col md:flex-row` layout with proper spacing
-3. Control panel: `max-h-[40vh] md:max-h-screen` with overflow scroll
-4. Canvas container: `min-h-[300px]` to ensure visibility
+### Tablet Layout (CRITICAL)
+1. **Target a 1024×576 pad landscape viewport**
+2. **Control panel MUST NOT overlap canvas**
+3. Keep a stable tablet layout; do NOT switch into phone-style stacked layout at narrow widths
+4. If the displayed area is smaller, the host app scales the whole widget
 5. Touch-friendly controls (44px minimum touch targets)
 
 ### Button Logic (CRITICAL)
@@ -49,13 +49,13 @@ Generate a complete, interactive HTML simulation with these MANDATORY features:
 1. Auto-resize on window resize
 2. Clear visualization with grid or guides
 3. Real-time data display overlay
-4. Proper scaling for different screen sizes
+4. Proper scaling inside the fixed tablet layout
 
 ### Interactivity
 1. Real-time updates when sliders change
 2. Presets apply and reset simulation
 3. Keyboard shortcuts (Space = toggle, R = reset)
-4. Touch gestures for mobile
+4. Touch gestures for tablet
 
 ### Visual Polish
 1. Show current simulation state (running/paused/ended)

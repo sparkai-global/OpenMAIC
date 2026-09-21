@@ -56,7 +56,7 @@ Generate a FUN, INTERACTIVE HTML game with these MANDATORY features:
 1. Attractive theme matching the subject
 2. Clear UI for controls and feedback
 3. Animations for success/failure
-4. Responsive layout (mobile + desktop)
+4. Tablet-first fixed layout for a 1024×576 pad viewport; avoid phone-style responsive stacking
 
 ### Technical (MANDATORY)
 1. **Inline onclick for start button**: `<button onclick="startGame()">开始</button>` - NOT addEventListener

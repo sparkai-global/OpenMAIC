@@ -32,7 +32,7 @@ Generate a complete, interactive 3D visualization using Three.js with these MAND
 1. **Three.js from CDN** using importmap for ES modules
 2. **Proper lighting** (ambient + directional/point lights)
 3. **OrbitControls** for camera manipulation
-4. **Responsive canvas** that fills the container
+4. **Tablet-first canvas** that fills a stable 1024×576 pad layout
 
 ### Objects
 1. Create 3D objects based on the visualization type
@@ -70,10 +70,10 @@ Embed a complete widget configuration in the HTML:
 }
 ```
 
-### Mobile Considerations
+### Tablet Considerations
 1. Touch-enabled OrbitControls
-2. Lower polygon count for mobile
-3. Control panel at bottom for thumb access
+2. Reasonable polygon count for tablet performance
+3. Stable control panel that does not trigger phone-style layout
 4. Readable text sizes
 
 Return ONLY the HTML document.

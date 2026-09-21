@@ -25,7 +25,7 @@ Canvas-based simulations for physics, chemistry, biology, engineering.
 - `keyVariables`: List of controllable parameters (e.g., ["angle", "velocity", "mass"])
 
 **Design Principles:**
-- Mobile-first layout: Controls MUST NOT overlap canvas on mobile
+- Tablet-first fixed layout: design for a 1024×576 pad viewport; do not switch into phone-style stacked layouts
 - Proper state management: Reset button MUST return to initial state
 - Touch-friendly: 44px minimum touch targets
 
@@ -105,7 +105,7 @@ Interactive 3D scenes using Three.js for immersive learning experiences.
 **Design Principles:**
 - Use OrbitControls for camera manipulation
 - Proper lighting (ambient + directional)
-- Touch-friendly controls for mobile
+- Touch-friendly controls for tablet
 - Performance-optimized geometry
 - Smooth animations with requestAnimationFrame
 
@@ -230,4 +230,4 @@ Output a JSON array where each scene has this structure:
 5. **Valid JSON**: Always output valid JSON array format
 6. **REQUIRED for interactive scenes**: Every scene with `type: "interactive"` MUST include both `widgetType` AND `widgetOutline` fields
 7. **Game quality**: Game widgets should be INTERACTIVE and FUN, not boring quizzes
-8. **Mobile-first**: All widgets should work well on mobile devices
+8. **Tablet-first**: All widgets target a 1024×576 pad viewport; if shown in a smaller stage, the host app scales the whole widget instead of requiring phone breakpoints

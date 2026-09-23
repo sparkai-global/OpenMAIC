@@ -16,7 +16,7 @@ const log = createLogger('MinerUCloud');
 
 const TIMEOUTS = {
   batch: 60_000,
-  upload: 180_000,
+  upload: 600_000,
   poll: 30_000,
   zip: 180_000,
 } as const;
